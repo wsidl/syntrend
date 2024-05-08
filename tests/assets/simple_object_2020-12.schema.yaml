@@ -1,0 +1,13 @@
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$id: "https://example.com/simple"
+type: object
+properties:
+    timestamp:
+        description: Time when value is captured
+        type: integer
+    status:
+        description: Status of the tracking entity
+        type: string
+required:
+  - timestamp
+  - status
