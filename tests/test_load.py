@@ -26,16 +26,13 @@ def test_project_config_generator_retries(monkeypatch, fields, expected):
 
 def test_project_loader():
     value = load.load_project({"objects": {"simple": {
-        "schema": "tests/assets/simple_config.json",
-        "properties": {
-            "timestamp": {
-                "start": 946713600,
-                "trend": "self + 5",
-                "value_range": {"min": 4, "max": 10},
-                "conditions": ["simple.timestamp[-1] + 13 > simple.timestamp"],
-            },
-            "status": {"start": "START"}
-        }
+        "timestamp": {
+            "start": 946713600,
+            "trend": "self + 5",
+            "value_range": {"min": 4, "max": 10},
+            "conditions": ["simple.timestamp[-1] + 13 > simple.timestamp"],
+        },
+        "status": {"start": "START"}
     }}})
     print(value)
 

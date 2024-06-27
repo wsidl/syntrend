@@ -25,7 +25,7 @@ def load_project(config_dict: dict):
     generator_map = {}
     for object_name, object_cfg in project_cfg.objects.items():
         generator_map[object_name] = {}
-        for property_name, property_config in object_cfg.properties.items():
+        for property_name, property_config in object_cfg.items():
             generator_map[object_name][property_name] = generator.PropertyGenerator(property_config)
     return project_cfg
 

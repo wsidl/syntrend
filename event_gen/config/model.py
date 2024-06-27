@@ -81,5 +81,4 @@ class ObjectConfig(BaseModel):
 
 class ProjectConfig(BaseModel):
     config: Optional[ModuleConfig] = None
-    objects: dict[str, ObjectConfig]
-    _base_path: Path = None
+    objects: dict[str, dict[str, PropertyConfig]]
