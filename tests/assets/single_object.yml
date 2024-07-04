@@ -1,0 +1,21 @@
+type: object
+properties:
+  id:
+    type: integer
+    min_integer: 0
+  first_name:
+    type: first_name
+  last_name:
+    type: last_name
+  address:
+    type: object
+    properties:
+      street:
+        type: string
+      city:
+        type: string
+      prov:
+        type: string
+        chars: abcdefghijklmnopqrstuvwxyz
+        max_length: 2
+        min_length: 2

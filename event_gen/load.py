@@ -1,11 +1,9 @@
 from event_gen.config import model
-from event_gen.utils import parse, generator
+from event_gen.utils import generator
 
 import logging
 from pathlib import Path
-from typing import Optional
-
-from pydantic import BaseModel, Field, model_validator
+from typing import Union
 
 LOG = logging.getLogger(__name__)
 
@@ -17,7 +15,7 @@ def update_module_config(config: model.ModuleConfig):
         generator.MAX_HISTORIAN_BUFFER = config.max_historian_buffer
 
 
-def load_project(config_dict: dict):
+def load_project(config_dict: Union[dict, model.ProjectConfig]):
     project_cfg = model.ProjectConfig(**config_dict)
     if project_cfg.config:
         update_module_config(project_cfg.config)
@@ -26,6 +24,8 @@ def load_project(config_dict: dict):
     for object_name, object_cfg in project_cfg.objects.items():
         generator_map[object_name] = {}
         for property_name, property_config in object_cfg.items():
+            property_type = property_config.get("type", property_config.get("property_type"))
+
             generator_map[object_name][property_name] = generator.PropertyGenerator(property_config)
     return project_cfg
 
