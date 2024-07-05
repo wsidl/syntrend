@@ -3,21 +3,23 @@ from event_gen.config import model
 from random import random, betavariate
 
 
-def dist_no_dist(prop_config: model.PropertyDefinition, gen_func: callable):
+def dist_no_dist(prop_def: model.PropertyDefinition, gen_func: callable):
     return gen_func
 
 
-def dist_linear(prop_config: model.PropertyDefinition, gen_func: callable):
-    scale = prop_config.distribution.offset_max + prop_config.distribution.offset_min
+def dist_linear(prop_def: model.PropertyDefinition, gen_func: callable):
+    assert prop_def.type in {'integer', 'float'}, "Linear Distribution can only support numeric values"
+    scale = prop_def.distribution.offset_max + prop_def.distribution.offset_min
 
     def _generator():
-        return random() * scale + gen_func() + prop_config.distribution.offset_min
+        return random() * scale + gen_func() + prop_def.distribution.offset_min
 
     return _generator
 
 
-def dist_standard_deviation(prop_config: model.PropertyDefinition, gen_func: callable):
-    dist_cfg = prop_config.distribution
+def dist_standard_deviation(prop_def: model.PropertyDefinition, gen_func: callable):
+    assert prop_def.type in {'integer', 'float'}, "Standard Deviation Distribution can only support numeric values"
+    dist_cfg = prop_def.distribution
     scale = dist_cfg.offset_max - dist_cfg.offset_min
     unscaled_variance = (float(dist_cfg.std_dev_factor) / scale) ** 2
     unscaled_mean = -dist_cfg.offset_min / scale
@@ -44,5 +46,5 @@ DISTRIBUTIONS = {
 }
 
 
-def get_distribution(prop_config: model.PropertyDefinition, gen_func: callable):
-    return DISTRIBUTIONS[prop_config.distribution.type](prop_config, gen_func)
+def get_distribution(prop_def: model.PropertyDefinition, gen_func: callable):
+    return DISTRIBUTIONS[prop_def.distribution.type](prop_def, gen_func)

@@ -3,45 +3,46 @@ from event_gen.generators import distributions as d, generators as g
 
 from functools import partial
 
-from pytest import mark
+from pytest import mark, raises
 
 Prop_Def = partial(model.PropertyDefinition, name_="test")
 
 
 @mark.parametrize("prop_cfg", [
-        [Prop_Def(type="str")],
-        [Prop_Def(type="str", distribution=model.DistributionTypes.NoDistribution)],
+        Prop_Def(type="string"),
+        Prop_Def(type="string", distribution=model.DistributionTypes.NoDistribution),
     ],
     ids=["default_dist", "given_dist"],
 )
 def test_no_distribution(prop_cfg):
-    prop_cfg = Prop_Def(
-        type="float",
-        distribution=model.DistributionTypes.NoDistribution
-    )
-    gen_func = g.string_generator
+    gen_func = g.load_generator(None, prop_cfg)
     dist_func = d.get_distribution(prop_cfg, gen_func)
-    assert gen_func == dist_func(prop_cfg, gen_func), "The NoDist Generator runs an un-altered function generator"
+    assert gen_func == dist_func, "The NoDist Generator runs an un-altered function generator"
 
 
-@mark.parametrize(
-    "_type,_type_str,_func,_min,_max",
-    [
-        [int, "integer", g.integer_generator, 0, 5],
-        [float, "float", g.float_generator, 0, 5],
-    ]
-)
-def test_linear_distribution_numeric(_type, _type_str, _func, _min, _max):
+@mark.parametrize("_type,_type_str", [[int, "integer"], [float, "float"]])
+def test_linear_distribution_numeric(_type: type, _type_str: str):
     prop_cfg = Prop_Def(
         type=_type_str,
         distribution=model.PropertyDistribution(
             type=model.DistributionTypes.Linear,
             offset_min=0,
             offset_max=5
-        )
+        ),
+        offset_min=0,
+        offset_max=5
     )
-    gen_func = d.get_distribution(prop_cfg, _func)
+    gen_func = g.load_generator(None, prop_cfg)
+    dist_func = d.get_distribution(prop_cfg, gen_func)
     gen_values = [
-        gen_func() for _ in range(30)
+        dist_func() for _ in range(30)
     ]
-    assert all([_min <= x <= _max for x in gen_values]), "All Values must be within the current tolerance"
+    assert all([0 <= x <= 10 for x in gen_values]), "All Values must be within the current tolerance"
+
+
+@mark.parametrize("_type,_type_str", [[str, "string"], [dict, "object"], [str, "hex"], [str, "uuid"]])
+def test_linear_distribution_invalid_type(_type: type, _type_str: str):
+    prop_cfg = Prop_Def(type=_type_str, distribution=model.PropertyDistribution(type=model.DistributionTypes.Linear))
+    gen_func = g.load_generator(None, prop_cfg)
+    with raises(AssertionError):
+        d.get_distribution(prop_cfg, gen_func)

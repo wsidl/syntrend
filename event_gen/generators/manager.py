@@ -10,7 +10,7 @@ from time import time, sleep
 def load_object_generator(object_name: str):
     object_def = CONFIG.objects[object_name]
     property_def = object_def.into__(model.PropertyDefinition)
-    object_gen = generators.load_generator(property_def.type, ROOT_MANAGER, property_def)
+    object_gen = generators.load_generator(ROOT_MANAGER, property_def)
     formatter = formatters.load_formatter(object_name, object_def.output)
 
     def _generate():
