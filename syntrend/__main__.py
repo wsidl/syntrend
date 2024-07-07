@@ -2,6 +2,7 @@ import click
 import pathlib
 
 from syntrend import generators
+from syntrend.utils import manager
 from syntrend.config import load_config, CONFIG
 
 ERRORS = []
@@ -25,8 +26,9 @@ def generate(project_file: pathlib.Path):
     Uses the available project file to generate datasets
     """
     load_config(project_file)
-    generators.manager.ROOT_MANAGER.load()
-    generators.manager.ROOT_MANAGER.start()
+    generators.load_generators()
+    manager.ROOT_MANAGER.load()
+    manager.ROOT_MANAGER.start()
 
     # configs = []
     # schemas = {}

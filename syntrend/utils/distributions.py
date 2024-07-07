@@ -3,16 +3,16 @@ from syntrend.config import model
 from random import random, betavariate
 
 
-def dist_no_dist(prop_def: model.PropertyDefinition, gen_func: callable):
+def dist_no_dist(prop_def: model.PropertyDefinition, gen_func: object):
     return gen_func
 
 
-def dist_linear(prop_def: model.PropertyDefinition, gen_func: callable):
+def dist_linear(prop_def: model.PropertyDefinition, gen_func: object):
     assert prop_def.type in {'integer', 'float'}, "Linear Distribution can only support numeric values"
     scale = prop_def.distribution.max_offset + prop_def.distribution.min_offset
 
     def _generator():
-        return random() * scale + gen_func() + prop_def.distribution.min_offset
+        return random() * scale + gen_func.generate() + prop_def.distribution.min_offset
 
     return _generator
 

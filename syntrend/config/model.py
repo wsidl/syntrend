@@ -2,11 +2,14 @@ import logging
 from typing import Union, Type
 import dataclasses as dc
 from enum import Enum
+from os import getenv
 from pathlib import Path
 
 LOG = logging.getLogger(__name__)
 OUTPUT_STDOUT = Path("-")
 DEFAULT_FILE_FORMAT = "{name}-{id}.{format}"
+USER_CONFIG_DIR = Path.home().joinpath(".config", "syntrend")
+ADD_GENERATOR_DIR = USER_CONFIG_DIR.joinpath("generators")
 
 
 class NullValue:
@@ -117,6 +120,7 @@ def validate_int(_min=None, _max=None):
 class ModuleConfig(Validated):
     max_generator_retries: int = dc.field(default=20)
     max_historian_buffer: int = dc.field(default=20)
+    generator_dir: str = dc.field(default=getenv("SYNTREND_GENERATOR_DIR", str(ADD_GENERATOR_DIR)))
 
     validate_max_generator_retries = validate_int(_min=1)
     validate_max_historian_buffer = validate_int(_min=1)
@@ -198,7 +202,7 @@ class PropertyDefinition(Validated):
     expression: str = ""
     items: list[any] = dc.field(default_factory=list)
     properties: dict[str, "PropertyDefinition"] = dc.field(default_factory=dict)
-    prop_config: dict = dc.field(default_factory=dict)
+    kwargs: dict = dc.field(default_factory=dict)
 
     def __init__(self, **kwargs):
         self.name = kwargs.pop("name")
@@ -223,9 +227,9 @@ class PropertyDefinition(Validated):
                 prop: val.copy__() if isinstance(val, PropertyDefinition) else PropertyDefinition(name=prop if "name" not in val else val["name"], **val)
                 for prop, val in kwargs.pop("properties").items()
             }
-        if "prop_config" in kwargs:
-            kwargs.update(kwargs.pop("prop_config"))
-        self.prop_config = kwargs
+        if "kwargs" in kwargs:
+            kwargs.update(kwargs.pop("kwargs"))
+        self.kwargs = kwargs
 
 
 @dc.dataclass

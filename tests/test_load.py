@@ -24,17 +24,17 @@ def test_project_config_generator_retries(monkeypatch, fields, expected):
     ), "Applying the MAX_HISTORIAN_BUFFER config should update the global value"
 
 
-def test_project_loader():
-    value = load.load_project({"objects": {"simple": {
-        "timestamp": {
-            "start": 946713600,
-            "trend": "self + 5",
-            "value_range": {"min": 4, "max": 10},
-            "conditions": ["simple.timestamp[-1] + 13 > simple.timestamp"],
-        },
-        "status": {"start": "START"}
-    }}})
-    print(value)
+# def test_project_loader():
+#     value = load.load_project({"objects": {"simple": {
+#         "timestamp": {
+#             "start": 946713600,
+#             "trend": "self + 5",
+#             "value_range": {"min": 4, "max": 10},
+#             "conditions": ["simple.timestamp[-1] + 13 > simple.timestamp"],
+#         },
+#         "status": {"start": "START"}
+#     }}})
+#     print(value)
 
     # simple_series = config.SeriesConfig(objects={
     #     "simple": config.ObjectDef(

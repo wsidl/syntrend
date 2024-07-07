@@ -1,6 +1,6 @@
 from syntrend.config import model, CONFIG
-from syntrend.generators import generators, historian
-from syntrend.utils import formatters
+from syntrend.generators import get_generator
+from syntrend.utils import formatters, historian
 
 from jinja2 import Environment, BaseLoader
 
@@ -13,11 +13,11 @@ RE_EXPR_TOKEN = re.compile(r"\{([^}]+)}")
 def load_object_generator(object_name: str):
     object_def = CONFIG.objects[object_name]
     property_def = object_def.into__(model.PropertyDefinition)
-    object_gen = generators.load_generator(property_def)
+    object_gen = get_generator(property_def)
     formatter = formatters.load_formatter(object_name, object_def.output)
 
     def _generate():
-        value = object_gen()
+        value = object_gen.generate()
         formatter(value)
         return value
 
