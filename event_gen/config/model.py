@@ -72,23 +72,22 @@ class Validated:
     def update__(self, other) -> None:
         assert isinstance(other, self.__class__), "Can only update from a matching dataclass type"
         for field in dc.fields(self):
-            name = field.name
-            other_field = getattr(other, name)
+            other_field = getattr(other, field.name)
             if isinstance(other_field, Validated):
-                getattr(self, name).update__(other_field)
+                getattr(self, field.name).update__(other_field)
                 continue
             if isinstance(other_field, dict):
-                current_keys = set(getattr(self, name))
+                current_keys = set(getattr(self, field.name))
                 for prop in other_field:
                     if isinstance(other_field[prop], Validated):
                         if prop not in current_keys:
-                            getattr(self, name)[prop] = other_field[prop].copy__()
+                            getattr(self, field.name)[prop] = other_field[prop].copy__()
                         else:
-                            getattr(self, name)[prop].update__(other_field[prop])
+                            getattr(self, field.name)[prop].update__(other_field[prop])
                         continue
-                    getattr(self, name)[prop] = other_field[prop]
+                    getattr(self, field.name)[prop] = other_field[prop]
                 continue
-            setattr(self, name, getattr(other, name))
+            setattr(self, field.name, getattr(other, field.name))
 
     def into__(self, other_cls: Type["Validated"]) -> "Validated":
         current_fieldset = set(fld.name for fld in dc.fields(self))
@@ -101,6 +100,10 @@ class Validated:
 
 def validate_int(_min=None, _max=None):
     def _validator(_, value):
+        try:
+            value = int(value)
+        except TypeError:
+            raise TypeError("Value must parsable to integer")
         if _min is not None:
             assert value >= _min, f"Value must be >= {_min}"
         if _max is not None:
@@ -179,32 +182,32 @@ class SeriesConfig(Validated):
 class PropertyDistribution(Validated):
     type: DistributionTypes = DistributionTypes.NoDistribution
     std_dev_factor: float = 0.
-    offset_min: Union[int, float] = 0
-    offset_max: Union[int, float] = 0
+    min_offset: Union[int, float] = 0
+    max_offset: Union[int, float] = 0
 
     def model_validator(self):
-        assert (
-            self.offset_min <= self.offset_max,
-            f"Min value '{self.offset_min}' must be lower than the Max value '{self.offset_max}'"
-        )
+        assert self.min_offset <= self.max_offset, f"Min value '{self.min_offset}' must be lower than the Max value '{self.max_offset}'"
 
 
 @dc.dataclass(init=False)
 class PropertyDefinition(Validated):
-    name_: str
+    name: str
     type: str
     distribution: Union[DistributionTypes, PropertyDistribution] = dc.field(default=DistributionTypes.NoDistribution)
     conditions: list[str] = dc.field(default_factory=list)
-    expression: any = NULL_VAL
+    expression: str = ""
+    items: list[any] = dc.field(default_factory=list)
     properties: dict[str, "PropertyDefinition"] = dc.field(default_factory=dict)
     prop_config: dict = dc.field(default_factory=dict)
 
     def __init__(self, **kwargs):
-        self.name_ = kwargs.pop("name_")
+        self.name = kwargs.pop("name")
         self.type = kwargs.pop("type").lower()
         self.conditions = []
         self.properties = {}
+        self.expression = kwargs.pop("expression", "")
         self.distribution = PropertyDistribution()
+        self.items = kwargs.pop("items", [])
         if dist_type := kwargs.pop("distribution", {}):
             if isinstance(dist_type, str):
                 dist_type = DistributionTypes(dist_type)
@@ -217,7 +220,7 @@ class PropertyDefinition(Validated):
             self.conditions = kwargs.pop("conditions")
         if "properties" in kwargs:
             self.properties = {
-                prop: val.copy__() if isinstance(val, PropertyDefinition) else PropertyDefinition(name_=prop if "name_" not in val else val["name_"], **val)
+                prop: val.copy__() if isinstance(val, PropertyDefinition) else PropertyDefinition(name=prop if "name" not in val else val["name"], **val)
                 for prop, val in kwargs.pop("properties").items()
             }
         if "prop_config" in kwargs:
@@ -247,4 +250,4 @@ class ProjectConfig(Validated):
     def validate_objects(objects):
         if len(objects) == 0:
             raise ValueError("Project Config must include one object to generate")
-        return {k: ObjectDefinition(name_=k, **objects[k]) for k in objects}
+        return {k: ObjectDefinition(name=k, **objects[k]) for k in objects}

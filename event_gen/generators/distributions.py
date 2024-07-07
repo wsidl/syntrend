@@ -9,10 +9,10 @@ def dist_no_dist(prop_def: model.PropertyDefinition, gen_func: callable):
 
 def dist_linear(prop_def: model.PropertyDefinition, gen_func: callable):
     assert prop_def.type in {'integer', 'float'}, "Linear Distribution can only support numeric values"
-    scale = prop_def.distribution.offset_max + prop_def.distribution.offset_min
+    scale = prop_def.distribution.max_offset + prop_def.distribution.min_offset
 
     def _generator():
-        return random() * scale + gen_func() + prop_def.distribution.offset_min
+        return random() * scale + gen_func() + prop_def.distribution.min_offset
 
     return _generator
 
@@ -20,9 +20,9 @@ def dist_linear(prop_def: model.PropertyDefinition, gen_func: callable):
 def dist_standard_deviation(prop_def: model.PropertyDefinition, gen_func: callable):
     assert prop_def.type in {'integer', 'float'}, "Standard Deviation Distribution can only support numeric values"
     dist_cfg = prop_def.distribution
-    scale = dist_cfg.offset_max - dist_cfg.offset_min
+    scale = dist_cfg.max_offset - dist_cfg.min_offset
     unscaled_variance = (float(dist_cfg.std_dev_factor) / scale) ** 2
-    unscaled_mean = -dist_cfg.offset_min / scale
+    unscaled_mean = -dist_cfg.min_offset / scale
     t = unscaled_mean / (1 - unscaled_mean)
     beta = ((t / unscaled_variance) - (t * t) - (2 * t) - 1) / (
         (t * t * t) + (3 * t * t) + (3 * t) + 1

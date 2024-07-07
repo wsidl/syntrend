@@ -28,14 +28,8 @@ def load_config(config_file: Union[dict, str, Path]) -> model.ProjectConfig:
     config_dict = retrieve_source(config_file)
 
     _error = None
-    for _cfg in [
-        config_dict,
-        {"objects": config_dict},
-        {"objects": {"self": config_dict}}
-    ]:
-        try:
-            return model.ProjectConfig(**_cfg)
-        except TypeError as exc:
-            if not _error:
-                _error = exc
-    raise ValueError(f"Invalid Project Configuration: {_error}")
+    if "objects" in config_dict and "type" not in config_dict:
+        return model.ProjectConfig(**config_dict)
+    if "type" in config_dict and "config" not in config_dict and "objects" not in config_dict:
+        return model.ProjectConfig(**{"objects": {"self": config_dict}})
+    return model.ProjectConfig(**{"objects": config_dict})

@@ -1,8 +1,10 @@
 type: object
+output:
+  record_count: 30
 properties:
   id:
     type: integer
-    min_integer: 0
+    min_offset: 0
   first_name:
     type: first_name
   last_name:
@@ -13,7 +15,13 @@ properties:
       street:
         type: string
       city:
-        type: string
+        type: items
+        items:
+          - Vancouver
+          - Surrey
+          - New Westminster
+          - Langley
+          - Coquitlam
       prov:
         type: string
         chars: abcdefghijklmnopqrstuvwxyz

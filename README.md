@@ -1,2 +1,1 @@
-# Event Generator
-
+# SynTrend Synthetic Data Generation

@@ -25,6 +25,7 @@ def generate(project_file: pathlib.Path):
     Uses the available project file to generate datasets
     """
     load_config(project_file)
+    generators.manager.ROOT_MANAGER.load()
     generators.manager.ROOT_MANAGER.start()
 
     # configs = []

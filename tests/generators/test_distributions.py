@@ -5,7 +5,7 @@ from functools import partial
 
 from pytest import mark, raises
 
-Prop_Def = partial(model.PropertyDefinition, name_="test")
+Prop_Def = partial(model.PropertyDefinition, name="test")
 
 
 @mark.parametrize("prop_cfg", [
@@ -15,7 +15,7 @@ Prop_Def = partial(model.PropertyDefinition, name_="test")
     ids=["default_dist", "given_dist"],
 )
 def test_no_distribution(prop_cfg):
-    gen_func = g.load_generator(None, prop_cfg)
+    gen_func = g.load_generator(prop_cfg)
     dist_func = d.get_distribution(prop_cfg, gen_func)
     assert gen_func == dist_func, "The NoDist Generator runs an un-altered function generator"
 
@@ -26,13 +26,13 @@ def test_linear_distribution_numeric(_type: type, _type_str: str):
         type=_type_str,
         distribution=model.PropertyDistribution(
             type=model.DistributionTypes.Linear,
-            offset_min=0,
-            offset_max=5
+            min_offset=0,
+            max_offset=5
         ),
-        offset_min=0,
-        offset_max=5
+        min_offset=0,
+        max_offset=5
     )
-    gen_func = g.load_generator(None, prop_cfg)
+    gen_func = g.load_generator(prop_cfg)
     dist_func = d.get_distribution(prop_cfg, gen_func)
     gen_values = [
         dist_func() for _ in range(30)
@@ -43,6 +43,6 @@ def test_linear_distribution_numeric(_type: type, _type_str: str):
 @mark.parametrize("_type,_type_str", [[str, "string"], [dict, "object"], [str, "hex"], [str, "uuid"]])
 def test_linear_distribution_invalid_type(_type: type, _type_str: str):
     prop_cfg = Prop_Def(type=_type_str, distribution=model.PropertyDistribution(type=model.DistributionTypes.Linear))
-    gen_func = g.load_generator(None, prop_cfg)
+    gen_func = g.load_generator(prop_cfg)
     with raises(AssertionError):
         d.get_distribution(prop_cfg, gen_func)
