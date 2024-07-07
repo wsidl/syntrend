@@ -1,5 +1,5 @@
-from event_gen.config import model
-from event_gen.utils import generator
+from syntrend.config import model
+from syntrend.utils import generator
 import logging
 from pytest import mark, param
 from pydantic import ValidationError
@@ -331,8 +331,8 @@ def test_property_generator_condition_fail(monkeypatch):
 
         return _return_value
 
-    monkeypatch.setattr("event_gen.utils.generator.MAX_GENERATOR_RETRIES", 5)
-    monkeypatch.setattr("event_gen.utils.generator.generator_factory", set_value)
+    monkeypatch.setattr("syntrend.utils.generator.MAX_GENERATOR_RETRIES", 5)
+    monkeypatch.setattr("syntrend.utils.generator.generator_factory", set_value)
     new_object = generator.PropertyGenerator(model.PropertyConfig(
         start=20,
         value_range=model.ValueRange(min=-10, max=10),

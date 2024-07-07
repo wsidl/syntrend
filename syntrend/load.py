@@ -1,5 +1,5 @@
-from event_gen.config import model
-from event_gen.utils import generator
+from syntrend.config import model
+from syntrend.utils import generator
 
 import logging
 from pathlib import Path

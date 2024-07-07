@@ -1,5 +1,5 @@
-from event_gen.config import model
-from event_gen.generators import distributions as d, generators as g
+from syntrend.config import model
+from syntrend.generators import distributions as d, generators as g
 
 from functools import partial
 

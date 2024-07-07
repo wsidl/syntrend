@@ -1,4 +1,4 @@
-from event_gen.config import model
+from syntrend.config import model
 
 from contextlib import contextmanager
 from typing import Callable, Union

@@ -1,6 +1,6 @@
-from event_gen.config import model
-from event_gen import load
-from event_gen.utils import generator
+from syntrend.config import model
+from syntrend import load
+from syntrend.utils import generator
 
 from pytest import mark
 

@@ -1,4 +1,4 @@
-from event_gen.config import CONFIG
+from syntrend.config import CONFIG
 from typing import Union, Annotated
 from annotated_types import Le
 

@@ -1,6 +1,6 @@
-from event_gen.config import model, CONFIG
-from event_gen.generators import generators, historian
-from event_gen.utils import formatters
+from syntrend.config import model, CONFIG
+from syntrend.generators import generators, historian
+from syntrend.utils import formatters
 
 from jinja2 import Environment, BaseLoader
 

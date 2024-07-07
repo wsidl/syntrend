@@ -1,8 +1,8 @@
 import click
 import pathlib
 
-from event_gen import generators
-from event_gen.config import load_config, CONFIG
+from syntrend import generators
+from syntrend.config import load_config, CONFIG
 
 ERRORS = []
 

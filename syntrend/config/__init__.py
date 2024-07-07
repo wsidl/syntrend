@@ -1,5 +1,5 @@
-from event_gen.config.model import ProjectConfig
-from event_gen.config.parse import load_config as _load_config
+from syntrend.config.model import ProjectConfig
+from syntrend.config.parse import load_config as _load_config
 
 CONFIG = ProjectConfig(objects={"self": {"type": "integer"}})
 

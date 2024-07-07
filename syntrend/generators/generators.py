@@ -1,5 +1,5 @@
-from event_gen.config import model
-from event_gen.generators import historian
+from syntrend.config import model
+from syntrend.generators import historian
 
 from random import randint, random
 from typing import Callable, Union, TypeVar

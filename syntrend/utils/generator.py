@@ -1,5 +1,5 @@
-from event_gen.config import model
-from event_gen.generators import historian, filters
+from syntrend.config import model
+from syntrend.generators import historian, filters
 
 from random import uniform, betavariate
 from enum import Enum
