@@ -1,45 +1,44 @@
 from syntrend.config import CONFIG
-from typing import Union, Annotated
+from typing import Annotated
 from annotated_types import Le
+from functools import cached_property
+from collections import deque
 
 T_NegInt = Annotated[int, Le(0)]
 
 
-class Historian(list):
+class Historian:
     def __init__(self):
-        super().__init__()
-        self.clear()
+        self.__values: deque = deque(maxlen=CONFIG.config.max_historian_buffer)
 
     # Historian Manager methods
     def __get_value(self, item: T_NegInt = 0):
         offset = item - 1
-        list_size = super().__len__()
+        list_size = len(self.__values)
         if list_size == 0:
             raise ValueError("No values added to historian")
         if -offset <= list_size:
-            return super().__getitem__(offset)
-        return super().__getitem__(0)
+            return self.__values[offset]
+        return self.__values[list_size - 1]
 
-    def __getitem__(self, item: T_NegInt) -> Union[str, int, float]:
-        return self.__get_value(item)
+    def __getitem__(self, item: T_NegInt) -> any:
+        return self.__get_value(int(item))
 
     def __call__(self, item: T_NegInt = 0):
-        return self.__get_value(item)
+        return self.__get_value(int(item))
 
     def append(self, _object):
-        super().append(_object)
-        while super().__len__() > CONFIG.config.max_historian_buffer:
-            super().pop(0)
+        self.__values.append(_object)
 
     def has_values(self) -> bool:
-        return super().__len__() > 0
+        return len(self.__values) > 0
 
     ##########################################################
     # Convenience Operators when defaulting to current value #
     ##########################################################
-    @property
+    @cached_property
     def current(self):
-        return super().__getitem__(-1)
+        return self.__values[-1]
 
     # Comparator Methods
     def __eq__(self, other):
@@ -72,7 +71,7 @@ class Historian(list):
 
     # Formatting / Type Casting
     def __len__(self):
-        return super().__len__()
+        return self.__values
 
     def __int__(self):
         return int(self.current)
@@ -109,4 +108,3 @@ class Historian(list):
 
     def __contains__(self, item):
         raise AttributeError("'Historian' object has no attribute '__contains__'")
-
