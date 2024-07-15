@@ -1,4 +1,5 @@
 from syntrend.utils import manager
+from syntrend.config import model
 
 from pytest import mark, raises
 
@@ -42,12 +43,28 @@ def test_prepare_dependency_tree_missing_dependency():
     ]
 )
 def test_prepare_dependency_tree_circular_dependency(dependencies, expected):
-    with raises(ValueError) as exc:
-        manager.prepare_dependency_tree(dependencies)
-    assert exc.type == ValueError
-    assert exc.value.args[0].startswith("Circular dependency with ")
+    tree = manager.prepare_dependency_tree(dependencies)
     expected = [sorted(a) for a in expected]
-    for group in exc.value.args[1]:
+    for group in tree:
         assert sorted(group) in expected
 
 
+@mark.parametrize(
+    "property_def,result",
+    [
+        (model.PropertyDefinition(name="test", type="string", expression="{self}."), {"self": {"self"}}),
+        (model.PropertyDefinition(name="test", type="string", expression="{other.pass}."), {"self": {"other.pass"}}),
+        (model.PropertyDefinition(name="test", type="object", properties={
+            "a": model.PropertyDefinition(name="a", type="string", expression="{self.b}+"),
+            "b": model.PropertyDefinition(name="b", type="string"),
+        }), {"self": set(), "self.a": {"self.b"}, "self.b": set()}),
+    ],
+    ids=[
+        "reference_self",
+        "reference_other_property",
+        "object_property_ref_string",
+    ]
+)
+def test_iter_property_dependencies(property_def, result):
+    dependency_tree = manager.iter_property_dependencies("self", property_def)
+    assert dependency_tree == result

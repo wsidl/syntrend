@@ -4,11 +4,23 @@ from syntrend.utils import formatters, historian
 
 from jinja2 import Environment, BaseLoader
 
+from collections import namedtuple
 from typing import Union
 from time import time, sleep
 import re
 
 RE_EXPR_TOKEN = re.compile(r"\{([^}]+)}")
+RE_PATH_ROOT = re.compile(r"^")
+
+
+class DependencySet(set[str]):
+    @classmethod
+    def from_set(cls, other):
+        return DependencySet(other)
+
+
+class CircularDependencySet(DependencySet):
+    pass
 
 
 def load_object_generator(object_name: str):
@@ -53,60 +65,69 @@ def evaluate_circular_dependencies(dependencies: dict[str, set[str]]) -> list[li
     return circular_keys
 
 
-def prepare_dependency_tree(dependencies: dict[str, set[str]]) -> list[set[str]]:
+def prepare_dependency_tree(dependencies: dict[str, set[str]]) -> list[DependencySet]:
     dependency_tree = []
-    all_branches = set(dependencies.keys())
-    while dependencies:
+    deps = dependencies.copy()
+    all_branches = set(deps.keys())
+    while deps:
         leaf_nodes = set(
             _value
-            for _value_set in dependencies.values()
+            for _value_set in deps.values()
             for _value in _value_set
-        ) - set(dependencies.keys())
-        leaf_nodes.update(leaf_key for leaf_key, leaf_value in dependencies.items() if not leaf_value)
-        if not leaf_nodes:
-            # Circular Dependency
-            circular_keys = evaluate_circular_dependencies(dependencies)
-            raise ValueError(f"Circular dependency with {', '.join(dependencies.keys())}", circular_keys)
+        ) - set(deps.keys())
+        leaf_nodes.update(leaf_key for leaf_key, leaf_value in deps.items() if not leaf_value)
         missing_leaves = leaf_nodes - all_branches
         if missing_leaves:
             raise ValueError(f"Missing leaf nodes: {', '.join(missing_leaves)}")
-        dependency_tree.append(leaf_nodes)
-        dependencies = dict(((key, value_set - leaf_nodes) for key, value_set in dependencies.items() if value_set))
+        if leaf_nodes:
+            dependency_tree.append(DependencySet.from_set(leaf_nodes))
+            deps = dict(((key, value_set - leaf_nodes) for key, value_set in deps.items() if value_set))
+        else:
+            # Circular Dependency
+            for circ_ref in evaluate_circular_dependencies(deps):
+                dependency_tree.append(CircularDependencySet.from_set(circ_ref))
+                for key in circ_ref:
+                    deps.pop(key, None)
     return dependency_tree
 
 
-def parse_expression_dependencies():
-    dependencies: dict[str, set[str]] = {}
+def iter_property_dependencies(parent_key: str, cfg: model.PropertyDefinition) -> dict[str, set[str]]:
+    sub_keys = {parent_key: set()}
+    if cfg.expression and isinstance(cfg.expression, str):
+        for token in RE_EXPR_TOKEN.finditer(cfg.expression):
+            sub_keys[parent_key].add(token.group(1))
 
-    def _load_prop(parent_key: str, cfg: model.PropertyDefinition) -> dict[str, set[str]]:
-        sub_keys = {parent_key: set()}
-        if cfg.expression and isinstance(cfg.expression, str):
-            for token in RE_EXPR_TOKEN.finditer(cfg.expression):
-                sub_keys[parent_key].add(token.group(1))
+    for condition in cfg.conditions or []:
+        for token in RE_EXPR_TOKEN.finditer(condition):
+            sub_keys[parent_key].add(token.group(1))
 
-        for idx, item in enumerate(cfg.items):
-            sub_keys.update(_load_prop(f"{parent_key}[{item}]", cfg.items[item]))
-        for key in cfg.properties:
-            sub_keys.update(_load_prop(f"{parent_key}.{key}", cfg.properties[key]))
+    for idx, item in enumerate(cfg.items):
+        sub_keys.update(iter_property_dependencies(f"{parent_key}[{item}]", cfg.items[item]))
+    for key in cfg.properties:
+        sub_keys.update(iter_property_dependencies(f"{parent_key}.{key}", cfg.properties[key]))
 
-        return sub_keys
-
-    for obj_name in CONFIG.objects:
-        for _prop_path, _dep_path in _load_prop(obj_name, CONFIG.objects[obj_name]):
-            if _prop_path not in dependencies:
-                dependencies[_prop_path] = set()
-            dependencies[_prop_path].add(_dep_path)
-
-    return prepare_dependency_tree(dependencies)
+    return sub_keys
 
 
 class SeriesManager:
     def __init__(self):
         self.__object_generators = {}
         self.__historians: dict[str, historian.Historian] = {}
+        self.__dependency_paths: dict[str, set[str]] = {}
+        self.__dependency_order: list[DependencySet] = []
 
     def load(self):
-        parse_expression_dependencies(CONFIG)
+        dependencies: dict[str, set[str]] = {}
+
+        for obj_name in CONFIG.objects:
+            for prop_path, _dep_path in iter_property_dependencies(obj_name, CONFIG.objects[obj_name]):
+                _obj_name, _prop_path = prop_path.split(".", 1)
+                if prop_path not in dependencies:
+                    dependencies[prop_path] = set()
+                dependencies[prop_path].add(_dep_path)
+
+        self.__dependency_paths = dependencies
+        self.__dependency_order = prepare_dependency_tree(dependencies)
 
     def start(self):
         for obj_name in CONFIG.objects:
