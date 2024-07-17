@@ -1,16 +1,12 @@
 from syntrend.config import model, CONFIG
 from syntrend.generators import get_generator
-from syntrend.utils import formatters, historian
+from syntrend.utils import formatters, historian, filters
 
 from jinja2 import Environment, BaseLoader
 
-from collections import namedtuple
-from typing import Union
-from time import time, sleep
 import re
 
 RE_EXPR_TOKEN = re.compile(r"\{([^}]+)}")
-RE_PATH_ROOT = re.compile(r"^")
 
 
 class DependencySet(set[str]):
@@ -28,9 +24,15 @@ def load_object_generator(object_name: str):
     property_def = object_def.into__(model.PropertyDefinition)
     object_gen = get_generator(property_def)
     formatter = formatters.load_formatter(object_name, object_def.output)
+    trend_gen = None
+    if property_def.expression:
+        trend_gen = ROOT_MANAGER.load_expression(property_def.expression)
 
     def _generate():
-        value = object_gen.generate()
+        value = None
+        if trend_gen:
+            value = trend_gen()
+        value = value if value else object_gen.generate()
         formatter(value)
         return value
 
@@ -115,24 +117,33 @@ class SeriesManager:
         self.__historians: dict[str, historian.Historian] = {}
         self.__dependency_paths: dict[str, set[str]] = {}
         self.__dependency_order: list[DependencySet] = []
+        self.expression_env = Environment(loader=BaseLoader())
+
+    def load_expression(self, expression: str):
+        compiled_expr = self.expression_env.compile_expression(expression, undefined_to_none=False)
+
+        def _generate():
+            try:
+                return compiled_expr(**self.__historians)
+            except IndexError:
+                return
+
+        return _generate
 
     def load(self):
+        filters.load_environment(self.expression_env)
         dependencies: dict[str, set[str]] = {}
 
         for obj_name in CONFIG.objects:
-            for prop_path, _dep_path in iter_property_dependencies(obj_name, CONFIG.objects[obj_name]):
-                _obj_name, _prop_path = prop_path.split(".", 1)
-                if prop_path not in dependencies:
-                    dependencies[prop_path] = set()
-                dependencies[prop_path].add(_dep_path)
+            dependencies.update(iter_property_dependencies(obj_name, CONFIG.objects[obj_name]))
 
         self.__dependency_paths = dependencies
         self.__dependency_order = prepare_dependency_tree(dependencies)
 
     def start(self):
         for obj_name in CONFIG.objects:
-            self.__object_generators[obj_name] = load_object_generator(obj_name)
             self.__historians[obj_name] = historian.Historian()
+            self.__object_generators[obj_name] = load_object_generator(obj_name)
 
         def _run(_obj_name: str):
             value = self.__object_generators[_obj_name]()

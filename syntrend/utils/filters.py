@@ -1,8 +1,12 @@
 import datetime
 import re
 import logging
+from typing import Union
 
 from jinja2 import Environment
+from jsonpath_ng import parse
+
+from syntrend.utils.historian import Historian
 
 LOG = logging.getLogger(__name__)
 R_DATETIME = re.compile(r"[1-2]\d{3}-[0-1]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d")
@@ -66,6 +70,16 @@ def series(generator, series_length):
     return _Comparator()
 
 
+def get_index(value: Union["Historian", list], index: int):
+    return value[index]
+
+
+def get_path(value: Union["Historian", object], path_ref: str):
+    if isinstance(value, Historian):
+        value = value.current
+    return parse(path_ref).find(value)[0].value
+
+
 def load_environment(env: Environment):
     env.globals.update(
         datetime=datetime.datetime,
@@ -73,6 +87,10 @@ def load_environment(env: Environment):
         time=datetime.time,
         date=datetime.date,
     )
-    env.filters["to_timestamp"] = to_timestamp
-    env.filters["to_datetime"] = to_datetime
-    env.filters["series"] = series
+    env.filters.update(
+        to_timestamp=to_timestamp,
+        to_datetime=to_datetime,
+        series=series,
+        index=get_index,
+        path=get_path,
+    )

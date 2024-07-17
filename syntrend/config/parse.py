@@ -31,5 +31,5 @@ def load_config(config_file: Union[dict, str, Path]) -> model.ProjectConfig:
     if "objects" in config_dict and "type" not in config_dict:
         return model.ProjectConfig(**config_dict)
     if "type" in config_dict and "config" not in config_dict and "objects" not in config_dict:
-        return model.ProjectConfig(**{"objects": {"self": config_dict}})
+        return model.ProjectConfig(**{"objects": {"this": config_dict}})
     return model.ProjectConfig(**{"objects": config_dict})

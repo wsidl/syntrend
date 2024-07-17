@@ -1,10 +1,8 @@
 from syntrend.config import CONFIG
-from typing import Annotated
-from annotated_types import Le
-from functools import cached_property
 from collections import deque
+import re
 
-T_NegInt = Annotated[int, Le(0)]
+RE_PATH_ROOT = re.compile(r"^(?:\[(-?\d*)])?\.?(.*)$")
 
 
 class Historian:
@@ -12,33 +10,21 @@ class Historian:
         self.__values: deque = deque(maxlen=CONFIG.config.max_historian_buffer)
 
     # Historian Manager methods
-    def __get_value(self, item: T_NegInt = 0):
-        offset = item - 1
-        list_size = len(self.__values)
-        if list_size == 0:
-            raise ValueError("No values added to historian")
-        if -offset <= list_size:
-            return self.__values[offset]
-        return self.__values[list_size - 1]
-
-    def __getitem__(self, item: T_NegInt) -> any:
-        return self.__get_value(int(item))
-
-    def __call__(self, item: T_NegInt = 0):
-        return self.__get_value(int(item))
-
     def append(self, _object):
-        self.__values.append(_object)
+        self.__values.appendleft(_object)
 
     def has_values(self) -> bool:
         return len(self.__values) > 0
 
+    def __getitem__(self, item: int):
+        return self.__values[item]
+
     ##########################################################
     # Convenience Operators when defaulting to current value #
     ##########################################################
-    @cached_property
+    @property
     def current(self):
-        return self.__values[-1]
+        return self.__values[0]
 
     # Comparator Methods
     def __eq__(self, other):
@@ -91,10 +77,10 @@ class Historian:
         return format(self.current, format_spec)
 
     def __str__(self):
-        return str(self.current)
+        return f"<Historian current={str(self.current)}>"
 
     def __repr__(self):
-        return str(self.current)
+        return f"<Historian current={str(self.current)}>"
 
     # Removing unwanted methods
     def insert(self, _, __):

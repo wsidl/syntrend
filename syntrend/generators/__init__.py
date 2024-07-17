@@ -38,7 +38,6 @@ class PropertyGenerator:
         self.kwargs = kwargs_tpl(**kwargs)
         self.properties = self.load_properties(self.config.properties)
         self.items = self.load_items(self.config.items)
-        self.expression = self.load_expression(self.config.expression)
         self.validate()
 
     def load_items(self, items: list[any]) -> list[any]:
@@ -46,9 +45,6 @@ class PropertyGenerator:
 
     def load_properties(self, properties: dict[str, any]) -> dict[str, any]:
         return properties
-
-    def load_expression(self, expression: str) -> any:
-        return expression
 
     def load_kwargs(self, kwargs: dict[str, any]) -> dict[str, any]:
         return kwargs
@@ -70,7 +66,6 @@ def register(property_generator: Type[PropertyGenerator]):
 
 
 def get_generator(config: model.PropertyDefinition) -> PropertyGenerator:
-    print(GENERATORS)
     prop_gen_cls = GENERATORS[config.type]
     new_config = model.PropertyDefinition(name=config.name, type=config.type, **prop_gen_cls.default_config)
     new_config.update__(config)
@@ -80,12 +75,10 @@ def get_generator(config: model.PropertyDefinition) -> PropertyGenerator:
 
 
 def _load_generator_dir(module_name: str, directory: Path):
-    print(module_name)
     for _file in directory.iterdir():
         if not _file.suffix.startswith(".py") or _file.is_dir() or _file.name.startswith("_"):
             continue
         basename = _file.name.split(".")[0]
-        print(f"Loading {basename}")
         mod = import_module(f"{module_name}.{basename}")
 
 

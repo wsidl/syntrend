@@ -28,7 +28,7 @@ class StringGenerator(PropertyGenerator):
     def generate(self):
         return "".join([
             self.kwargs.chars[randint(0, len(self.kwargs.chars) - 1)]
-            for _ in range(randint(self.kwargs["min_length"], self.kwargs["max_length"]))
+            for _ in range(randint(self.kwargs.min_length, self.kwargs.max_length))
         ])
 
 

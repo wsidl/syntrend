@@ -1,2 +1,1 @@
 type: integer
-expression: self + 1
