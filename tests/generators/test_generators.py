@@ -17,7 +17,7 @@ def load_generators():
 def test_load_default_generator():
     base_def = Prop_Def(type="string", **generators.GENERATORS["string"].default_config)
     prop_def = Prop_Def(type="string")
-    str_gen = generators.get_generator(prop_def)
+    str_gen = generators.get_generator(prop_def, None)
     exp_gen = string_gen.StringGenerator(base_def)
     assert str_gen.__class__ == exp_gen.__class__, "Load Generator should return the String Generator"
 
@@ -34,7 +34,7 @@ def test_register_generator():
     prop_def = Prop_Def(type="test")
     exp_gen = RandomTestGenerator(prop_def)
     try:
-        test_gen = generators.get_generator(prop_def)
+        test_gen = generators.get_generator(prop_def, None)
     except KeyError:
         raise ValueError("Should have found a 'test' generator")
     assert test_gen.__class__ == exp_gen.__class__, "Should have returned the 'test' generator"

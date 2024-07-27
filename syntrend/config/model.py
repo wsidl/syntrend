@@ -128,14 +128,13 @@ class ModuleConfig(Validated):
 
 @dc.dataclass
 class OutputConfig(Validated):
-    output_format: str = dc.field(default="json")
-    output_dir: Path = dc.field(default="-")
+    format: str = dc.field(default="json")
+    directory: Path = dc.field(default="-")
     filename_format: str = dc.field(default="{name}_{id}.{format}")
     aggregate: bool = dc.field(default=False)
-    record_count: int = dc.field(default=1)
+    count: int = dc.field(default=1)
 
-    @staticmethod
-    def validate_output_dir(value):
+    def validate_output_dir(self, value):
         if isinstance(value, Path):
             return value
         if value == "-":
@@ -200,6 +199,7 @@ class PropertyDefinition(Validated):
     distribution: Union[DistributionTypes, PropertyDistribution] = dc.field(default=DistributionTypes.NoDistribution)
     conditions: list[str] = dc.field(default_factory=list)
     expression: str = ""
+    start: any = None
     items: list[any] = dc.field(default_factory=list)
     properties: dict[str, "PropertyDefinition"] = dc.field(default_factory=dict)
     kwargs: dict = dc.field(default_factory=dict)
@@ -211,6 +211,7 @@ class PropertyDefinition(Validated):
         self.properties = {}
         self.expression = kwargs.pop("expression", "")
         self.distribution = PropertyDistribution()
+        self.start = kwargs.pop("start", None)
         self.items = kwargs.pop("items", [])
         if dist_type := kwargs.pop("distribution", {}):
             if isinstance(dist_type, str):
@@ -232,13 +233,17 @@ class PropertyDefinition(Validated):
         self.kwargs = kwargs
 
 
-@dc.dataclass
+@dc.dataclass(init=False)
 class ObjectDefinition(PropertyDefinition):
     output: OutputConfig = dc.field(default_factory=OutputConfig)
     series: SeriesType = dc.field(default=SeriesType.Reference)
 
-    @staticmethod
-    def validate_output(value):
+    def __init__(self, **kwargs):
+        self.output = OutputConfig(**kwargs.pop("output", {}))
+        self.series = SeriesType(kwargs.pop("series", "reference"))
+        super().__init__(**kwargs)
+
+    def validate_output(self, value):
         if isinstance(value, OutputConfig):
             return value
         return OutputConfig(**value)
@@ -250,8 +255,7 @@ class ProjectConfig(Validated):
     output: OutputConfig = dc.field(default_factory=OutputConfig)
     config: ModuleConfig = dc.field(default_factory=ModuleConfig)
 
-    @staticmethod
-    def validate_objects(objects):
+    def validate_objects(self, objects):
         if len(objects) == 0:
             raise ValueError("Project Config must include one object to generate")
         return {k: ObjectDefinition(name=k, **objects[k]) for k in objects}

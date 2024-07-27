@@ -6,7 +6,7 @@ class StaticGenerator(PropertyGenerator):
     name = "static"
 
     def validate(self):
-        assert len(self.expression) > 0, "Static Generator requires a value to be provided"
+        assert hasattr(self.kwargs, "value"), "Static Generator requires a 'value' property"
 
     def generate(self):
-        return self.expression
+        return self.kwargs.value

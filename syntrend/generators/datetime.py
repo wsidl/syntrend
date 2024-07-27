@@ -49,8 +49,8 @@ class TimestampGenerator(PropertyGenerator):
     def load_kwargs(self, kwargs: dict[str, any]) -> dict[str, any]:
         kwargs["is_utc"] = bool(kwargs["is_utc"])
         kwargs["time_offset"] = int(kwargs["time_offset"])
-        kwargs["now"] = datetime.utcnow if kwargs["is_utc"] else datetime.now()
+        kwargs["now"] = lambda: (datetime.utcnow if kwargs["is_utc"] else datetime.now)().timestamp()
         return kwargs
 
     def generate(self):
-        return self.kwargs.now() + self.kwargs.time_offset
+        return int(self.kwargs.now()) + self.kwargs.time_offset

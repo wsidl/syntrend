@@ -52,7 +52,7 @@ def test_prepare_dependency_tree_circular_dependency(dependencies, expected):
 @mark.parametrize(
     "property_def,result",
     [
-        (model.PropertyDefinition(name="test", type="string", expression="{self}."), {"self": {"self"}}),
+        (model.PropertyDefinition(name="test", type="string", expression="self."), {"self": {"self"}}),
         (model.PropertyDefinition(name="test", type="string", expression="{other.pass}."), {"self": {"other.pass"}}),
         (model.PropertyDefinition(name="test", type="object", properties={
             "a": model.PropertyDefinition(name="a", type="string", expression="{self.b}+"),

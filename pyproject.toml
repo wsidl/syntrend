@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "event-sg"
+name = "syntrend"
 version = "0.1.0"
 description = ""
-authors = ["Will Siddall <will.siddall@teck.com>"]
+authors = ["Will Siddall <will.siddall@gmail.com>"]
 readme = "README.md"
-packages = [{include = "event_generator"}]
+packages = [{include = "syntrend"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"

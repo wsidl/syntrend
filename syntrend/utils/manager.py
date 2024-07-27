@@ -22,17 +22,11 @@ class CircularDependencySet(DependencySet):
 def load_object_generator(object_name: str):
     object_def = CONFIG.objects[object_name]
     property_def = object_def.into__(model.PropertyDefinition)
-    object_gen = get_generator(property_def)
+    object_gen = get_generator(property_def, ROOT_MANAGER)
     formatter = formatters.load_formatter(object_name, object_def.output)
-    trend_gen = None
-    if property_def.expression:
-        trend_gen = ROOT_MANAGER.load_expression(property_def.expression)
 
     def _generate():
-        value = None
-        if trend_gen:
-            value = trend_gen()
-        value = value if value else object_gen.generate()
+        value = object_gen.compile()
         formatter(value)
         return value
 
@@ -104,7 +98,9 @@ def iter_property_dependencies(parent_key: str, cfg: model.PropertyDefinition) -
             sub_keys[parent_key].add(token.group(1))
 
     for idx, item in enumerate(cfg.items):
-        sub_keys.update(iter_property_dependencies(f"{parent_key}[{item}]", cfg.items[item]))
+        if isinstance(item, str):
+            continue
+        sub_keys.update(iter_property_dependencies(f"{parent_key}[{idx}]", item))
     for key in cfg.properties:
         sub_keys.update(iter_property_dependencies(f"{parent_key}.{key}", cfg.properties[key]))
 
@@ -114,7 +110,7 @@ def iter_property_dependencies(parent_key: str, cfg: model.PropertyDefinition) -
 class SeriesManager:
     def __init__(self):
         self.__object_generators = {}
-        self.__historians: dict[str, historian.Historian] = {}
+        self.historians: dict[str, historian.Historian] = {}
         self.__dependency_paths: dict[str, set[str]] = {}
         self.__dependency_order: list[DependencySet] = []
         self.expression_env = Environment(loader=BaseLoader())
@@ -122,9 +118,9 @@ class SeriesManager:
     def load_expression(self, expression: str):
         compiled_expr = self.expression_env.compile_expression(expression, undefined_to_none=False)
 
-        def _generate():
+        def _generate(**kwargs):
             try:
-                return compiled_expr(**self.__historians)
+                return compiled_expr(**(self.historians | kwargs))
             except IndexError:
                 return
 
@@ -142,15 +138,15 @@ class SeriesManager:
 
     def start(self):
         for obj_name in CONFIG.objects:
-            self.__historians[obj_name] = historian.Historian()
+            self.historians[obj_name] = historian.Historian()
             self.__object_generators[obj_name] = load_object_generator(obj_name)
 
         def _run(_obj_name: str):
             value = self.__object_generators[_obj_name]()
-            self.__historians[_obj_name].append(value)
+            self.historians[_obj_name].append(value)
 
         for obj_name in CONFIG.objects:
-            for _ in range(CONFIG.objects[obj_name].output.record_count):
+            for _ in range(CONFIG.objects[obj_name].output.count):
                 _run(obj_name)
                 # sleep(1)
 
