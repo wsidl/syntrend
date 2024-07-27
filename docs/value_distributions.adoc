@@ -1,0 +1,195 @@
+= Value Trend Distribution
+
+The dominant feature of this utility is its ability to generate datasets to express 
+a known pattern or behaviour based on an algorithm or expression. These expressions can be leveraged 
+for a number of use cases, described here. In particular to this document is the ability to provide a level of "fuzziness" to that data to generate datasets to best mimic the uncertain nature of real data. This is done by applying a randomized offset to the generated value so that it can resemble real data while resembling a known pattern or expression.
+
+To apply a value distribution in your configuration, the target property definition must include the
+`distribution` sub-property with relevant nested configurations provided.
+
+[IMPORTANT]
+====
+Any examples provided assumes that:
+
+- A Project Config generates an object sequence with more than 1 value (`output.count > 1`)
+- The Value being used is a numerical primitive (integer or float/double)
+====
+
+[NOTE]
+====
+It is not required for the property to use an `expression` for a value distribution to apply.
+Randomly-generated values can have an additional distribution applied to it.
+====
+
+== No Distribution
+
+This is the default behaviour for all generated values.
+If you apply an expression, it will generate a value as you expect by the expression.
+
+=== Static Example
+
+[cols="a,a"]
+|===
+|
+.Static Value Config
+[source,yaml]
+----
+output:
+  count: 5
+type: static
+value: 5
+----
+
+|
+.Generates
+[example]
+----
+5
+5
+5
+5
+5
+----
+
+2+|
+.Graphed as a constant
+[mermaid]
+....
+---
+config:
+  themeVariables:
+    xyChart:
+      plotColorPalette: "#00F"
+---
+xychart-beta
+    x-axis "Record Counts" 1 --> 5
+    line [5, 5, 5, 5, 5]
+....
+
+|===
+
+=== Trigonometric Function
+
+[cols="a,a"]
+|===
+|
+.Static Value Config
+[source,yaml]
+----
+output:
+  count: 10
+type: float
+expression: 10 * sin(interval * 2/3) + 11
+start: 5
+----
+
+|
+.Generates
+[example]
+----
+11.0
+17.18369803069737
+20.719379013633127
+20.092974268256818
+15.57272626635812
+9.094320371245146
+3.4319750469207175
+1.0104508290207175
+2.8667060843242
+8.205845018010741
+----
+
+2+|
+.Graphed values looks like a Sine Wave!
+[mermaid]
+....
+---
+config:
+  themeVariables:
+    xyChart:
+      plotColorPalette: "#00F"
+---
+xychart-beta
+    x-axis "Record Counts" 1 --> 10
+    line [11.0, 17.18369803069737, 20.719379013633127, 20.092974268256818, 15.57272626635812, 9.094320371245146, 3.4319750469207175, 1.0104508290207175, 2.8667060843242, 8.205845018010741]
+....
+
+|===
+
+== Linear Distribution
+
+Linear distribution provides a consistent distribution of possible offsets from a given value. Using the provided `min_offset` and `max_offset`, it will create a random value to offset the generated value.
+
+As a result, if all possible values were collected, it would create an equal distribution of values of a window around the given expression.
+
+[NOTE]
+====
+Target Property Definition includes
+[source,yaml]
+----
+distribution:
+  type: linear
+  min_offset: int
+  max_offset: int
+----
+where `min_offset` and `max_offset` provides the range to generate a random number used for the offset (added to the generated value).
+====
+
+=== Static Example (Part 2)
+
+Re-using the link:#_static_example[above example], a static expression can be applied with a linear distribution.
+
+[cols="a,a"]
+|===
+|
+.Static Value Config
+[source,yaml]
+----
+output:
+  count: 5
+type: static
+value: 5
+----
+
+|
+.Generates
+[example]
+----
+5
+5
+5
+5
+5
+----
+
+2+|
+.Graphed as a constant
+[gnuplot]
+....
+set title "Simple Plots" font ",20"
+set key left box
+set samples 50
+set style data points
+
+plot [-10:10] sin(x),atan(x),cos(atan(x))
+....
+
+|===
+
+=== Use Case: Static Reference across entries
+
+If needing to create a reference dataset where a field is an identifiable grouping (e.g. Foreign Key), using a static reference for the object definition ensures all entries will use the same value
+
+This example project creates a series of events containing a reference key (`user_id`) to create a series of events that can populate table or event topic that can simulate sensor data.
+
+.Sample Object Project
+
+== Expression Lookback (alternate to Static)
+
+Where the link:#Static Value[] method implements a constant for all datasets, it requires the use of a `value` to be provided, ensuring a known value is provided each time. This provides absolute control over the value that will persist.
+
+Alternatively, there are use cases where a random value may be required but have it persist across all records. This would use the `expression` property for the trend it would use.
+
+=== Use Case: Static Reference from Randomly Generated start value
+
+Copying from the above example in link:#_use_case_static_reference_across_entries[Use Case: Static Reference across entries], alter the property definition to randomly select a value for `user_id`.

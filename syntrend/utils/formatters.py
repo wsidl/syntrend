@@ -4,7 +4,7 @@ from contextlib import contextmanager
 from typing import Callable, Union
 from pathlib import Path
 from io import BufferedRandom, RawIOBase, SEEK_END, StringIO
-from sys import stdout
+import sys
 
 T_Primary = Union[str, int, float, dict[str, "T_Primary"]]
 T_Formatter = Callable[[T_Primary], str]
@@ -74,17 +74,17 @@ OUTPUT_COUNTS: dict[str, int] = {}
 
 
 def load_formatter(object_name: str, output_cfg: model.OutputConfig):
-    assert output_cfg.output_format in FORMATS, f'Format "{output_cfg.output_format}" is not supported'
-    __formatter, __writer = FORMATS[output_cfg.output_format](output_cfg)
+    assert output_cfg.format in FORMATS, f'Format "{output_cfg.format}" is not supported'
+    __formatter, __writer = FORMATS[output_cfg.format](output_cfg)
     format_cfg = {
         "name": object_name,
-        "format": output_cfg.output_format,
+        "format": output_cfg.format,
         "id": "{id}"
     }
     output_dir = None
     output_path = ""
-    if str(output_cfg.output_dir) != "-":
-        output_dir = Path(output_cfg.output_dir)
+    if str(output_cfg.directory) != "-":
+        output_dir = Path(output_cfg.directory)
         output_path = output_dir.joinpath(output_cfg.filename_format.format(**format_cfg))
     count_key = str(output_path)
     if count_key not in OUTPUT_COUNTS:
@@ -93,18 +93,17 @@ def load_formatter(object_name: str, output_cfg: model.OutputConfig):
     @contextmanager
     def _ctx_opener():
         if not output_dir:
-            yield stdout
+            yield sys.stdout
             return
-        else:
-            seq = 0
-            if not output_cfg.aggregate:
-                OUTPUT_COUNTS[count_key] += 1
-                seq = OUTPUT_COUNTS[count_key]
-            _out = Path(count_key.format(id=seq))
-            if not _out.exists():
-                _out.open(mode="x")
-            with _out.open(mode="r+b") as f:
-                yield f
+        seq = 0
+        if not output_cfg.aggregate:
+            OUTPUT_COUNTS[count_key] += 1
+            seq = OUTPUT_COUNTS[count_key]
+        _out = Path(count_key.format(id=seq))
+        if not _out.exists():
+            _out.open(mode="x")
+        with _out.open(mode="r+b") as f:
+            yield f
 
     def __run_formatter(event: T_Primary):
         value = __formatter(event)

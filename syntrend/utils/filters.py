@@ -2,6 +2,7 @@ import datetime
 import re
 import logging
 from typing import Union
+import math
 
 from jinja2 import Environment
 from jsonpath_ng import parse
@@ -86,6 +87,9 @@ def load_environment(env: Environment):
         timedelta=datetime.timedelta,
         time=datetime.time,
         date=datetime.date,
+        sin=math.sin,
+        cos=math.cos,
+        tan=math.tan,
     )
     env.filters.update(
         to_timestamp=to_timestamp,
