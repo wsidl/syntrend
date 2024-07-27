@@ -14,6 +14,7 @@ def load_generators():
     generators.load_generators()
 
 
+@mark.unit
 def test_load_default_generator():
     base_def = Prop_Def(type="string", **generators.GENERATORS["string"].default_config)
     prop_def = Prop_Def(type="string")
@@ -30,6 +31,7 @@ class RandomTestGenerator(generators.PropertyGenerator):
         return 1, "test", self.config.kwargs
 
 
+@mark.unit
 def test_register_generator():
     prop_def = Prop_Def(type="test")
     exp_gen = RandomTestGenerator(prop_def)

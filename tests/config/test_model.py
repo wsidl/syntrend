@@ -4,6 +4,7 @@ from syntrend.utils import generator
 from pytest import mark, param, raises
 
 
+@mark.unit
 def test_project_config_lower_val():
     with raises(AssertionError) as exc:
         model.ModuleConfig(max_generator_retries=-1)
@@ -11,6 +12,7 @@ def test_project_config_lower_val():
     assert exc.value.args[0] == "Value must be >= 1", "Exception raised should say the value must be >= 1"
 
 
+@mark.unit
 def test_project_config_invalid_type():
     with raises(TypeError) as exc:
         model.ModuleConfig(max_generator_retries=[])
