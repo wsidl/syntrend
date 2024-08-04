@@ -106,5 +106,18 @@ def test_cond_status_change(load_doc):
     generated_lines = [
         json.loads(line) for line in console.output[:-1].split("\n")
     ]
+    assert all([ev["ref"] == "status" for ev in generated_lines])
+    below, above = [], []
+    ranges = (below, above)
+    for ev in generated_lines:
+        ranges[ev["sensor"] > 5].append(ev)
+    assert len(below) > 1
+    assert len(above) > 1
+    assert all([
+        ev["status"] == "below" for ev in below
+    ]), "Status should report 'below' when Sensor value is less than 6"
+    assert all([
+        ev["status"] == "above" for ev in above
+    ]), "Status should report 'above' when sensor value is greater than 5"
     print(generated_lines)
     # TODO: Fix Dependency Management
