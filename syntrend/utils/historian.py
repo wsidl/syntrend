@@ -57,7 +57,7 @@ class Historian:
 
     # Formatting / Type Casting
     def __len__(self):
-        return self.__values
+        return len(self.__values)
 
     def __int__(self):
         return int(self.current)

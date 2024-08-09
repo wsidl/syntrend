@@ -3,6 +3,7 @@ from syntrend.generators import register, PropertyGenerator
 
 @register
 class IntegerGenerator(PropertyGenerator):
+    type = int
     name = "integer"
     default_config = {
         "min_offset": -500,

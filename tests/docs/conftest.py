@@ -1,5 +1,6 @@
 from pathlib import Path
 import re
+import traceback
 
 from click.testing import CliRunner
 from pytest import fixture
@@ -51,6 +52,8 @@ def load_doc(request, monkeypatch):
             blocks.pop("console").split("\n", 1)[1],
             cli_result,
         )
+        if cli_result.exit_code:
+            traceback.print_tb(cli_result.exc_info[2])
         return response
 
     return __parse_doc_config

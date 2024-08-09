@@ -1,13 +1,11 @@
 import datetime
 import re
 import logging
-from typing import Union
+from typing import Union, TYPE_CHECKING
 import math
 
-from jinja2 import Environment
-from jsonpath_ng import parse
-
-from syntrend.utils.historian import Historian
+if TYPE_CHECKING:
+    from syntrend.utils.manager import SeriesManager
 
 LOG = logging.getLogger(__name__)
 R_DATETIME = re.compile(r"[1-2]\d{3}-[0-1]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d")
@@ -15,6 +13,8 @@ R_TIME = re.compile(r"[0-2]\d:[0-5]\d:[0-5]\d")
 R_DATE = re.compile(r"[1-2]\d{3}-[0-1]\d-[0-3]\d")
 R_DELTA = re.compile(r"(\d+)([dhms])")
 DELTA_ABBR_MAP = {"d": "days", "h": "hours", "m": "minutes", "s": "seconds"}
+
+MANAGER: Union["SeriesManager", None] = None
 
 
 def to_timestamp(value: datetime.datetime):
@@ -71,18 +71,24 @@ def series(generator, series_length):
     return _Comparator()
 
 
-def get_index(value: Union["Historian", list], index: int):
-    return value[index]
+def get_object(object_name):
+    historian = MANAGER.historians[object_name]
+    generator = MANAGER.generators[object_name]
+
+    def get_index(index: int = 0):
+        if index == 0:
+            return generator
+        if index <= len(historian):
+            return historian[index-1]
+        return None
+
+    return get_index
 
 
-def get_path(value: Union["Historian", object], path_ref: str):
-    if isinstance(value, Historian):
-        value = value.current
-    return parse(path_ref).find(value)[0].value
-
-
-def load_environment(env: Environment):
-    env.globals.update(
+def load_environment(manager: "SeriesManager"):
+    global MANAGER
+    MANAGER = manager
+    manager.expression_env.globals.update(
         datetime=datetime.datetime,
         timedelta=datetime.timedelta,
         time=datetime.time,
@@ -91,10 +97,11 @@ def load_environment(env: Environment):
         cos=math.cos,
         tan=math.tan,
     )
-    env.filters.update(
+    manager.expression_env.filters.update(
         to_timestamp=to_timestamp,
         to_datetime=to_datetime,
         series=series,
-        index=get_index,
-        path=get_path,
+        # path=get_path,
     )
+    for object_name in manager.historians:
+        manager.expression_env.globals[object_name] = get_object(object_name)

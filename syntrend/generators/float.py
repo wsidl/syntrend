@@ -3,6 +3,7 @@ from syntrend.generators import register, PropertyGenerator
 
 @register
 class FloatGenerator(PropertyGenerator):
+    type = float
     name = "float"
     default_config = {
         "min_offset": -500.,

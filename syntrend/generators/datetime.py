@@ -16,6 +16,7 @@ DATETIME_SYMBOL_MAP = {
 
 @register
 class DateTimeGenerator(PropertyGenerator):
+    type = datetime
     name = "datetime"
     default_config = {
         "format": "%Y-%m-%dT%H:%M:%S%z",
@@ -40,6 +41,7 @@ class DateTimeGenerator(PropertyGenerator):
 
 @register
 class TimestampGenerator(PropertyGenerator):
+    type = int
     name = "timestamp"
     default_config = {
         "is_utc": True,

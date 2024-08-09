@@ -3,6 +3,7 @@ from syntrend.generators import register, PropertyGenerator
 
 @register
 class UUIDGenerator(PropertyGenerator):
+    type = str
     name = "uuid"
     default_config = {
         "use_upper": False,

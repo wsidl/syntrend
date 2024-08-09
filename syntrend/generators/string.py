@@ -6,6 +6,7 @@ from random import randint
 @register
 class StringGenerator(PropertyGenerator):
     name = "string"
+    type = str
     default_config = {
         "chars": "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ",
         "min_length": 6,
