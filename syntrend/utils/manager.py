@@ -126,20 +126,16 @@ class SeriesManager:
 
         return _generate
 
-    def load(self):
-        filters.load_environment(self.expression_env)
-        dependencies: dict[str, set[str]] = {}
-
-        for obj_name in CONFIG.objects:
-            dependencies.update(iter_property_dependencies(obj_name, CONFIG.objects[obj_name]))
-
-        self.__dependency_paths = dependencies
-        self.__dependency_order = prepare_dependency_tree(dependencies)
-
     def start(self):
         for obj_name in CONFIG.objects:
             self.historians[obj_name] = historian.Historian()
-            self.__object_generators[obj_name] = load_object_generator(obj_name)
+            object_def = CONFIG.objects[obj_name]
+            property_def = object_def.into__(model.PropertyDefinition)
+            self.generators[obj_name] = get_generator(obj_name, property_def, ROOT_MANAGER)
+            self.formatters[obj_name] = formatters.load_formatter(obj_name, object_def.output)
+            self.__renderers[obj_name] = 0
+
+        filters.load_environment(self)
 
         def _run(_obj_name: str):
             value = self.__object_generators[_obj_name]()
