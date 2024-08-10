@@ -381,7 +381,7 @@ type: timestamp
 
 === Name
 
-Generates a Posix Timestamp integer of the current time
+Generates a fake full name
 
 ==== Properties
 
@@ -390,12 +390,8 @@ Generates a Posix Timestamp integer of the current time
 | Property | Default | Description
 
 | type
-| "datetime"
+| "name"
 | Selector for this generator
-
-| time_offset
-| 0
-| Numerical offset (in integer seconds) to apply to the generated timestamp
 
 |===
 
@@ -404,16 +400,115 @@ Generates a Posix Timestamp integer of the current time
 .Minimal Project Example
 [source,yaml]
 ----
-type: timestamp
+type: name
 ----
 
 .Generates
 [source,console]
 ----
-1720207283
+"Cindy Nash"
 ----
 
+=== First Name
 
+Generates a fake first name
+
+==== Properties
+
+[cols="1,1,4a"]
+|===
+| Property | Default | Description
+
+| type
+| "first_name"
+| Selector for this generator
+
+|===
+
+==== Example
+
+.Minimal Project Example
+[source,yaml]
+----
+type: first_name
+----
+
+.Generates
+[source,console]
+----
+"Kathy"
+----
+
+=== Last Name
+
+Generates a fake last name
+
+==== Properties
+
+[cols="1,1,4a"]
+|===
+| Property | Default | Description
+
+| type
+| "last_name"
+| Selector for this generator
+
+|===
+
+==== Example
+
+.Minimal Project Example
+[source,yaml]
+----
+type: last_name
+----
+
+.Generates
+[source,console]
+----
+"Martinez"
+----
+
+=== UUID
+
+Generates a random UUID string
+
+==== Properties
+
+[cols="1,1,4a"]
+|===
+| Property | Default | Description
+
+| type
+| "uuid"
+| Selector for this generator
+
+| use_upper
+| False
+| Generates a UUID hex-string with upper-case characters
+
+| separator
+| "-"
+| Character separator between UUID blocks
+
+| compact
+| False
+| Removes separators between UUID blocks (similar to `separator: ""`)
+|===
+
+==== Example
+
+.Minimal Project Example
+[source,yaml]
+----
+type: uuid
+----
+
+.Generates
+[source,console]
+----
+"c65f9cc1-1533-4689-b373-74e2042221e1"
+----
 
 == Complex Types
 
