@@ -21,6 +21,11 @@ black = "^23.11.0"
 coverage = "^7.3.2"
 
 [tool.pytest.ini_options]
+markers = [
+    "docs",
+    "unit",
+    "integration",
+]
 # log_cli = true
 
 [build-system]
