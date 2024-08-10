@@ -1,0 +1,627 @@
+= Generator Configurations
+:toc:
+
+These generators are all available to use in a Configuration File. Since all properties are defined by a generator,
+it is possible to provide a number of combinations of generators of the target schema.
+
+> All Configurations require the `type` or `property_type` property in its configuration to know which generator it will use.
+
+== Global Properties
+
+These properties are globally available to all generator types.
+
+[cols="1,1,4"]
+|===
+| Property | Default | Description
+
+| type
+| <listed below>
+| Defines the generator to use. See sections below for options
+
+| start
+| none
+| Provides the initial value for a property. Especially helpful for creating a series requiring a static value or a trend with a specified start value.
+
+| expression
+| none
+| Parsable expression (using https://jinja.palletsprojects.com/en/3.1.x/[Jinja]) used to generate expected values. More information in link:/docs/expressions.adoc[Expressions Doc])
+|===
+
+== Simple Objects
+
+=== String
+
+Random string generator
+
+==== Properties
+
+[cols="1,1,4"]
+|===
+| Property | Default | Description
+
+| type
+| "string"
+| Selector for this generator
+
+| chars
+| [0-9a-zA-Z]
+| Combination of characters to be used in the random string. *Changing order or adding duplicates will impact results*.
+
+| min_char_length
+| 6
+| Minimum length of a random string
+
+| max_char_length
+| 20
+| Maximum length of a random string
+|===
+
+.Property Conditions
+. `chars` must have at least one character
+. Values in `chars` must be parseable by the output format selected for the dataset
+. `min_length` must be equal or greater than 0
+. `min_length` must be equal or less than `max_length`
+
+.Additional Notes
+. `chars` can be a string or a list
+. if `chars` is a list:
+.. items can be multi-character words and `min_length`/`max_length` will apply to the number of words selected
+.. items must be string values. Any other type will raise an error
+
+==== Example
+.Minimal Project Example
+[source,yaml]
+----
+type: string
+----
+
+.Generates
+[source,console]
+----
+"d30ioen4"
+----
+
+=== Integer
+
+Generates a random integer within a range
+
+==== Properties
+
+[cols="1,1,4"]
+|===
+| Property | Default | Description
+
+| type
+| "integer"
+| Selector for this generator
+
+| min_offset
+| -500
+| Minimum number (inclusive)
+
+| max_offset
+| 500
+| Maximum number (inclusive)
+|===
+
+==== Example
+
+.Minimal Project Example
+[source,yaml]
+----
+type: integer
+----
+
+.Generates
+[source,console]
+----
+-159
+----
+
+=== Float / Double
+
+Generates a random floating-point number within a range
+
+==== Properties
+
+[cols="1,1,4"]
+|===
+| Property | Default | Description
+
+| type
+| "float"
+| Selector for this generator
+
+| min_offset
+| -500.0
+| Minimum number (inclusive)
+
+| max_offset
+| 500.0
+| Maximum number (inclusive)
+
+| num_decimals
+| 6
+| Number of Decimal points to round a value
+|===
+
+.Property Requirements
+. `min_offset` must be less than or equal to `max_offset`
+
+.Additional Notes
+. `num_decimals` less than 0 allows rounding to the tens, thousands, etc.
+
+==== Example
+
+.Minimal Project Example
+[source,yaml]
+----
+type: float
+----
+
+.Generates
+[source,console]
+----
+291.225612
+----
+
+=== Static
+
+Generates a random integer within a range
+
+==== Properties
+
+[cols="1,1,4"]
+|===
+| Property | Default | Description
+
+| type
+| "static"
+| Selector for this generator
+
+| value
+| None
+| Value to present at all times
+|===
+
+==== Example
+
+.Minimal Project Example
+[source,yaml]
+----
+type: static
+value: testing
+----
+
+.Generates
+[source,console]
+----
+"testing"
+----
+
+== Expanded Types
+
+=== Hexidecimal
+
+[NOTE]
+Expanded from String Generator
+
+Generates a Hexidecimal string
+
+==== Properties
+
+[cols="1,1,4"]
+|===
+| Property | Default | Description
+
+| type
+| "hex"
+| Selector for this generator
+
+| chars
+| [0-9a-f]
+| Combination of characters to be used in the random string. *Changing order or adding duplicates will impact results*.
+
+| min_char_length
+| 6
+| Minimum length of a random string
+
+| max_char_length
+| 20
+| Maximum length of a random string
+
+| use_upper
+| False
+| Output value should use upper-case values for Hexidecimal string
+|===
+
+==== Example
+
+.Minimal Project Example
+[source,yaml]
+----
+type: hex
+----
+
+.Example Output
+[source,console]
+----
+"39f3ad376"
+----
+
+=== Date Time
+
+Generates a Formatted DateTime string of the current time
+
+==== Properties
+
+[cols="1,1,4a"]
+|===
+| Property | Default | Description
+
+| type
+| "datetime"
+| Selector for this generator
+
+| format
+| "%Y-%m-%dT%H:%M:%S%z"
+| Format string (Using https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes[Python's formatting standard]) to use as output
+
+| time_offset
+| "0d"
+| Offset to apply to the generated value. Value is formatted as a sequence of numerical/suffix pairs using the regular expression `-?\d+[YmdHMS]`
+
+| is_utc
+| True
+| Defines if generated value is in UTC. Setting to "True" also attaches a timezone to the output
+|===
+
+.Property Requirements
+- `time_offset` values must be in a number/suffix pair with no space, `NS` where `N` is an integer and `S` is the suffix denoting the date type `N` represents.
+
+.Additional Notes
+- Multiple sequences can be used in `time_offset`, such as `1m -15H` provides a time offset of 1 month and less 15 hours.
+- If the same suffix is provided twice, the last value is kept (e.g. `1d 4H 3d` will result with offset "3 days and 4 hours")
+
+==== Example
+
+.Minimal Project Example
+[source,yaml]
+----
+type: integer
+----
+
+.Generates
+[source,console]
+----
+-159
+----
+
+=== Date Time
+
+Generates a Formatted DateTime string of the current time
+
+==== Properties
+
+[cols="1,1,4a"]
+|===
+| Property | Default | Description
+
+| type
+| "datetime"
+| Selector for this generator
+
+| format
+| "%Y-%m-%dT%H:%M:%S%z"
+| Format string (Using https://docs.python.org/3/library/datetime.html#strftime-and-strptime-format-codes[Python's formatting standard]) to use as output
+
+| time_offset
+| "0d"
+| Offset to apply to the generated value. Value is formatted as a sequence of numerical/suffix pairs using the regular expression `-?\d+[YmdHMS]`
+
+| is_utc
+| True
+| Defines if generated value is in UTC. Setting to "True" also attaches a timezone to the output
+|===
+
+.Property Requirements
+- `time_offset` values must be in a number/suffix pair with no space, `NS` where `N` is an integer and `S` is the suffix denoting the date type `N` represents.
+
+.Additional Notes
+- Multiple sequences can be used in `time_offset`, such as `1m -15H` provides a time offset of 1 month and less 15 hours.
+- If the same suffix is provided twice, the last value is kept (e.g. `1d 4H 3d` will result with offset "3 days and 4 hours")
+
+==== Example
+
+.Minimal Project Example
+[source,yaml]
+----
+type: datetime
+----
+
+.Generates
+[source,console]
+----
+"2024-07-05T19:21:23+0000"
+----
+
+=== Timestamp
+
+Generates a Posix Timestamp integer of the current time
+
+==== Properties
+
+[cols="1,1,4a"]
+|===
+| Property | Default | Description
+
+| type
+| "datetime"
+| Selector for this generator
+
+| time_offset
+| 0
+| Numerical offset (in integer seconds) to apply to the generated timestamp
+
+|===
+
+==== Example
+
+.Minimal Project Example
+[source,yaml]
+----
+type: timestamp
+----
+
+.Generates
+[source,console]
+----
+1720207283
+----
+
+=== Name
+
+Generates a Posix Timestamp integer of the current time
+
+==== Properties
+
+[cols="1,1,4a"]
+|===
+| Property | Default | Description
+
+| type
+| "datetime"
+| Selector for this generator
+
+| time_offset
+| 0
+| Numerical offset (in integer seconds) to apply to the generated timestamp
+
+|===
+
+==== Example
+
+.Minimal Project Example
+[source,yaml]
+----
+type: timestamp
+----
+
+.Generates
+[source,console]
+----
+1720207283
+----
+
+
+
+== Complex Types
+
+=== Choice
+
+Random List Select Generator. Will generate a series of values based on the provided list of items
+
+==== Properties
+
+[cols="1,1,4"]
+|===
+| Property | Default | Description
+
+| type
+| "choice"
+| Selector for this generator
+
+| items
+| None
+| List of static values to select
+|===
+
+==== Example
+
+.Minimal Project Example
+[source,yaml]
+----
+type: choice
+items:
+  - red
+  - green
+  - blue
+----
+
+.Example Output
+[source,console]
+----
+"green"
+----
+
+=== Union
+
+Multi-Generator Option. Provides a mechanism for an output or nested value to be one of many different generators or same generator with different properties.
+
+==== Properties
+
+[cols="1,1,4"]
+|===
+| Property | Default | Description
+
+| type
+| "union"
+| Selector for this generator
+
+| items
+| None
+| List of nested generators and their properties
+|===
+
+==== Example
+
+.Minimal Project Example
+[source,yaml]
+----
+type: union
+items:
+  - type: string
+  - type: string
+    chars: abcdefg
+  - type: integer
+----
+
+.Example Output
+[source,console]
+----
+-255
+----
+
+.Multiple Value Example
+[source,yaml]
+----
+output:
+  count: 5
+type: union
+items:
+  - type: string
+  - type: string
+    chars: abcdefg
+  - type: integer
+----
+
+.Example Output
+[source,console]
+----
+-255
+"39t4jfn3"
+"fg902a"
+356
+"aceeabdaccefadaa"
+----
+
+=== List
+
+Generates a list of values of a specific type (using another generator type definition)
+
+==== Properties
+
+[cols="1,1,4"]
+|===
+| Property | Default | Description
+
+| type
+| "list"
+| Selector for this generator
+
+| sub_type
+| None
+| Generator Type (listed in this document) to be used for the items within the list
+
+| min_length
+| 1
+| Minimum number of values to generate
+
+| max_length
+| 5
+| Minimum number of values to generate
+
+|===
+
+.Property Conditions
+. `min_length` must be equal or greater than 0
+. `min_length` must be equal or less than `max_length`
+
+==== Example
+
+.Minimal Project Example
+[source,yaml]
+----
+type: union
+items:
+  - type: string
+  - type: string
+    chars: abcdefg
+  - type: integer
+----
+
+.Example Output
+[source,console]
+----
+-255
+----
+
+.Multiple Value Example
+[source,yaml]
+----
+output:
+  count: 5
+type: union
+items:
+- type: string
+- type: string
+  chars: abcdefg
+- type: integer
+----
+
+.Example Output
+[source,console]
+----
+-255
+"39t4jfn3"
+"fg902a"
+356
+"aceeabdaccefadaa"
+----
+
+=== Object / Mapping
+
+Generates an object/map/dictionary with nested properties with various generator types. Often used as the root object for tabular or JSON values.
+
+==== Properties
+
+[cols="1,1,4"]
+|===
+| Property | Default | Description
+
+| type
+| "object"
+| Selector for this generator
+
+| properties
+| {}
+| Map of Property Names to the generator used for this object
+|===
+
+==== Examples
+
+.Minimal Project Example
+[source,yaml]
+----
+type: object
+properties:
+  value:
+    type: string
+----
+
+.Example Output
+[source,console]
+----
+{"value": "dj430DFFUJ1"}
+----
+

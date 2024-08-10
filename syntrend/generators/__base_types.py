@@ -1,4 +1,3 @@
-from datetime import datetime
 from typing import Type, Callable, Union
 
 
@@ -144,10 +143,6 @@ class MappingType(CollectionType):
         return self.properties[name]
 
 
-class DateTimeType(BaseType):
-    pass
-
-
 EXPRESSION_TYPES = {
     str: StringType,
     int: IntegerType,
@@ -155,7 +150,6 @@ EXPRESSION_TYPES = {
     bool: BooleanType,
     list: ListType,
     dict: MappingType,
-    datetime: DateTimeType,
 }
 AVAILABLE_TYPES = set(EXPRESSION_TYPES.values())
 T_TYPE_MAP = dict[str, set[Union[str, Type[BaseType]]]]

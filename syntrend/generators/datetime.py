@@ -1,9 +1,11 @@
 from syntrend.generators import register, PropertyGenerator
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
+from time import localtime
+from functools import partial
 import re
 
-RE_TIME_OFFSET = re.compile(r"(\d+)([YmdHMS])")
+RE_TIME_OFFSET = re.compile(r"(-?\d+)([YmdHMS])")
 DATETIME_SYMBOL_MAP = {
     "Y": "years",
     "m": "months",
@@ -14,9 +16,20 @@ DATETIME_SYMBOL_MAP = {
 }
 
 
+def datetime_aware(kwargs):
+    kwargs["is_utc"] = bool(kwargs.get("is_utc", True))
+    kwargs["tz_offset"] = timezone(timedelta(seconds=0 if kwargs["is_utc"] else localtime().tm_gmtoff))
+
+    def generator(self):
+        return self.kwargs.now().astimezone(self.kwargs.tz_offset)
+
+    kwargs["generate"] = generator
+    kwargs["now"] = partial(datetime.now, tz=timezone.utc)
+
+
 @register
 class DateTimeGenerator(PropertyGenerator):
-    type = datetime
+    type = str
     name = "datetime"
     default_config = {
         "format": "%Y-%m-%dT%H:%M:%S%z",
@@ -25,18 +38,16 @@ class DateTimeGenerator(PropertyGenerator):
     }
 
     def load_kwargs(self, kwargs: dict[str, any]) -> dict[str, any]:
-        kwargs["is_utc"] = bool(kwargs["is_utc"])
-
         offset_matches = {}
         for _match in RE_TIME_OFFSET.finditer(kwargs["time_offset"]):
             val, key = _match.groups()
             offset_matches[DATETIME_SYMBOL_MAP[key]] = int(val)
         kwargs["time_offset"] = timedelta(**offset_matches)
-        kwargs["now"] = datetime.utcnow if kwargs["is_utc"] else datetime.now
+        datetime_aware(kwargs)
         return kwargs
 
     def generate(self):
-        return self.kwargs.now() + self.kwargs.time_offset
+        return (self.kwargs.generate(self) + self.kwargs.time_offset).strftime(self.kwargs.format)
 
 
 @register
@@ -44,15 +55,13 @@ class TimestampGenerator(PropertyGenerator):
     type = int
     name = "timestamp"
     default_config = {
-        "is_utc": True,
         "time_offset": 0,
     }
 
     def load_kwargs(self, kwargs: dict[str, any]) -> dict[str, any]:
-        kwargs["is_utc"] = bool(kwargs["is_utc"])
+        datetime_aware(kwargs)
         kwargs["time_offset"] = int(kwargs["time_offset"])
-        kwargs["now"] = lambda: (datetime.utcnow if kwargs["is_utc"] else datetime.now)().timestamp()
         return kwargs
 
     def generate(self):
-        return int(self.kwargs.now()) + self.kwargs.time_offset
+        return int(self.kwargs.generate(self).timestamp()) + self.kwargs.time_offset
