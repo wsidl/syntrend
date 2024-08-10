@@ -53,13 +53,15 @@ class Validated:
         that raises ValueError or a transformation to
         the field value.
         The validation is performed by calling a function named:
-            `validate_<field_name>(self, value, field) -> field.type`
+            `parse_<field_name>(self, value, field) -> field.type`
         """
         for field in dc.fields(self):
-            if method := getattr(self, f"validate_{field.name}", None):
+            if callable(method := getattr(self, f"parse_{field.name}", None)):
                 setattr(self, field.name, method(getattr(self, field.name)))
-        if method := getattr(self, "model_validator", None):
-            method()
+        self.validate()
+
+    def validate(self):
+        return
 
     def to_dict__(self) -> dict:
         return dc.asdict(self)
@@ -101,8 +103,8 @@ class Validated:
         })
 
 
-def validate_int(_min=None, _max=None):
-    def _validator(_, value):
+def parse_int(_min=None, _max=None):
+    def _parser(_, value):
         try:
             value = int(value)
         except TypeError:
@@ -113,7 +115,7 @@ def validate_int(_min=None, _max=None):
             assert value <= _max, f"Value must be <= {_max}"
         return int(value)
 
-    return _validator
+    return _parser
 
 
 @dc.dataclass
@@ -122,19 +124,22 @@ class ModuleConfig(Validated):
     max_historian_buffer: int = dc.field(default=20)
     generator_dir: str = dc.field(default=getenv("SYNTREND_GENERATOR_DIR", str(ADD_GENERATOR_DIR)))
 
-    validate_max_generator_retries = validate_int(_min=1)
-    validate_max_historian_buffer = validate_int(_min=1)
+    parse_max_generator_retries = parse_int(_min=1)
+    parse_max_historian_buffer = parse_int(_min=1)
 
 
 @dc.dataclass
 class OutputConfig(Validated):
+    """
+
+    """
     format: str = dc.field(default="json")
     directory: Path = dc.field(default="-")
     filename_format: str = dc.field(default="{name}_{id}.{format}")
     aggregate: bool = dc.field(default=False)
     count: int = dc.field(default=1)
 
-    def validate_output_dir(self, value):
+    def parse_output_dir(self, value):
         if isinstance(value, Path):
             return value
         if value == "-":
@@ -145,7 +150,7 @@ class OutputConfig(Validated):
         assert p.is_dir(), "Path must be a directory"
         return p
 
-    def model_validator(self):
+    def validate(self):
         if isinstance(self.aggregate, (str, int)):
             self.aggregate = bool(self.aggregate)
 
@@ -188,7 +193,7 @@ class PropertyDistribution(Validated):
     min_offset: Union[int, float] = 0
     max_offset: Union[int, float] = 0
 
-    def model_validator(self):
+    def validate(self):
         assert self.min_offset <= self.max_offset, f"Min value '{self.min_offset}' must be lower than the Max value '{self.max_offset}'"
 
 
@@ -243,19 +248,32 @@ class ObjectDefinition(PropertyDefinition):
         self.series = SeriesType(kwargs.pop("series", "reference"))
         super().__init__(**kwargs)
 
-    def validate_output(self, value):
+    def parse_output(self, value):
         if isinstance(value, OutputConfig):
             return value
         return OutputConfig(**value)
 
 
+class ObjectDefinitions(dict):
+    def __new__(cls, **kwargs):
+        for object_name in kwargs:
+            if isinstance(kwargs[object_name], dict):
+                kwargs[object_name] = ObjectDefinition(name=object_name, **kwargs[object_name])
+        return kwargs
+
+
 @dc.dataclass
 class ProjectConfig(Validated):
-    objects: dict[str, ObjectDefinition]
+    """
+    Project File Configuration
+
+    Provides
+    """
+    objects: Union[ObjectDefinitions, dict[str, Union[dict, ObjectDefinition]]]
     output: OutputConfig = dc.field(default_factory=OutputConfig)
     config: ModuleConfig = dc.field(default_factory=ModuleConfig)
 
-    def validate_objects(self, objects):
+    def parse_objects(self, objects):
         if len(objects) == 0:
             raise ValueError("Project Config must include one object to generate")
-        return {k: ObjectDefinition(name=k, **objects[k]) for k in objects}
+        return ObjectDefinitions(**objects)
