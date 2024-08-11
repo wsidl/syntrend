@@ -8,12 +8,12 @@ packages = [{include = "syntrend"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
-pyyaml = "^6.0.1"
 click = "^8.1.7"
 pydantic = "^2.5.2"
 jsonpath-ng = "^1.6.0"
 jinja2 = "^3.1.2"
 faker = "^26.0.0"
+ruamel-yaml = "^0.18.6"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"
@@ -26,7 +26,7 @@ markers = [
     "unit",
     "integration",
 ]
-# log_cli = true
+log_cli = true
 
 [build-system]
 requires = ["poetry-core"]
