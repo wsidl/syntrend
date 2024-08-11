@@ -67,7 +67,7 @@ class Validated:
         return dc.asdict(self)
 
     def copy__(self):
-        return self.__class__(**{
+        return type(self)(**{
             f_name: f_val.copy__() if isinstance(f_val, Validated) else f_val
             for f_name, f_val in [
                 (fld.name, getattr(self, fld.name)) for fld in dc.fields(self)
@@ -94,7 +94,7 @@ class Validated:
                 continue
             setattr(self, field.name, getattr(other, field.name))
 
-    def into__(self, other_cls: Type["Validated"]) -> "Validated":
+    def into__(self, other_cls: dc.dataclass) -> "Validated":
         current_fieldset = set(fld.name for fld in dc.fields(self))
         new_fieldset = set(fld.name for fld in dc.fields(other_cls))
         assert len(new_fieldset - current_fieldset) == 0, "Target Object contains fields not in current object"
@@ -139,7 +139,7 @@ class OutputConfig(Validated):
     aggregate: bool = dc.field(default=False)
     count: int = dc.field(default=1)
 
-    def parse_output_dir(self, value):
+    def parse_directory(self, value):
         if isinstance(value, Path):
             return value
         if value == "-":
