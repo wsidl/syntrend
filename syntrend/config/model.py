@@ -273,6 +273,16 @@ class ProjectConfig(Validated):
     output: OutputConfig = dc.field(default_factory=OutputConfig)
     config: ModuleConfig = dc.field(default_factory=ModuleConfig)
 
+    def parse_output(self, output):
+        if isinstance(output, OutputConfig):
+            return output
+        return OutputConfig(**output)
+
+    def parse_config(self, config):
+        if isinstance(config, ModuleConfig):
+            return config
+        return ModuleConfig(**config)
+
     def parse_objects(self, objects):
         if len(objects) == 0:
             raise ValueError("Project Config must include one object to generate")
