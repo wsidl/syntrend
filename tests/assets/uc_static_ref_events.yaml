@@ -1,0 +1,12 @@
+output:
+    count: 5
+type: object
+properties:
+  timestamp:
+    type: timestamp
+    expression: this(1).timestamp | default(new) + 5
+  user_id:
+    type: static
+    value: jdoe
+  value:
+    type: integer

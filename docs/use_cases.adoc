@@ -21,9 +21,7 @@ the project file to only implement the value type, its value configuration, and 
 
 | [source,yaml]
 ----
-type: string
-min_length: 8
-max_length: 10
+include::../tests/assets/uc_single_value_string.yaml[]
 ----
 | [source,console]
 ----
@@ -38,9 +36,7 @@ $ syntrend generate single_value_string.yaml
 
 | [source,yaml]
 ----
-type: integer
-min_offset: 5
-max_offset: 10
+include::../tests/assets/uc_single_value_integer.yaml[]
 ----
 | [source,console]
 ----
@@ -54,14 +50,7 @@ $ syntrend generate single_value_integer.yaml
 |===
 | [source,yaml]
 ----
-type: choice
-items:
-  - red
-  - yellow
-  - blue
-  - orange
-  - green
-  - purple
+include::../tests/assets/uc_random_choice.yaml[]
 ----
 | [source,console]
 ----
@@ -76,20 +65,7 @@ $ syntrend generate random_color.yaml
 
 | [source,yaml]
 ----
-type: object
-properties:
-  field_1:
-    type: string
-  field_2:
-    type: integer
-  field_3:
-    type: float
-  field_4:
-    type: choice
-    items:
-      - small
-      - medium
-      - large
+include::../tests/assets/uc_single_value_object.yaml[]
 ----
 | [source,console]
 ----
@@ -117,9 +93,7 @@ how many records should be generated.
 
 | [source,yaml]
 ----
-type: string
-output:
-  count: 5
+include::../tests/assets/uc_multi_value_string.yaml[]
 ----
 | [source,console]
 ----
@@ -159,18 +133,7 @@ Using this in a project could look like this:
 |===
 | [source,yaml]
 ----
-output:
-    count: 5
-type: object
-properties:
-  timestamp:
-    type: timestamp
-    expression: this(1).timestamp \| default(new) + 5
-  user_id:
-    type: static
-    value: jdoe
-  value:
-    type: integer
+include::../tests/assets/uc_static_ref_events.yaml[]
 ----
 | [source, console]
 ----
@@ -191,21 +154,7 @@ Alternatively, it's also possible to have `syntrend` generate a random starting 
 |===
 | [source, yaml]
 ----
-output:
-    count: 5
-type: object
-properties:
-  timestamp:
-    type: timestamp
-    expression: this(1).timestamp \| default(new) + 5
-  user_id:
-    type: string
-    min_length: 3
-    max_length: 6
-    expression: this(1).user_id \| default(new)
-  value:
-    type: integer
-
+include::../tests/assets/uc_static_ref_random_start.yaml[]
 ----
 
 | [source, console]
@@ -229,10 +178,7 @@ Using the `expression` flag allows for the use of any https://jinja.palletsproje
 |===
 | [source,yaml]
 ----
-output:
-  count: 5
-type: string
-expression: new[:5] + "-test"
+include::../tests/assets/uc_seq_format_string.yaml[]
 ----
 | [source,console]
 ----
@@ -255,20 +201,7 @@ It's possible to implement conditional logic to allow for static values that cha
 |===
 | [source,yaml]
 ----
-output:
-  count: 5
-type: object
-properties:
-  ref:
-    type: static
-    value: status
-  status:
-    type: string
-    expression: '"above" if this().sensor > 5 else "below"'
-  sensor:
-    type: integer
-    expression: this(1).sensor + 2
-    start: 0
+include::../tests/assets/uc_cond_status_change.yaml[]
 ----
 | [source,console]
 ----

@@ -1,0 +1,14 @@
+output:
+  count: 5
+type: object
+properties:
+  ref:
+    type: static
+    value: status
+  status:
+    type: string
+    expression: '"above" if this().sensor > 5 else "below"'
+  sensor:
+    type: integer
+    expression: this(1).sensor + 2
+    start: 0

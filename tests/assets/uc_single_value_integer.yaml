@@ -1,0 +1,3 @@
+type: integer
+min_offset: 5
+max_offset: 10

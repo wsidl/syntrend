@@ -1,0 +1,14 @@
+type: object
+properties:
+  field_1:
+    type: string
+  field_2:
+    type: integer
+  field_3:
+    type: float
+  field_4:
+    type: choice
+    items:
+      - small
+      - medium
+      - large

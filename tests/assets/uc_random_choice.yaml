@@ -1,0 +1,8 @@
+type: choice
+items:
+  - red
+  - yellow
+  - blue
+  - orange
+  - green
+  - purple

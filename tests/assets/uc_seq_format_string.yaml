@@ -1,0 +1,4 @@
+output:
+  count: 5
+type: string
+expression: new[:5] + "-test"

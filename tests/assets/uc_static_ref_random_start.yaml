@@ -1,0 +1,14 @@
+output:
+    count: 5
+type: object
+properties:
+  timestamp:
+    type: timestamp
+    expression: this(1).timestamp | default(new) + 5
+  user_id:
+    type: string
+    min_length: 3
+    max_length: 6
+    expression: this(1).user_id | default(new)
+  value:
+    type: integer
