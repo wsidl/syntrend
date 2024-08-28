@@ -14,7 +14,7 @@ CONFIG_MODULES = [
 MODULE_KEYS = {}
 for module in CONFIG_MODULES:
     yaml.register_class(module)
-    MODULE_KEYS[module] = {fld.name for fld in model.dc.fields(module)}
+    MODULE_KEYS[module] = set(model.fields(module))
 
 
 def parse_object(config_dict: dict) -> Union[dict, model.Validated]:
@@ -55,13 +55,16 @@ def load_config(config_file: Union[dict, str, Path]) -> model.ProjectConfig:
         if isinstance(config_obj, model.ProjectConfig):
             new_config = config_obj
         elif isinstance(config_obj, model.OutputConfig):
-            new_config.output.update__(config_obj)
+            model.update(new_config.output, config_obj)
         elif isinstance(config_obj, model.ModuleConfig):
-            new_config.config.update__(config_obj)
+            model.update(new_config.config, config_obj)
         elif isinstance(config_obj, dict):
             if "type" in config_obj:
                 config_obj = {"this": config_obj}
-            new_config.objects = model.ObjectDefinitions(**config_obj)
+            new_config.objects = {
+                obj_name: model.ObjectDefinition(name=obj_name, **config_obj[obj_name])
+                for obj_name in config_obj
+            }
         else:
             raise ValueError(f"Unhandled Configuration Type: {repr(config_obj)}", config_obj)
     return new_config

@@ -108,7 +108,7 @@ def register(property_generator: Type[PropertyGenerator]):
 def get_generator(object_name: str, config: model.PropertyDefinition, manager) -> PropertyGenerator:
     prop_gen_cls = GENERATORS[config.type]
     new_config = model.PropertyDefinition(name=config.name, type=config.type, **prop_gen_cls.default_config)
-    new_config.update__(config)
+    model.update(new_config, config)
     new_gen = prop_gen_cls(object_name, new_config)
     new_gen.load(manager)
     return new_gen
