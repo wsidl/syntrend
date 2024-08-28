@@ -1,4 +1,5 @@
 import datetime
+import random
 import re
 import logging
 from typing import Union, TYPE_CHECKING
@@ -96,6 +97,7 @@ def load_environment(manager: "SeriesManager"):
         sin=math.sin,
         cos=math.cos,
         tan=math.tan,
+        random=random.randint,
     )
     manager.expression_env.filters.update(
         to_timestamp=to_timestamp,

@@ -1,7 +1,7 @@
 import click
 import pathlib
 
-from syntrend import generators
+from syntrend import generators, formatters
 from syntrend.utils import manager
 from syntrend.config import load_config, CONFIG
 
@@ -27,6 +27,8 @@ def generate(project_file: pathlib.Path):
     """
     load_config(project_file)
     generators.load_generators()
+    formatters.load_formatters()
+    manager.ROOT_MANAGER.load()
     manager.ROOT_MANAGER.start()
 
 

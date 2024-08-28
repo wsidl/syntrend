@@ -72,3 +72,8 @@ class ObjectGenerator(ComplexGenerator):
             key: self.properties[key].render()
             for key in self.properties
         }
+
+    def undo(self):
+        super(ComplexGenerator, self).undo()
+        for key in self.properties:
+            self.properties[key].undo()

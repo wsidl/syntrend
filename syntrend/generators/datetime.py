@@ -2,6 +2,7 @@ from syntrend.generators import register, PropertyGenerator
 
 from datetime import datetime, timedelta, timezone
 from time import localtime
+from random import randint
 from functools import partial
 import re
 
@@ -19,6 +20,10 @@ DATETIME_SYMBOL_MAP = {
 def datetime_aware(kwargs):
     kwargs["is_utc"] = bool(kwargs.get("is_utc", True))
     kwargs["tz_offset"] = timezone(timedelta(seconds=0 if kwargs["is_utc"] else localtime().tm_gmtoff))
+    kwargs["min_offset"] = int(kwargs.get("min_offset", 0))
+    kwargs["max_offset"] = int(kwargs.get("max_offset", kwargs["min_offset"]))
+    if kwargs["min_offset"] > kwargs["max_offset"]:
+        raise ValueError("min_offset must be less than or equal to max_offset")
 
     def generator(self):
         return self.kwargs.now().astimezone(self.kwargs.tz_offset)
