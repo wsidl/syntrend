@@ -1,15 +1,21 @@
+"""Project File Schema"""
+
 import logging
-from typing import Union, Type
+from typing import Union, Optional
 import dataclasses as dc
 from enum import Enum
 from os import getenv
 from pathlib import Path
+from functools import partial
 
 LOG = logging.getLogger(__name__)
+DEFAULT_ENVVAR_PREFIX = "SYNTREND_"
 OUTPUT_STDOUT = Path("-")
 DEFAULT_FILE_FORMAT = "{name}-{id}.{format}"
 USER_CONFIG_DIR = Path.home().joinpath(".config", "syntrend")
 ADD_GENERATOR_DIR = USER_CONFIG_DIR.joinpath("generators")
+
+dataclass = partial(dc.dataclass, kw_only=True, init=False)
 
 
 class NullValue:
@@ -45,99 +51,155 @@ class SeriesType(Enum):
     Reference = "reference"
 
 
-@dc.dataclass
+@dataclass
 class Validated:
-    def __post_init__(self):
-        """Run validation methods if declared.
-        The validation method can be a simple check
-        that raises ValueError or a transformation to
-        the field value.
-        The validation is performed by calling a function named:
-            `parse_<field_name>(self, value, field) -> field.type`
+    """Base Class for Configurations"""
+    source__: dict = dc.field(default_factory=dict)
+
+    def __init__(self, **kwargs):
+        """Runs Parsing methods (if declared) to parse dataclass fields and validation method. Requires
+        a method to match the field name with the following signature:
+          `parse_<field.name>(self, value) -> any`
         """
+        kwargs.update(kwargs.pop("kwargs", {}))
+        self.source__ = kwargs.copy()
         for field in dc.fields(self):
+            default_val = NULL_VAL
+            if field.default is not dc.MISSING:
+                default_val = field.default
+            elif field.default_factory is not dc.MISSING:
+                default_val = field.default_factory()
+            setattr(self, field.name, kwargs.pop(field.name, default_val))
             if callable(method := getattr(self, f"parse_{field.name}", None)):
                 setattr(self, field.name, method(getattr(self, field.name)))
+        self.kwargs = kwargs
+        if hasattr(self, "parse_kwargs"):
+            self.kwargs = self.parse_kwargs(kwargs)
         self.validate()
 
+    def __repr__(self):
+        _fields = [f"{field_name}={repr(getattr(self, field_name))}" for field_name in fields(self) + ["kwargs"]]
+        return f"<{type(self).__name__}({_fields})>"
+
     def validate(self):
+        """Validation Method to confirm conditions are correct across multiple fields/properties"""
         return
 
-    def to_dict__(self) -> dict:
-        return dc.asdict(self)
 
-    def copy__(self):
-        return type(self)(**{
-            f_name: f_val.copy__() if isinstance(f_val, Validated) else f_val
-            for f_name, f_val in [
-                (fld.name, getattr(self, fld.name)) for fld in dc.fields(self)
-            ]
-        })
+def copy(obj: Validated) -> Validated:
+    """Generates a duplicate of self
 
-    def update__(self, other) -> None:
-        assert isinstance(other, self.__class__), "Can only update from a matching dataclass type"
-        for field in dc.fields(self):
-            other_field = getattr(other, field.name)
-            if isinstance(other_field, Validated):
-                getattr(self, field.name).update__(other_field)
-                continue
-            if isinstance(other_field, dict):
-                current_keys = set(getattr(self, field.name))
-                for prop in other_field:
-                    if isinstance(other_field[prop], Validated):
-                        if prop not in current_keys:
-                            getattr(self, field.name)[prop] = other_field[prop].copy__()
-                        else:
-                            getattr(self, field.name)[prop].update__(other_field[prop])
-                        continue
-                    getattr(self, field.name)[prop] = other_field[prop]
-                continue
-            setattr(self, field.name, getattr(other, field.name))
-
-    def into__(self, other_cls: dc.dataclass) -> "Validated":
-        current_fieldset = set(fld.name for fld in dc.fields(self))
-        new_fieldset = set(fld.name for fld in dc.fields(other_cls))
-        assert len(new_fieldset - current_fieldset) == 0, "Target Object contains fields not in current object"
-        return other_cls(**{
-            fld.name: getattr(self, fld.name) for fld in dc.fields(other_cls)
-        })
+    Returns:
+        Instance of a `Validated` subclass
+    """
+    new_dict = {
+        f_name: copy(f_val) if isinstance(f_val, Validated) else f_val
+        for f_name, f_val in [
+            (fld_name, getattr(obj, fld_name)) for fld_name in fields(obj)
+        ]
+        if not obj.source__ or f_name in obj.source__
+    }
+    return type(obj)(**(new_dict | obj.kwargs))
 
 
-def parse_int(_min=None, _max=None):
+def update(obj: Validated, other: Validated) -> None:
+    """Applies any values from another `Validated` instance to self.
+
+    Similar to `dict.update()` but applies specifically to `Validated` instances to preserve
+    class behaviour
+
+    Args:
+        other: Instance of `Validated` subclass to copy values from
+
+    Raises:
+        TypeError: `other` is not a subclass of `Validated`
+    """
+    if not isinstance(other, Validated):
+        raise TypeError("Only `Validated` subclasses can be supported to update from")
+
+    for field in dc.fields(obj):
+        setattr(obj, field.name, getattr(other, field.name))
+    obj.kwargs.update(other.kwargs)
+    obj.source__ = other.source__
+
+
+def fields(obj: dc.dataclass) -> list[str]:
+    return [field.name for field in dc.fields(obj)]
+
+
+def parse_int(_min: Optional[int] = None, _max: Optional[int] = None):
+    """Convenience function to parse integer values for `Validated` classes
+
+    Args:
+        _min: Minimum value of the integer range
+        _max: Maximum value of the integer range
+
+    Returns:
+        Callable WrappParsed integer for the field
+
+    Raises:
+        TypeError: Input Value is not a valid Integer type
+        ValueError: Input Value is not within the defined range
+    """
     def _parser(_, value):
         try:
             value = int(value)
         except TypeError:
-            raise TypeError("Value must parsable to integer")
-        if _min is not None:
-            assert value >= _min, f"Value must be >= {_min}"
-        if _max is not None:
-            assert value <= _max, f"Value must be <= {_max}"
+            raise TypeError("Value must be parsable to integer")
+        if _min is not None and value < _min:
+            raise ValueError(f"Value must be >= {_min}")
+        if _max is not None and value > _max:
+            raise ValueError(f"Value must be <= {_max}")
         return int(value)
 
     return _parser
 
 
-@dc.dataclass
+@dataclass
 class ModuleConfig(Validated):
-    max_generator_retries: int = dc.field(default=20)
-    max_historian_buffer: int = dc.field(default=20)
-    generator_dir: str = dc.field(default=getenv("SYNTREND_GENERATOR_DIR", str(ADD_GENERATOR_DIR)))
+    """Configuration Properties to modify/alter how the `syntrend` utility behaves"""
+    max_generator_retries: int = dc.field(default=int(getenv(f"{DEFAULT_ENVVAR_PREFIX}_MAX_GENERATOR_RETRIES", 20)))
+    """Maximum number of retries a Generator can perform before failing.
+    
+    *Useful for when a distribution is applied
+    """
+    max_historian_buffer: int = dc.field(default=int(getenv(f"{DEFAULT_ENVVAR_PREFIX}_MAX_HISTORIAN_BUFFER", 20)))
+    """Maximum values to be kept in a buffer of previous values"""
+    generator_dir: str = dc.field(default=getenv(f"{DEFAULT_ENVVAR_PREFIX}_GENERATOR_DIR", ""))
+    """Source Directory of Custom Generators"""
 
     parse_max_generator_retries = parse_int(_min=1)
+    """Parse `max_generator_retries` and validates if value >= 1"""
     parse_max_historian_buffer = parse_int(_min=1)
+    """Parse `max_historian_buffer` and validates if value >= 1"""
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def parse_generator_dir(self, value: str) -> Path:
+        """Parse `generator_dir` and validates path exists and is a directory"""
+        if value:
+            return ADD_GENERATOR_DIR
+        parsed_path = Path(value).absolute()
+        if not parsed_path.is_dir():
+            raise ValueError(f"Source Generator Directory does not exist: {str(parsed_path)}")
+        return parsed_path
 
 
-@dc.dataclass
+@dataclass
 class OutputConfig(Validated):
-    """
+    """Configuration Properties used for Global and Object-specific outputs"""
 
-    """
+    """"""
     format: str = dc.field(default="json")
     directory: Path = dc.field(default="-")
     filename_format: str = dc.field(default="{name}_{id}.{format}")
-    aggregate: bool = dc.field(default=False)
+    collection: bool = dc.field(default=False)
     count: int = dc.field(default=1)
+    time_field: str = dc.field(default="")
+
+    def parse_collection(self, value):
+        return bool(value)
 
     def parse_directory(self, value):
         if isinstance(value, Path):
@@ -149,10 +211,6 @@ class OutputConfig(Validated):
             p.mkdir(parents=True)
         assert p.is_dir(), "Path must be a directory"
         return p
-
-    def validate(self):
-        if isinstance(self.aggregate, (str, int)):
-            self.aggregate = bool(self.aggregate)
 
 
 # class ValueRange(BaseModel):
@@ -174,79 +232,68 @@ class OutputConfig(Validated):
 #         super().__init__(**kwargs)
 
 
-@dc.dataclass(init=False)
+@dataclass
 class SeriesConfig(Validated):
     type: SeriesType
     count: int = dc.field(default=1)
     series_cfg: dict = dc.field(default_factory=dict)
 
-    def __init__(self, **kwargs):
-        self.type = SeriesType(kwargs.pop("type", "reference").lower())
-        self.count = int(kwargs.pop("count", 1))
-        self.series_cfg = kwargs
+    parse_count = parse_int(_min=1)
 
 
-@dc.dataclass
+@dataclass
 class PropertyDistribution(Validated):
     type: DistributionTypes = DistributionTypes.NoDistribution
     std_dev_factor: float = 0.
     min_offset: Union[int, float] = 0
-    max_offset: Union[int, float] = 0
+    max_offset: Union[int, float] = 1
+
+    def parse_type(self, value):
+        if isinstance(value, DistributionTypes):
+            return value
+        return DistributionTypes(value)
 
     def validate(self):
-        assert self.min_offset <= self.max_offset, f"Min value '{self.min_offset}' must be lower than the Max value '{self.max_offset}'"
+        if self.min_offset > self.max_offset:
+            raise ValueError("Distribution Min value must be lower than the Max value")
 
 
-@dc.dataclass(init=False)
+@dc.dataclass
 class PropertyDefinition(Validated):
     name: str
     type: str
     distribution: Union[DistributionTypes, PropertyDistribution] = dc.field(default=DistributionTypes.NoDistribution)
     conditions: list[str] = dc.field(default_factory=list)
-    expression: str = ""
-    start: any = None
+    expression: str = dc.field(default="")
+    start: any = dc.field(default=None)
     items: list[any] = dc.field(default_factory=list)
     properties: dict[str, "PropertyDefinition"] = dc.field(default_factory=dict)
-    kwargs: dict = dc.field(default_factory=dict)
 
     def __init__(self, **kwargs):
-        self.name = kwargs.pop("name")
-        self.type = kwargs.pop("type").lower()
-        self.conditions = []
-        self.properties = {}
-        self.expression = kwargs.pop("expression", "")
-        self.distribution = PropertyDistribution()
-        self.start = kwargs.pop("start", None)
-        self.items = kwargs.pop("items", [])
-        if dist_type := kwargs.pop("distribution", {}):
-            if isinstance(dist_type, str):
-                dist_type = DistributionTypes(dist_type)
-            if isinstance(dist_type, DistributionTypes):
-                dist_type = {"type": dist_type}
-            if isinstance(dist_type, dict):
-                dist_type = PropertyDistribution(**dist_type)
-            self.distribution = dist_type
-        if "conditions" in kwargs:
-            self.conditions = kwargs.pop("conditions")
-        if "properties" in kwargs:
-            self.properties = {
-                prop: val.copy__() if isinstance(val, PropertyDefinition) else PropertyDefinition(name=prop if "name" not in val else val["name"], **val)
-                for prop, val in kwargs.pop("properties").items()
-            }
-        if "kwargs" in kwargs:
-            kwargs.update(kwargs.pop("kwargs"))
-        self.kwargs = kwargs
+        super().__init__(**kwargs)
+
+    def parse_distribution(self, dist_type):
+        if isinstance(dist_type, str):
+            dist_type = DistributionTypes(dist_type)
+        if isinstance(dist_type, DistributionTypes):
+            dist_type = {"type": dist_type}
+        if isinstance(dist_type, dict):
+            dist_type = PropertyDistribution(**dist_type)
+        return dist_type
+
+    def parse_properties(self, props):
+        return {
+            prop: (
+                val if isinstance(val, PropertyDefinition) else
+                PropertyDefinition(name=prop if "name" not in val else val["name"], **val)
+            ) for prop, val in props.items()
+        }
 
 
-@dc.dataclass(init=False)
+@dataclass
 class ObjectDefinition(PropertyDefinition):
     output: OutputConfig = dc.field(default_factory=OutputConfig)
     series: SeriesType = dc.field(default=SeriesType.Reference)
-
-    def __init__(self, **kwargs):
-        self.output = OutputConfig(**kwargs.pop("output", {}))
-        self.series = SeriesType(kwargs.pop("series", "reference"))
-        super().__init__(**kwargs)
 
     def parse_output(self, value):
         if isinstance(value, OutputConfig):
@@ -254,22 +301,14 @@ class ObjectDefinition(PropertyDefinition):
         return OutputConfig(**value)
 
 
-class ObjectDefinitions(dict):
-    def __new__(cls, **kwargs):
-        for object_name in kwargs:
-            if isinstance(kwargs[object_name], dict):
-                kwargs[object_name] = ObjectDefinition(name=object_name, **kwargs[object_name])
-        return kwargs
-
-
-@dc.dataclass
+@dataclass
 class ProjectConfig(Validated):
     """
     Project File Configuration
 
     Provides
     """
-    objects: Union[ObjectDefinitions, dict[str, Union[dict, ObjectDefinition]]]
+    objects: dict[str, ObjectDefinition]
     output: OutputConfig = dc.field(default_factory=OutputConfig)
     config: ModuleConfig = dc.field(default_factory=ModuleConfig)
 
@@ -286,4 +325,4 @@ class ProjectConfig(Validated):
     def parse_objects(self, objects):
         if len(objects) == 0:
             raise ValueError("Project Config must include one object to generate")
-        return ObjectDefinitions(**objects)
+        return {obj_name: ObjectDefinition(name=obj_name, **objects[obj_name]) for obj_name in objects}
