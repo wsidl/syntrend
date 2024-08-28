@@ -1,4 +1,5 @@
 from syntrend.config import model, CONFIG
+from syntrend.utils import distributions
 from typing import Type, Callable
 from pathlib import Path
 from importlib import import_module
@@ -28,6 +29,7 @@ class PropertyGenerator:
         self.items: list[any] = []
         self.expression: Callable = default_generator
         self.start = None
+        self.__distribution = None
 
         kwargs_names = list(self.config.kwargs)
         __modules_nt_type = namedtuple("RequiredModules", self.required_modules)
@@ -56,7 +58,7 @@ class PropertyGenerator:
         self.properties = self.load_properties(self.config.properties)
         self.items = self.load_items(self.config.items)
         self.validate()
-
+        self.__distribution = distributions.get_distribution(self.config.distribution)
         if self.config.expression and isinstance(self.config.expression, str):
             self.expression = manager.load_expression(self)
 
@@ -73,7 +75,7 @@ class PropertyGenerator:
         pass
 
     def render(self):
-        _, iteration = self.root_manager.renderer()
+        iteration = self.root_manager.current_iteration(self.root_object)
         if self.iteration == iteration:
             return self.iteration_value
 
@@ -87,10 +89,15 @@ class PropertyGenerator:
         self.iteration_value = self.expression(
             new=generated,
             interval=self.iteration,
+            kwargs=self.kwargs
         )
+        self.iteration_value = self.__distribution(self.iteration_value)
         if self.type is not None and not isinstance(self.iteration_value, self.type):
             self.iteration_value = self.type(self.iteration_value)
         return self.iteration_value
+
+    def undo(self):
+        self.iteration -= 1
 
     def generate(self):
         raise NotImplemented("Generator has not implemented `generate` method")
