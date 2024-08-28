@@ -1,0 +1,11 @@
+output:
+#  directory: _outs
+  format: table
+  count: 10
+  collection: True
+  filename_format: "{name}.{format}"
+objects:
+  obj1:
+    type: string
+  obj2:
+    type: integer

@@ -1,0 +1,5 @@
+output:
+  count: 5
+type: integer
+start: 1
+expression: this(1) + 1

@@ -1,0 +1,5 @@
+output:
+  count: 10
+type: float
+expression: 10 * sin(interval * 2/3) + 11
+start: 5

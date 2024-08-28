@@ -1,0 +1,4 @@
+obj1:
+  type: string
+obj2:
+  type: integer

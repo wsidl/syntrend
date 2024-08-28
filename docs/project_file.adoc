@@ -1,0 +1,133 @@
+= Project File Schema
+:toc:
+:stem:
+:doctype: article
+
+For a dataset to be generated, a project file must be provided. This project is formatted in YAML and supports a variety of features
+
+[glossary]
+== Glossary
+
+[glossary]
+Project Definition:: YAML-based file content to support multiple project definitions per environment and contains other project configurations
+Property Definition:: YAML block defined by a link:generators.adoc[Generator Type]. Some Property Definitions may contain nested Properties, allowing for nested and complex structures.
+Object Definition:: Root level **Property Definition** and also includes other properties to support how the object will behave.
+
+== Project File Structure
+
+The project file includes a few sections at the root level. These are:
+
+`config`:: Default Utility Configurations that impact `syntrend` features
+`output`:: Default Output Configurations
+`objects`:: Mapping of Object Definitions to be generated. Each Object is identified by an Object Name.
+
+.Sample Project File
+[source,yaml]
+----
+config:
+  max_generator_retries: 4
+output:
+  format: json
+objects:
+  set1:
+    type: string
+  set2:
+    type: integer
+----
+
+=== Simplified Structures
+
+If no changes are needed for `config` or `output`, the list of `objects` can be defined at the root level. The resulting project would behave like the previous file and is less verbose.
+
+.Project File with no Config or Options
+[source,yaml]
+----
+set1:
+  type: string
+set2:
+  type: integer
+----
+
+If a single dataset is to be generated, the object name can be left out and only provide the Object Definition
+
+.Project File for a single Object Definition
+[source,yaml]
+----
+type: string
+----
+
+The resulting project will assume a default `this` Object Name when parsing link:expressions.adoc[Expressions].
+
+=== Config Block
+
+The Config block provides a way to define alternate options (also available as Environment Variables).
+
+.Config Properties
+[cols="1,1,4a"]
+|===
+| Property | Default | Description
+
+| max_generator_retries
+| 20
+| Number of attempts to generate a value in the case a generator fails with a specific iteration (helpful with value distributions).
+
+| max_historian_buffer
+| 20
+| Number of previous values (per Object Definition)
+
+| generator_dir
+| <user's home>/.config/syntrend/generators
+| Directory path containing custom Generators
+|===
+
+=== Output Block
+
+Block containing default values for all nested **Object Definitions** to specific how objects will generate
+
+.Output Properties
+[cols="1,1,4a"]
+|===
+| Property | Default | Description
+
+| format
+| "json"
+| Format the objects will be presented at output. Options include "json" and "csv"
+
+| directory
+| "-"
+| Output Directory where generated files will be saved. The Default Value ("-") denotes writing to console.
+
+| filename_format
+| {name}_{id}.{format}
+| Filename Format for new events and saved in the path defined in `directory`. More info in link:#_filename_format[Filename Format])
+|===
+
+[#_filename_format]
+==== Filename Format
+
+Filenames can be generated based on a format string provided in the `filename_format` property. The format uses curly braces "{ }" to identify placeholder variables to generate a filename.
+
+stem:[A=T_(u)/(T_(u) + T_(d))]
+
+.Placeholder Variables
+[cols="1,3"]
+|===
+| Variable | Description
+
+| name
+| **Object Name** of the resulting object
+
+| id
+| Iteration of the event in the series
+|===
+
+== F.A.Q.
+
+Why was YAML used for the project file?::
+Unlike JSON or TOML, YAML supports a few features that make it user-friendly when building up configurations. These features are:
++
+- **Anchors** to mark a block of YAML to be reused elsewhere
+- **Merge** to reuse an **Anchor** or included file through the `!include` macro
+
++
+And although JSON can be faster to parse and also supports macros, the user-friendly features makes it the choice for now.

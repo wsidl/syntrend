@@ -1,6 +1,7 @@
 from pathlib import Path
 import re
 import traceback
+import logging
 
 from click.testing import CliRunner, Result
 from pytest import fixture
