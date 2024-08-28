@@ -1,40 +1,39 @@
 from syntrend.config import model
 
-from random import random, betavariate
+from random import randint, betavariate, normalvariate, uniform
+import math
 
 
-def dist_no_dist(prop_def: model.PropertyDefinition, gen_func: object):
-    return gen_func
+def dist_no_dist(_):
+    def _generate(input_value):
+        return input_value
+    return _generate
 
 
-def dist_linear(prop_def: model.PropertyDefinition, gen_func: object):
-    assert prop_def.type in {'integer', 'float'}, "Linear Distribution can only support numeric values"
-    scale = prop_def.distribution.max_offset + prop_def.distribution.min_offset
+def dist_linear(prop_dist: model.PropertyDistribution):
 
-    def _generator():
-        return random() * scale + gen_func.generate() + prop_def.distribution.min_offset
+    def _generator(input_value):
+        return input_value + randint(prop_dist.min_offset, prop_dist.max_offset)
 
     return _generator
 
 
-def dist_standard_deviation(prop_def: model.PropertyDefinition, gen_func: callable):
-    assert prop_def.type in {'integer', 'float'}, "Standard Deviation Distribution can only support numeric values"
-    dist_cfg = prop_def.distribution
-    scale = dist_cfg.max_offset - dist_cfg.min_offset
-    unscaled_variance = (float(dist_cfg.std_dev_factor) / scale) ** 2
-    unscaled_mean = -dist_cfg.min_offset / scale
-    t = unscaled_mean / (1 - unscaled_mean)
-    beta = ((t / unscaled_variance) - (t * t) - (2 * t) - 1) / (
-        (t * t * t) + (3 * t * t) + (3 * t) + 1
-    )
-    alpha = beta * t
-    if alpha <= 0 or beta <= 0:
-        raise ValueError("Cannot create value in Std Dev with given numbers")
+def dist_standard_deviation(prop_dist: model.PropertyDistribution):
+    # if prop_dist.min_offset >= prop_dist.max_offset:
+    #     raise ValueError("min_offset must be less than max_offset")
+    # scale = prop_dist.max_offset - prop_dist.min_offset
+    # unscaled_variance = (float(prop_dist.std_dev_factor) / scale) ** 2
+    # unscaled_mean = -prop_dist.min_offset / scale
+    # t = unscaled_mean / (1 - unscaled_mean)
+    # beta = ((t / unscaled_variance) - (t * t) - (2 * t) - 1) / (
+    #     (t * t * t) + (3 * t * t) + (3 * t) + 1
+    # )
+    # alpha = beta * t
+    # if alpha <= 0 or beta <= 0:
+    #     raise ValueError("Cannot create value in Std Dev with given numbers", alpha, beta)
 
-    beta_var_factor = betavariate(alpha, beta) * scale + dist_cfg.std_dev_factor
-
-    def _generator():
-        return beta_var_factor * gen_func()
+    def _generator(input_value):
+        return normalvariate(input_value, float(prop_dist.std_dev_factor))
 
     return _generator
 
@@ -46,5 +45,5 @@ DISTRIBUTIONS = {
 }
 
 
-def get_distribution(prop_def: model.PropertyDefinition, gen_func: callable):
-    return DISTRIBUTIONS[prop_def.distribution.type](prop_def, gen_func)
+def get_distribution(prop_def: model.PropertyDistribution):
+    return DISTRIBUTIONS[prop_def.type](prop_def)

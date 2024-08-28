@@ -7,7 +7,7 @@ from pytest import mark
 @mark.docs
 def test_single_value_string(project_result):
     assert project_result.exit_code == 0, "Command should complete successfully"
-    assert 10 <= len(project_result.output.strip()) <= 12, "Length of string should be 8 - 10 chars long (plus quotes)"
+    assert 10 <= len(project_result.output.splitlines()[0].strip()) <= 12, "Length of string should be 8 - 10 chars long (plus quotes)"
 
 
 @mark.docs
@@ -20,7 +20,8 @@ def test_single_value_integer(project_result):
 @mark.docs
 def test_random_choice(project_result):
     assert project_result.exit_code == 0, "Command should complete successfully"
-    assert project_result.output[:-1] in {'"red"', '"yellow"', '"blue"', '"orange"', '"green"', '"purple"'}, "Choice should be a colour"
+    outputs = [line for line in project_result.output.splitlines() if line]
+    assert outputs[-1] in {'"red"', '"yellow"', '"blue"', '"orange"', '"green"', '"purple"'}, "Choice should be a colour"
 
 
 @mark.docs
@@ -43,7 +44,7 @@ def test_single_value_object(project_result):
 @mark.docs
 def test_multi_value_string(project_result):
     assert project_result.exit_code == 0, "Command should complete successfully"
-    generated_lines = project_result.output[:-1].split("\n")
+    generated_lines = project_result.output[:-1].splitlines()
     assert len(generated_lines) == 5, "Should have generated 5 values"
     assert all([8 <= len(line) <= 22 for line in generated_lines])
 
@@ -52,7 +53,7 @@ def test_multi_value_string(project_result):
 def test_static_ref_events(project_result):
     assert project_result.exit_code == 0, "Command should complete successfully"
     generated_lines = [
-        json.loads(line) for line in project_result.output[:-1].split("\n")
+        json.loads(line) for line in project_result.output[:-1].splitlines()
     ]
     names = [ev["user_id"] for ev in generated_lines]
     timestamps = [ev["timestamp"] for ev in generated_lines]
@@ -65,7 +66,7 @@ def test_static_ref_events(project_result):
 def test_static_ref_random_start(project_result):
     assert project_result.exit_code == 0, "Command should complete successfully"
     generated_lines = [
-        json.loads(line) for line in project_result.output[:-1].split("\n")
+        json.loads(line) for line in project_result.output[:-1].splitlines()
     ]
     names = [ev["user_id"] for ev in generated_lines]
     timestamps = [ev["timestamp"] for ev in generated_lines]
@@ -79,7 +80,7 @@ def test_static_ref_random_start(project_result):
 def test_seq_format_string(project_result):
     assert project_result.exit_code == 0, "Command should complete successfully"
     generated_lines = [
-        json.loads(line) for line in project_result.output[:-1].split("\n")
+        json.loads(line) for line in project_result.output[:-1].splitlines()
     ]
     assert all([ev.endswith("-test") for ev in generated_lines])
     assert all([len(ev) == 10 for ev in generated_lines])
@@ -104,5 +105,27 @@ def test_cond_status_change(project_result):
     assert all([
         ev["status"] == "above" for ev in above
     ]), "Status should report 'above' when sensor value is greater than 5"
-    print(generated_lines)
-    # TODO: Fix Dependency Management
+
+
+@mark.docs
+def test_num_trend(project_result):
+    assert project_result.exit_code == 0, "Command should complete successfully"
+    generated_lines = [
+        int(line) for line in project_result.output[:-1].split("\n")
+    ]
+    assert all([
+        generated_lines[i + 1] - 1 == generated_lines[i] for i in range(len(generated_lines) - 1)
+    ]), "Numbers should be an increment of 1 to the previous value"
+
+
+@mark.docs
+def test_sine_wave(project_result):
+    from math import sin
+    assert project_result.exit_code == 0, "Command should complete successfully"
+    generated_lines = [
+        float(line) for line in project_result.output[:-1].split("\n")
+    ]
+    new_sine_values = [
+        5 if i == 0 else (10 * sin(i * 2/3) + 11) for i in range(0, 10)
+    ]
+    assert all([a == b for a, b in zip(generated_lines, new_sine_values)]), "Value should be along the Sine Wave"
