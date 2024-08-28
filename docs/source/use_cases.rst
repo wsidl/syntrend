@@ -84,7 +84,7 @@ Creating multiple objects is simple by defining object names for each Object Def
 .. literalinclude:: ../../tests/assets/uc_multi_object.yaml
    :language: yaml
 
-.. TODO: Need to manage multiple outputs to console
+.. TODO: show new example of output
 
 Multiple Objects to Outputs
 ```````````````````````````
