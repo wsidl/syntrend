@@ -3,7 +3,7 @@ from syntrend.generators import get_generator, PropertyGenerator
 from syntrend.utils import historian, filters
 from syntrend.formatters import load_formatter
 
-from jinja2 import Environment, BaseLoader
+from jinja2 import Environment, BaseLoader, exceptions
 
 import re
 import time
@@ -29,7 +29,11 @@ class SeriesManager:
         compiled_expr = self.expression_env.compile_expression(prop_generator.config.expression, undefined_to_none=False)
 
         def _generate(**kwargs):
-            return compiled_expr(**kwargs)
+            try:
+                return compiled_expr(**kwargs)
+            except exceptions.UndefinedError as e:
+                field = e.args[0].split(" ")[0][1:-1]
+                raise ValueError(f"Reference '{field}' is not defined", field)
 
         return _generate
 
