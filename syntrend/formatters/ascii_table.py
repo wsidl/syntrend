@@ -50,7 +50,7 @@ def table_formatter(object_name: str):
                 widths[key] = cell_width
         if output_options.collection:
             buffer += _write_rows(
-                events=Collection(Event(**{key: key for key in column_widths})),
+                events=Collection(Event({key: key for key in column_widths})),
                 row_sep=output_options.kwargs.get("header_separator", "="),
             )
         buffer += _write_rows(
