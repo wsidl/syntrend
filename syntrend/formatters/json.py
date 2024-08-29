@@ -18,7 +18,7 @@ def json_formatter(object_name: str):
             buffer.append(ROW_FORMAT.format(
                 row_indent=row_buffer,
                 content=json.dumps(event["value"] if event.use_default else event),
-                sep="," if idx < event_count - 1 else "",
+                sep="," if idx < event_count - 1 and is_collection else "",
             ))
         if is_collection:
             buffer.append("]")
