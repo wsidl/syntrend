@@ -1,6 +1,6 @@
 from syntrend.config import CONFIG
 from syntrend.generators import get_generator, PropertyGenerator
-from syntrend.utils import historian, filters
+from syntrend.utils import historian, filters, exceptions as exc
 from syntrend.formatters import load_formatter
 
 from jinja2 import Environment, BaseLoader, exceptions
@@ -33,8 +33,13 @@ class SeriesManager:
                 return compiled_expr(**kwargs)
             except exceptions.UndefinedError as e:
                 field = e.args[0].split(" ")[0][1:-1]
-                raise ValueError(f"Reference '{field}' is not defined", field)
-
+                raise exc.ExpressionError(
+                    f"Reference field is not defined",
+                    "Property: " + prop_generator.config.name,
+                    "Missing Field: " + field,
+                )
+            except exceptions.TemplateError as e:
+                raise exc.ExpressionError(f"Expression failed to execute with ({str(e)})", *e.args[1:])
         return _generate
 
     def load(self):

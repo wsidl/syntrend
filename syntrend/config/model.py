@@ -51,6 +51,10 @@ class SeriesType(Enum):
     Reference = "reference"
 
 
+def fields(obj: dc.dataclass, include_field=False) -> list[str|dc.Field]:
+    return [field if include_field else field.name for field in dc.fields(obj)]
+
+
 @dataclass
 class Validated:
     """Base Class for Configurations"""
@@ -63,7 +67,7 @@ class Validated:
         """
         kwargs.update(kwargs.pop("kwargs", {}))
         self.source__ = kwargs.copy()
-        for field in dc.fields(self):
+        for field in fields(self, include_field=True):
             default_val = NULL_VAL
             if field.default is not dc.MISSING:
                 default_val = field.default
@@ -87,7 +91,7 @@ class Validated:
 
 
 def copy(obj: Validated) -> Validated:
-    """Generates a duplicate of self
+    """Generates a duplicate of an object
 
     Returns:
         Instance of a `Validated` subclass
@@ -103,12 +107,13 @@ def copy(obj: Validated) -> Validated:
 
 
 def update(obj: Validated, other: Validated) -> None:
-    """Applies any values from another `Validated` instance to self.
+    """Applies any values from one `Validated` instance into another.
 
     Similar to `dict.update()` but applies specifically to `Validated` instances to preserve
     class behaviour
 
     Args:
+        obj: Instance of `Validated` subclass to update
         other: Instance of `Validated` subclass to copy values from
 
     Raises:
@@ -117,14 +122,10 @@ def update(obj: Validated, other: Validated) -> None:
     if not isinstance(other, Validated):
         raise TypeError("Only `Validated` subclasses can be supported to update from")
 
-    for field in dc.fields(obj):
-        setattr(obj, field.name, getattr(other, field.name))
+    for field in fields(obj):
+        setattr(obj, field, getattr(other, field))
     obj.kwargs.update(other.kwargs)
     obj.source__ = other.source__
-
-
-def fields(obj: dc.dataclass) -> list[str]:
-    return [field.name for field in dc.fields(obj)]
 
 
 def parse_int(_min: Optional[int] = None, _max: Optional[int] = None):

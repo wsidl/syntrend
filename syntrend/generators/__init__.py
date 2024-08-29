@@ -1,5 +1,5 @@
 from syntrend.config import model, CONFIG
-from syntrend.utils import distributions
+from syntrend.utils import distributions, exceptions
 from typing import Type, Callable
 from pathlib import Path
 from importlib import import_module
@@ -85,12 +85,14 @@ class PropertyGenerator:
             return self.start
 
         generated = self.generate()
-
-        self.iteration_value = self.expression(
-            new=generated,
-            interval=self.iteration,
-            kwargs=self.kwargs
-        )
+        try:
+            self.iteration_value = self.expression(
+                new=generated,
+                interval=self.iteration,
+                kwargs=self.kwargs
+            )
+        except exceptions.ExpressionError as e:
+            exceptions.process_exception(e)
         self.iteration_value = self.__distribution(self.iteration_value)
         if self.type is not None and not isinstance(self.iteration_value, self.type):
             self.iteration_value = self.type(self.iteration_value)
