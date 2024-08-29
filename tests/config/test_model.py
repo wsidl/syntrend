@@ -4,16 +4,66 @@ from pytest import mark, raises
 
 
 @mark.unit
-def test_project_config_lower_val():
-    with raises(AssertionError) as exc:
-        model.ModuleConfig(max_generator_retries=-1)
-    assert exc.type == AssertionError, "Calling ModuleConfig with a negative integer should raise an AssertionError"
-    assert exc.value.args[0] == "Value must be >= 1", "Exception raised should say the value must be >= 1"
+@mark.parametrize("value,_min,_max", [(1, 0, 2), (1, 1, 2), ("2", -2, 2), (-3, -5, -1)])
+def test_parse_int(value, _min, _max):
+    callback = model.parse_int(_min, _max)
+    response = callback(None, value)
+    assert response == int(value)
+
+
+@mark.unit
+@mark.parametrize("value,_min,_max,_error_type,_error", [
+    (0, 1, 2, ValueError, "Value must be >= 1"),
+    (4, 0, 2, ValueError, "Value must be <= 2"),
+    ({}, 4, 2, TypeError, "Value must be parsable to integer"),
+])
+def test_parse_int_errors(value, _min, _max, _error_type, _error):
+    callback = model.parse_int(_min, _max)
+    with raises(_error_type) as exc:
+        callback(None, value)
+    assert exc.value.args[0] == _error
+
+
+@mark.unit
+def test_module_config_default():
+    cfg = model.ModuleConfig()
+    assert cfg.max_generator_retries == 20
+    assert cfg.max_historian_buffer == 20
+    assert cfg.generator_dir == model.ADD_GENERATOR_DIR
+
+
+@mark.unit
+def test_module_config_max_generator_retries():
+    cfg = model.ModuleConfig(**{"max_generator_retries": 10})
+    assert cfg.max_generator_retries == 10
+    assert cfg.max_historian_buffer == 20
+    assert cfg.generator_dir == model.ADD_GENERATOR_DIR
+
+
+@mark.unit
+def test_module_config_max_historian_buffer():
+    cfg = model.ModuleConfig(**{"max_historian_buffer": 10})
+    assert cfg.max_generator_retries == 20
+    assert cfg.max_historian_buffer == 10
+    assert cfg.generator_dir == model.ADD_GENERATOR_DIR
+
+
+@mark.unit
+def test_module_config_generator_dir():
+    cfg = model.ModuleConfig(**{"max_historian_buffer": 10})
+    assert cfg.max_generator_retries == 20
+    assert cfg.max_historian_buffer == 10
+    assert cfg.generator_dir == model.ADD_GENERATOR_DIR
+
+
+@mark.unit
+def test_module_config_bad_dir():
+    with raises(ValueError):
+        model.ModuleConfig(generator_dir="not_real")
 
 
 @mark.unit
 def test_project_config_invalid_type():
     with raises(TypeError) as exc:
         model.ModuleConfig(max_generator_retries=[])
-    assert exc.type is TypeError, "Expecting TypeError for value type mismatch"
-    assert exc.value.args[0] == "Value must parsable to integer", "TypeError message should match output from module"
+    assert exc.value.args[0] == "Value must be parsable to integer", "TypeError message should match output from module"

@@ -150,7 +150,7 @@ def parse_int(_min: Optional[int] = None, _max: Optional[int] = None):
             raise ValueError(f"Value must be >= {_min}")
         if _max is not None and value > _max:
             raise ValueError(f"Value must be <= {_max}")
-        return int(value)
+        return value
 
     return _parser
 
@@ -178,19 +178,17 @@ class ModuleConfig(Validated):
 
     def parse_generator_dir(self, value: str) -> Path:
         """Parse `generator_dir` and validates path exists and is a directory"""
-        if value:
+        if not value:
             return ADD_GENERATOR_DIR
         parsed_path = Path(value).absolute()
         if not parsed_path.is_dir():
-            raise ValueError(f"Source Generator Directory does not exist: {str(parsed_path)}")
+            raise ValueError("Source Generator Directory does not exist")
         return parsed_path
 
 
 @dataclass
 class OutputConfig(Validated):
     """Configuration Properties used for Global and Object-specific outputs"""
-
-    """"""
     format: str = dc.field(default="json")
     directory: Path = dc.field(default="-")
     filename_format: str = dc.field(default="{name}_{id}.{format}")
