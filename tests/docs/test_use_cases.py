@@ -144,5 +144,5 @@ def test_sine_wave(project_result):
         5 if i == 0 else (10 * sin(i * 2 / 3) + 11) for i in range(0, 10)
     ]
     assert all(
-        [a == b for a, b in zip(generated_lines, new_sine_values)]
+        [a == b for a, b in zip(generated_lines, new_sine_values, strict=True)]
     ), 'Value should be along the Sine Wave'
