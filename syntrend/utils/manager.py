@@ -37,9 +37,9 @@ class SeriesManager:
                     "Reference field is not defined",
                     "Property: " + prop_generator.config.name,
                     "Missing Field: " + field,
-                )
+                ) from None
             except exceptions.TemplateError as e:
-                raise exc.ExpressionError(f"Expression failed to execute with ({str(e)})", *e.args[1:])
+                raise exc.ExpressionError(f"Expression failed to execute with ({str(e)})", *e.args[1:]) from None
         return _generate
 
     def load(self):

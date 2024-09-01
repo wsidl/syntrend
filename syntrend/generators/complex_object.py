@@ -17,7 +17,7 @@ class UnionGenerator(ComplexGenerator):
 
     def load_items(self, items: list[any]) -> list[any]:
         _gens = []
-        for idx, item in enumerate(items):
+        for item in items:
             _gens.append(get_generator(self.path, item, self.root_manager))
         return _gens
 

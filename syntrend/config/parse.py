@@ -46,7 +46,7 @@ def retrieve_source(config_file: Union[list[dict], dict, str, Path]) -> Generato
         raise ValueError(
             f"Invalid content format provided for parsing - {type(exc).__name__}: {exc.args}",
             f'Content being parsed begins with the following: "{content[:20]}..."'
-        )
+        ) from None
 
 
 def load_config(config_file: Union[dict, str, Path]) -> model.ProjectConfig:

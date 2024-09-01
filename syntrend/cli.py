@@ -3,7 +3,7 @@ import pathlib
 
 from syntrend import generators, formatters
 from syntrend.utils import manager
-from syntrend.config import load_config, CONFIG
+from syntrend.config import load_config
 
 ERRORS = []
 

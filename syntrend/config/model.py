@@ -146,7 +146,7 @@ def parse_int(_min: Optional[int] = None, _max: Optional[int] = None):
         try:
             value = int(value)
         except TypeError:
-            raise TypeError("Value must be parsable to integer")
+            raise TypeError("Value must be parsable to integer") from None
         if _min is not None and value < _min:
             raise ValueError(f"Value must be >= {_min}")
         if _max is not None and value > _max:
@@ -161,7 +161,7 @@ class ModuleConfig(Validated):
     """Configuration Properties to modify/alter how the `syntrend` utility behaves"""
     max_generator_retries: int = dc.field(default=int(getenv(f"{DEFAULT_ENVVAR_PREFIX}_MAX_GENERATOR_RETRIES", 20)))
     """Maximum number of retries a Generator can perform before failing.
-    
+
     *Useful for when a distribution is applied
     """
     max_historian_buffer: int = dc.field(default=int(getenv(f"{DEFAULT_ENVVAR_PREFIX}_MAX_HISTORIAN_BUFFER", 20)))

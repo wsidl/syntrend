@@ -38,5 +38,5 @@ def test_register_generator():
     try:
         test_gen = generators.get_generator("test", prop_def, None)
     except KeyError:
-        raise ValueError("Should have found a 'test' generator")
+        raise ValueError("Should have found a 'test' generator") from None
     assert test_gen.__class__ == exp_gen.__class__, "Should have returned the 'test' generator"
