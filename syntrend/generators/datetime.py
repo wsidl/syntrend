@@ -2,7 +2,6 @@ from syntrend.generators import register, PropertyGenerator
 
 from datetime import datetime, timedelta, timezone
 from time import localtime
-from random import randint
 from functools import partial
 import re
 

@@ -1,10 +1,9 @@
 from syntrend.config import model
 from syntrend.utils import distributions as d, manager as m
-from syntrend import generators as g
 
 from functools import partial
 
-from pytest import mark, raises, fixture
+from pytest import mark, fixture
 
 Prop_Def = partial(model.PropertyDefinition, name="test")
 
@@ -66,8 +65,6 @@ def test_std_dev_distribution(std_dev_factor):
     gen_values = [
         dist_func(5) for _ in range(1000)
     ]
-    assert (
-        min(gen_values) > 5 - offset and max(gen_values) < 5 + offset,
-        "All Values must be within the current tolerance",
-    )
-
+    assert \
+        min(gen_values) > 5 - offset and max(gen_values) < 5 + offset, \
+        "All Values must be within the current tolerance"

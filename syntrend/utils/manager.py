@@ -34,7 +34,7 @@ class SeriesManager:
             except exceptions.UndefinedError as e:
                 field = e.args[0].split(" ")[0][1:-1]
                 raise exc.ExpressionError(
-                    f"Reference field is not defined",
+                    "Reference field is not defined",
                     "Property: " + prop_generator.config.name,
                     "Missing Field: " + field,
                 )

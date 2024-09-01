@@ -1,7 +1,6 @@
 from pathlib import Path
 import re
 import traceback
-import logging
 
 from click.testing import CliRunner, Result
 from pytest import fixture
@@ -13,7 +12,7 @@ RE_TABLE_DELIM = re.compile(r'^\|={3,}$')
 
 @fixture(scope="function")
 def project_result(request, monkeypatch) -> Result:
-    from syntrend.__main__ import generate
+    from syntrend.cli import generate
 
     name = request.node.name.split("_", 1)[1]
     runner = CliRunner(mix_stderr=False)

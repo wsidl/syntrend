@@ -1,7 +1,6 @@
 from syntrend.config import model
 
-from random import randint, betavariate, normalvariate, uniform
-import math
+from random import randint, normalvariate
 
 
 def dist_no_dist(_):

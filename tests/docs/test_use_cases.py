@@ -30,9 +30,9 @@ def test_single_value_object(project_result):
         traceback.print_tb(project_result.exc_info[2])
     assert project_result.exit_code == 0, f"Command Errored: {project_result.exception}\n{traceback.print_stack(project_result.exc_info)}"
     gen_obj = json.loads(project_result.output)
-    assert (
-        isinstance(gen_obj, dict), f"Expecting dict but got {type(gen_obj).__name__} instead",
-    )
+    assert \
+        isinstance(gen_obj, dict), \
+        f"Expecting dict but got {type(gen_obj).__name__} instead"
     assert len(gen_obj) == 4, "Each object should have 3 properties"
     assert "field_1" in gen_obj, "'field_1' should be an object in both sets"
     assert isinstance(gen_obj["field_1"], str)

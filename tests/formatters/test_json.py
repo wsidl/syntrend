@@ -51,7 +51,6 @@ def test_multiple_objects_as_collection(project, monkeypatch):
     ))
     assert output[0] == '[', "First line should include a list encapsulation"
     assert output[1] == '  {"f1": "string", "f2": 10},', "Should generate an indented json string of multiple values"
-    assert (
-        len(output) == 5,
-        "Should generate 3 lines of json output with 2 lines for list encapsulation, and an extra empty line",
-    )
+    assert \
+        len(output) == 5, \
+        "Should generate 3 lines of json output with 2 lines for list encapsulation, and an extra empty line"

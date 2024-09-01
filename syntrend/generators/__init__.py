@@ -102,7 +102,7 @@ class PropertyGenerator:
         self.iteration -= 1
 
     def generate(self):
-        raise NotImplemented("Generator has not implemented `generate` method")
+        raise NotImplementedError("Generator has not implemented `generate` method")
 
 
 def register(property_generator: Type[PropertyGenerator]):

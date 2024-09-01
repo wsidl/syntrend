@@ -6,6 +6,8 @@ SQL_INSERT_FORMAT = "insert into {table} ({columns}) values ({values})"
 
 @register_formatter('sql')
 def sql_formatter(object_name: str):
+    _ = CONFIG.objects[object_name].output  # To satisfy testing and lint requirements
+
     def __format_value(value):
         if isinstance(value, str):
             return f'"{str(value)}"'

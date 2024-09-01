@@ -1,4 +1,4 @@
-from syntrend.generators import register, PropertyGenerator, get_generator, GENERATORS
+from syntrend.generators import register, PropertyGenerator, get_generator
 
 from random import randint
 

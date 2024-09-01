@@ -24,10 +24,9 @@ def test_single_object(project, monkeypatch):
     project(sql, {"type": "object"})
     formatter = sql.sql_formatter("test")
     output = formatter(Collection(Event({"f1": "string", "f2": 10})))
-    assert (
-        output[0] == 'insert into test (f1, f2) values ("string", 10)',
-        "Should generate an insert statement with 2 fields",
-    )
+    assert \
+        output[0] == 'insert into test (f1, f2) values ("string", 10)', \
+        "Should generate an insert statement with 2 fields"
 
 
 @mark.unit
