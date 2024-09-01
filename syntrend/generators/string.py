@@ -19,12 +19,12 @@ class StringGenerator(PropertyGenerator):
         return kwargs
 
     def validate(self):
-        assert len(self.kwargs.chars) > 0, "Cannot generate random strings without a list of characters"
-        assert self.kwargs.min_length > 0, "Min Length for string generator must be greater than zero"
-        assert (
-            self.kwargs.min_length <= self.kwargs.max_length,
-            "Min Length must be less than or equal to Max length",
-        )
+        if len(self.kwargs.chars) <= 0:
+            raise ValueError("Cannot generate random strings without a list of characters")
+        if self.kwargs.min_length <= 0:
+            raise ValueError("Min Length for string generator must be greater than zero")
+        if self.kwargs.min_length > self.kwargs.max_length:
+            raise ValueError("Min Length must be less than or equal to Max length")
 
     def generate(self):
         return "".join([

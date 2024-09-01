@@ -17,10 +17,8 @@ class IntegerGenerator(PropertyGenerator):
         return kwargs
 
     def validate(self):
-        assert (
-            self.kwargs.min_offset <= self.kwargs.max_offset,
-            "Min Offset must be less than or equal to Max Offset",
-        )
+        if self.kwargs.min_offset > self.kwargs.max_offset:
+            raise ValueError("Min Offset must be less than or equal to Max Offset")
 
     def generate(self):
         return self.modules.random.randint(self.kwargs.min_offset, self.kwargs.max_offset)

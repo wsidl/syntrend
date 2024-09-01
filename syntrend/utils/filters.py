@@ -12,8 +12,8 @@ LOG = logging.getLogger(__name__)
 R_DATETIME = re.compile(r"[1-2]\d{3}-[0-1]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d")
 R_TIME = re.compile(r"[0-2]\d:[0-5]\d:[0-5]\d")
 R_DATE = re.compile(r"[1-2]\d{3}-[0-1]\d-[0-3]\d")
-R_DELTA = re.compile(r"(\d+)([dhms])")
-DELTA_ABBR_MAP = {"d": "days", "h": "hours", "m": "minutes", "s": "seconds"}
+R_DELTA = re.compile(r"(\d+)([dHMS])")
+DELTA_ABBR_MAP = {"d": "days", "H": "hours", "M": "minutes", "S": "seconds"}
 
 MANAGER: Union["SeriesManager", None] = None
 
@@ -37,7 +37,9 @@ def to_datetime(value_string):
         pass
     time_parts = {}
     for match in R_DELTA.finditer(value_string):
-        time_parts[DELTA_ABBR_MAP[match.group(2)]] = match.group(1)
+        print(match)
+        time_parts[DELTA_ABBR_MAP[match.group(2)]] = int(match.group(1))
+    print(time_parts)
     return datetime.timedelta(**time_parts)
 
 
