@@ -9,8 +9,6 @@ packages = [{include = "syntrend"}]
 [tool.poetry.dependencies]
 python = "^3.11"
 click = "^8.1.7"
-pydantic = "^2.5.2"
-jsonpath-ng = "^1.6.0"
 jinja2 = "^3.1.2"
 faker = "^26.0.0"
 ruamel-yaml = "^0.18.6"
@@ -22,6 +20,27 @@ coverage = "^7.3.2"
 sphinx = "^8.0.2"
 ruff = "^0.6.1"
 pytest-cov = "^5.0.0"
+poethepoet = "^0.28.0"
+
+[tool.poe.tasks]
+lint-test = "ruff check"
+format-test = "ruff format --check"
+unit-test = "pytest -m unit"
+
+[tool.ruff]
+line-length = 88
+indent-width = 4
+target-version = "py311"
+
+[tool.ruff.lint]
+select = ["W", "E4", "E7", "E9", "F", "B"]
+unfixable = ["B"]
+
+[tool.ruff.format]
+quote-style = "single"  # Always preferred `blue` quoting convention over `black`
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "lf"
 
 [tool.pytest.ini_options]
 markers = [

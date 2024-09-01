@@ -5,12 +5,14 @@ from random import randint
 
 class ComplexGenerator(PropertyGenerator):
     def get_children(self) -> list[str]:
-        raise NotImplementedError(f"{str(type(self))}: 'get_children' is not implemented")
+        raise NotImplementedError(
+            f"{str(type(self))}: 'get_children' is not implemented"
+        )
 
 
 @register
 class UnionGenerator(ComplexGenerator):
-    name = "union"
+    name = 'union'
 
     def get_children(self):
         return []
@@ -27,22 +29,28 @@ class UnionGenerator(ComplexGenerator):
 
 @register
 class ListGenerator(ComplexGenerator):
-    name = "list"
+    name = 'list'
     default_config = {
-        "min_length": 1,
-        "max_length": 5,
+        'min_length': 1,
+        'max_length': 5,
     }
 
     def get_children(self):
-        return [f"[{idx}]" for idx in range(len(self.items))]
+        return [f'[{idx}]' for idx in range(len(self.items))]
 
     def load_kwargs(self, kwargs):
-        kwargs["min_length"] = int(kwargs["min_length"])
-        kwargs["max_length"] = int(kwargs["max_length"])
-        assert kwargs["min_length"] <= kwargs["max_length"], "Min must be less than or equal to Max"
-        assert kwargs["min_length"] >= 0, "List cannot have a negative length"
-        assert "sub_type" in kwargs, "Must provide a 'sub_type' property for the values to be generated"
-        kwargs["sub_type"] = get_generator(self.root_object, kwargs["sub_type"], self.root_manager)
+        kwargs['min_length'] = int(kwargs['min_length'])
+        kwargs['max_length'] = int(kwargs['max_length'])
+        assert (
+            kwargs['min_length'] <= kwargs['max_length']
+        ), 'Min must be less than or equal to Max'
+        assert kwargs['min_length'] >= 0, 'List cannot have a negative length'
+        assert (
+            'sub_type' in kwargs
+        ), "Must provide a 'sub_type' property for the values to be generated"
+        kwargs['sub_type'] = get_generator(
+            self.root_object, kwargs['sub_type'], self.root_manager
+        )
 
     def generate(self) -> list[any]:
         return [
@@ -53,13 +61,15 @@ class ListGenerator(ComplexGenerator):
 
 @register
 class ObjectGenerator(ComplexGenerator):
-    name = "object"
+    name = 'object'
     type = dict
 
     def get_children(self) -> list[str]:
         return list(self.properties)
 
-    def load_properties(self, properties: dict[str, any]) -> dict[str, PropertyGenerator]:
+    def load_properties(
+        self, properties: dict[str, any]
+    ) -> dict[str, PropertyGenerator]:
         return {
             key: get_generator(self.root_object, properties[key], self.root_manager)
             for key in properties
@@ -68,10 +78,7 @@ class ObjectGenerator(ComplexGenerator):
     def generate(self):
         for key in self.properties:
             self.properties[key].render()
-        return {
-            key: self.properties[key].render()
-            for key in self.properties
-        }
+        return {key: self.properties[key].render() for key in self.properties}
 
     def undo(self):
         super(ComplexGenerator, self).undo()

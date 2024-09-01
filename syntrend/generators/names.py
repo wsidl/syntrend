@@ -8,7 +8,7 @@ fake = Faker()
 @register
 class NameGenerator(PropertyGenerator):
     type = str
-    name = "name"
+    name = 'name'
 
     def generate(self):
         return fake.name()
@@ -17,7 +17,7 @@ class NameGenerator(PropertyGenerator):
 @register
 class FirstNameGenerator(PropertyGenerator):
     type = str
-    name = "first_name"
+    name = 'first_name'
 
     def generate(self):
         return fake.first_name()
@@ -26,7 +26,7 @@ class FirstNameGenerator(PropertyGenerator):
 @register
 class LastNameGenerator(PropertyGenerator):
     type = str
-    name = "last_name"
+    name = 'last_name'
 
     def generate(self):
         return fake.last_name()

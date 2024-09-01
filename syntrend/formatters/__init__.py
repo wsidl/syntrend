@@ -12,17 +12,17 @@ import sys
 from collections import namedtuple
 
 LOG = logging.getLogger(__name__)
-T_Primary = Union[str, int, float, dict[str, "T_Primary"]]
-Formatter = namedtuple("Formatter", "format,close")
-T_Formatter = Callable[[str], Callable[["Collection"], list[str]]]
+T_Primary = Union[str, int, float, dict[str, 'T_Primary']]
+Formatter = namedtuple('Formatter', 'format,close')
+T_Formatter = Callable[[str], Callable[['Collection'], list[str]]]
 FORMATTERS: dict[str, T_Formatter] = {}
 
-STREAM_FEED_EVENT = "stream_event"
-STREAM_FEED_COLLECTION = "stream_collection"
-TH_TEMP_PATH = "temp_path"
+STREAM_FEED_EVENT = 'stream_event'
+STREAM_FEED_COLLECTION = 'stream_collection'
+TH_TEMP_PATH = 'temp_path'
 
 FORMAT_FIELDS_DEFAULT = {
-    "nl": linesep,
+    'nl': linesep,
 }
 
 
@@ -30,7 +30,7 @@ class Event(dict):
     def __init__(self, value):
         self.use_default = False
         if not isinstance(value, dict):
-            value = {"value": value}
+            value = {'value': value}
             self.use_default = True
         super().__init__(**value)
 
@@ -42,23 +42,26 @@ class Collection(list):
 
 class TempHandler(writers.OutputHandler):
     def load(self):
-        fd, temp_path = mkstemp(prefix="syntrend_")
+        fd, temp_path = mkstemp(prefix='syntrend_')
         close(fd)
         self.args[TH_TEMP_PATH] = Path(temp_path)
-        self.args["output_callback"] = lambda x: None
+        self.args['output_callback'] = lambda x: None
 
     def write(self, event: Event, _=False):
-        if self.args[TH_TEMP_PATH].exists() and self.args[TH_TEMP_PATH].stat().st_size > 0:
-            with open(self.args[TH_TEMP_PATH], "rb") as t_file:
+        if (
+            self.args[TH_TEMP_PATH].exists()
+            and self.args[TH_TEMP_PATH].stat().st_size > 0
+        ):
+            with open(self.args[TH_TEMP_PATH], 'rb') as t_file:
                 _buffer = pickle.load(t_file)
         else:
             _buffer = Collection()
         _buffer.append(event)
-        with open(self.args[TH_TEMP_PATH], "wb") as t_file:
+        with open(self.args[TH_TEMP_PATH], 'wb') as t_file:
             pickle.dump(_buffer, t_file)
 
     def get_collection(self) -> Collection:
-        with open(self.args[TH_TEMP_PATH], "r+b") as t_file:
+        with open(self.args[TH_TEMP_PATH], 'r+b') as t_file:
             return pickle.load(t_file)
 
     def close(self):
@@ -67,7 +70,7 @@ class TempHandler(writers.OutputHandler):
 
 def register_formatter(format_name: str):
     if format_name in FORMATTERS:
-        raise NameError(f"Formatter for {format_name} is already registered")
+        raise NameError(f'Formatter for {format_name} is already registered')
 
     def _register_formatter(func: T_Formatter):
         FORMATTERS[format_name] = func
@@ -113,14 +116,18 @@ def load_formatter(object_name: str) -> Formatter:
 
 def _load_formatter_dir(module_name: str, directory: Path):
     for _file in directory.iterdir():
-        if not _file.suffix.startswith(".py") or _file.is_dir() or _file.name.startswith("_"):
+        if (
+            not _file.suffix.startswith('.py')
+            or _file.is_dir()
+            or _file.name.startswith('_')
+        ):
             continue
-        basename = _file.name.split(".")[0]
-        _ = import_module(f"{module_name}.{basename}")
+        basename = _file.name.split('.')[0]
+        _ = import_module(f'{module_name}.{basename}')
 
 
 def load_formatters():
-    _load_formatter_dir("syntrend.formatters", Path(__file__).parent)
+    _load_formatter_dir('syntrend.formatters', Path(__file__).parent)
     add_formatter_pkg = Path(CONFIG.config.generator_dir).absolute()
     if not (add_formatter_pkg.is_dir() and add_formatter_pkg.exists()):
         return

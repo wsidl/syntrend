@@ -6,11 +6,11 @@ from random import randint, normalvariate
 def dist_no_dist(_):
     def _generate(input_value):
         return input_value
+
     return _generate
 
 
 def dist_linear(prop_dist: model.PropertyDistribution):
-
     def _generator(input_value):
         return input_value + randint(prop_dist.min_offset, prop_dist.max_offset)
 

@@ -1,13 +1,14 @@
 from syntrend.formatters import register_formatter, Collection
 from syntrend.config import CONFIG
 
-DEFAULT_LINESEP = "\r\n"
+DEFAULT_LINESEP = '\r\n'
 
 
 @register_formatter('csv')
 def csv_formatter(object_name: str):
     import csv
     from io import StringIO
+
     buffer = StringIO()
     csv_writer = csv.DictWriter(buffer, {}, quoting=csv.QUOTE_NONNUMERIC)
     output_options = CONFIG.objects[object_name].output

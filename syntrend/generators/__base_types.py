@@ -163,21 +163,23 @@ def __load_type_methods(type_map: T_TYPE_MAP, root_type_name: str, type_object):
         if prop not in type_map:
             type_map[prop] = set()
         type_map[prop].add(root_type_name)
-    type_map["LOADED"].add(type_name)
+    type_map['LOADED'].add(type_name)
     for base_type in type_object.__mro__[1:]:
         base_name = base_type.__name__
         if base_name == type_name:
             continue
-        if not base_name.endswith("Type") or base_name == "BaseType":
+        if not base_name.endswith('Type') or base_name == 'BaseType':
             continue
         __load_type_methods(type_map, root_type_name, base_type)
 
 
 def load_type_method_mapping() -> dict[str, set[Type[BaseType]]]:
-    type_methods = {"LOADED": set()}
+    type_methods = {'LOADED': set()}
     for _type in EXPRESSION_TYPES:
-        __load_type_methods(type_methods, EXPRESSION_TYPES[_type].__name__, EXPRESSION_TYPES[_type])
-    type_methods.pop("LOADED")
+        __load_type_methods(
+            type_methods, EXPRESSION_TYPES[_type].__name__, EXPRESSION_TYPES[_type]
+        )
+    type_methods.pop('LOADED')
     return type_methods
 
 
@@ -201,5 +203,5 @@ def load_type(generator):
     return type(
         generator.__name__,
         tuple(list(generator.__bases__) + [base_type]),
-        generator.__dict__ | base_type.__dict__
+        generator.__dict__ | base_type.__dict__,
     )

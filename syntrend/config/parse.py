@@ -5,7 +5,7 @@ from pathlib import Path
 
 from ruamel.yaml import YAML, error
 
-yaml = YAML(typ="safe")
+yaml = YAML(typ='safe')
 CONFIG_MODULES = [
     model.ProjectConfig,
     model.OutputConfig,
@@ -25,7 +25,9 @@ def parse_object(config_dict: dict) -> Union[dict, model.Validated]:
     return config_dict
 
 
-def retrieve_source(config_file: Union[list[dict], dict, str, Path]) -> Generator[dict[str, Any], None, None]:
+def retrieve_source(
+    config_file: Union[list[dict], dict, str, Path],
+) -> Generator[dict[str, Any], None, None]:
     if isinstance(config_file, list):
         for inner_dict in config_file:
             yield parse_object(inner_dict)
@@ -36,7 +38,7 @@ def retrieve_source(config_file: Union[list[dict], dict, str, Path]) -> Generato
 
     content = config_file
     if (path_ref := Path(config_file)).exists():
-        with path_ref.open("r") as file_obj:
+        with path_ref.open('r') as file_obj:
             content = file_obj.read()
 
     try:
@@ -44,13 +46,13 @@ def retrieve_source(config_file: Union[list[dict], dict, str, Path]) -> Generato
             yield parse_object(doc)
     except error.YAMLError as exc:
         raise ValueError(
-            f"Invalid content format provided for parsing - {type(exc).__name__}: {exc.args}",
-            f'Content being parsed begins with the following: "{content[:20]}..."'
+            f'Invalid content format provided for parsing - {type(exc).__name__}: {exc.args}',
+            f'Content being parsed begins with the following: "{content[:20]}..."',
         ) from None
 
 
 def load_config(config_file: Union[dict, str, Path]) -> model.ProjectConfig:
-    new_config = model.ProjectConfig(objects={"test": {"type": "string"}})
+    new_config = model.ProjectConfig(objects={'test': {'type': 'string'}})
     for config_obj in retrieve_source(config_file):
         if isinstance(config_obj, model.ProjectConfig):
             new_config = config_obj
@@ -59,12 +61,14 @@ def load_config(config_file: Union[dict, str, Path]) -> model.ProjectConfig:
         elif isinstance(config_obj, model.ModuleConfig):
             model.update(new_config.config, config_obj)
         elif isinstance(config_obj, dict):
-            if "type" in config_obj:
-                config_obj = {"this": config_obj}
+            if 'type' in config_obj:
+                config_obj = {'this': config_obj}
             new_config.objects = {
                 obj_name: model.ObjectDefinition(name=obj_name, **config_obj[obj_name])
                 for obj_name in config_obj
             }
         else:
-            raise ValueError(f"Unhandled Configuration Type: {repr(config_obj)}", config_obj)
+            raise ValueError(
+                f'Unhandled Configuration Type: {repr(config_obj)}', config_obj
+            )
     return new_config

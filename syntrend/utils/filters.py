@@ -9,13 +9,13 @@ if TYPE_CHECKING:
     from syntrend.utils.manager import SeriesManager
 
 LOG = logging.getLogger(__name__)
-R_DATETIME = re.compile(r"[1-2]\d{3}-[0-1]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d")
-R_TIME = re.compile(r"[0-2]\d:[0-5]\d:[0-5]\d")
-R_DATE = re.compile(r"[1-2]\d{3}-[0-1]\d-[0-3]\d")
-R_DELTA = re.compile(r"(\d+)([dHMS])")
-DELTA_ABBR_MAP = {"d": "days", "H": "hours", "M": "minutes", "S": "seconds"}
+R_DATETIME = re.compile(r'[1-2]\d{3}-[0-1]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d')
+R_TIME = re.compile(r'[0-2]\d:[0-5]\d:[0-5]\d')
+R_DATE = re.compile(r'[1-2]\d{3}-[0-1]\d-[0-3]\d')
+R_DELTA = re.compile(r'(\d+)([dHMS])')
+DELTA_ABBR_MAP = {'d': 'days', 'H': 'hours', 'M': 'minutes', 'S': 'seconds'}
 
-MANAGER: Union["SeriesManager", None] = None
+MANAGER: Union['SeriesManager', None] = None
 
 
 def to_timestamp(value: datetime.datetime):
@@ -82,13 +82,13 @@ def get_object(object_name):
         if index == 0:
             return generator
         if index <= len(historian):
-            return historian[index-1]
+            return historian[index - 1]
         return None
 
     return get_index
 
 
-def load_environment(manager: "SeriesManager"):
+def load_environment(manager: 'SeriesManager'):
     global MANAGER
     MANAGER = manager
     manager.expression_env.globals.update(

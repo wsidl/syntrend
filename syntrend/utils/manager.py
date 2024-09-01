@@ -26,26 +26,33 @@ class SeriesManager:
         return self.__renderers[object_name]
 
     def load_expression(self, prop_generator: PropertyGenerator):
-        compiled_expr = self.expression_env.compile_expression(prop_generator.config.expression, undefined_to_none=False)
+        compiled_expr = self.expression_env.compile_expression(
+            prop_generator.config.expression, undefined_to_none=False
+        )
 
         def _generate(**kwargs):
             try:
                 return compiled_expr(**kwargs)
             except exceptions.UndefinedError as e:
-                field = e.args[0].split(" ")[0][1:-1]
+                field = e.args[0].split(' ')[0][1:-1]
                 raise exc.ExpressionError(
-                    "Reference field is not defined",
-                    "Property: " + prop_generator.config.name,
-                    "Missing Field: " + field,
+                    'Reference field is not defined',
+                    'Property: ' + prop_generator.config.name,
+                    'Missing Field: ' + field,
                 ) from None
             except exceptions.TemplateError as e:
-                raise exc.ExpressionError(f"Expression failed to execute with ({str(e)})", *e.args[1:]) from None
+                raise exc.ExpressionError(
+                    f'Expression failed to execute with ({str(e)})', *e.args[1:]
+                ) from None
+
         return _generate
 
     def load(self):
         for obj_name in CONFIG.objects:
             self.historians[obj_name] = historian.Historian()
-            self.generators[obj_name] = get_generator(obj_name, CONFIG.objects[obj_name], ROOT_MANAGER)
+            self.generators[obj_name] = get_generator(
+                obj_name, CONFIG.objects[obj_name], ROOT_MANAGER
+            )
             self.formatters[obj_name] = load_formatter(obj_name)
             self.__renderers[obj_name] = 0
 
@@ -75,10 +82,24 @@ class SeriesManager:
             self.__renderers[_obj_name] += 1
             return True
 
-        collection_objects = [obj_name for obj_name in CONFIG.objects if CONFIG.objects[obj_name].output.collection]
-        event_objects = [obj_name for obj_name in CONFIG.objects if not CONFIG.objects[obj_name].output.collection]
-        time_objects = [obj_name for obj_name in event_objects if CONFIG.objects[obj_name].output.time_field]
-        non_time_objects = [obj_name for obj_name in event_objects if obj_name not in time_objects]
+        collection_objects = [
+            obj_name
+            for obj_name in CONFIG.objects
+            if CONFIG.objects[obj_name].output.collection
+        ]
+        event_objects = [
+            obj_name
+            for obj_name in CONFIG.objects
+            if not CONFIG.objects[obj_name].output.collection
+        ]
+        time_objects = [
+            obj_name
+            for obj_name in event_objects
+            if CONFIG.objects[obj_name].output.time_field
+        ]
+        non_time_objects = [
+            obj_name for obj_name in event_objects if obj_name not in time_objects
+        ]
 
         # Render collections for references
         for obj_name in collection_objects:
@@ -113,7 +134,9 @@ class SeriesManager:
                 while _get_next_event(obj_name, new_time) is False:
                     failed_count += 1
                     if failed_count == CONFIG.config.max_generator_retries:
-                        raise ValueError("Failed to generate an event with a later timestamp")
+                        raise ValueError(
+                            'Failed to generate an event with a later timestamp'
+                        )
             current_time = new_time
 
         # Close Renderers

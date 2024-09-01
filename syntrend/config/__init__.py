@@ -1,7 +1,7 @@
 from syntrend.config.model import ProjectConfig, copy, update
 from syntrend.config.parse import load_config as _load_config
 
-default_config = {"objects": {"this": {"type": "integer"}}}
+default_config = {'objects': {'this': {'type': 'integer'}}}
 CONFIG = ProjectConfig(**default_config)
 
 

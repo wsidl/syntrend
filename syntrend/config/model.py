@@ -9,11 +9,11 @@ from pathlib import Path
 from functools import partial
 
 LOG = logging.getLogger(__name__)
-DEFAULT_ENVVAR_PREFIX = "SYNTREND_"
-OUTPUT_STDOUT = Path("-")
-DEFAULT_FILE_FORMAT = "{name}-{id}.{format}"
-USER_CONFIG_DIR = Path.home().joinpath(".config", "syntrend")
-ADD_GENERATOR_DIR = USER_CONFIG_DIR.joinpath("generators")
+DEFAULT_ENV_VAR_PREFIX = 'SYNTREND_'
+OUTPUT_STDOUT = Path('-')
+DEFAULT_FILE_FORMAT = '{name}-{id}.{format}'
+USER_CONFIG_DIR = Path.home().joinpath('.config', 'syntrend')
+ADD_GENERATOR_DIR = USER_CONFIG_DIR.joinpath('generators')
 
 dataclass = partial(dc.dataclass, kw_only=True, init=False)
 
@@ -32,32 +32,33 @@ class _NullString(NullValue, str):
 
 NULL_VAL = NullValue()
 NULL_INT = _NullInt(0)
-NULL_STR = _NullString("")
+NULL_STR = _NullString('')
 
 
 class DistributionTypes(Enum):
-    NoDistribution = "none"
-    Linear = "linear"
-    StdDev = "stdDev"
+    NoDistribution = 'none'
+    Linear = 'linear'
+    StdDev = 'stdDev'
 
 
 class Progress(Enum):
-    Trend = "trend"
-    Last = "last"
+    Trend = 'trend'
+    Last = 'last'
 
 
 class SeriesType(Enum):
-    Sequence = "sequence"
-    Reference = "reference"
+    Sequence = 'sequence'
+    Reference = 'reference'
 
 
-def fields(obj: dc.dataclass, include_field=False) -> list[str|dc.Field]:
+def fields(obj: dc.dataclass, include_field=False) -> list[str | dc.Field]:
     return [field if include_field else field.name for field in dc.fields(obj)]
 
 
 @dataclass
 class Validated:
     """Base Class for Configurations"""
+
     source__: dict = dc.field(default_factory=dict)
 
     def __init__(self, **kwargs):
@@ -65,7 +66,7 @@ class Validated:
         a method to match the field name with the following signature:
           `parse_<field.name>(self, value) -> any`
         """
-        kwargs.update(kwargs.pop("kwargs", {}))
+        kwargs.update(kwargs.pop('kwargs', {}))
         self.source__ = kwargs.copy()
         for field in fields(self, include_field=True):
             default_val = NULL_VAL
@@ -74,16 +75,19 @@ class Validated:
             elif field.default_factory is not dc.MISSING:
                 default_val = field.default_factory()
             setattr(self, field.name, kwargs.pop(field.name, default_val))
-            if callable(method := getattr(self, f"parse_{field.name}", None)):
+            if callable(method := getattr(self, f'parse_{field.name}', None)):
                 setattr(self, field.name, method(getattr(self, field.name)))
         self.kwargs = kwargs
-        if hasattr(self, "parse_kwargs"):
+        if hasattr(self, 'parse_kwargs'):
             self.kwargs = self.parse_kwargs(kwargs)
         self.validate()
 
     def __repr__(self):
-        _fields = [f"{field_name}={repr(getattr(self, field_name))}" for field_name in fields(self) + ["kwargs"]]
-        return f"<{type(self).__name__}({_fields})>"
+        _fields = [
+            f'{field_name}={repr(getattr(self, field_name))}'
+            for field_name in fields(self) + ['kwargs']
+        ]
+        return f'<{type(self).__name__}({_fields})>'
 
     def validate(self):
         """Validation Method to confirm conditions are correct across multiple fields/properties"""
@@ -120,7 +124,7 @@ def update(obj: Validated, other: Validated) -> None:
         TypeError: `other` is not a subclass of `Validated`
     """
     if not isinstance(other, Validated):
-        raise TypeError("Only `Validated` subclasses can be supported to update from")
+        raise TypeError('Only `Validated` subclasses can be supported to update from')
 
     for field in fields(obj):
         setattr(obj, field, getattr(other, field))
@@ -142,15 +146,16 @@ def parse_int(_min: Optional[int] = None, _max: Optional[int] = None):
         TypeError: Input Value is not a valid Integer type
         ValueError: Input Value is not within the defined range
     """
+
     def _parser(_, value):
         try:
             value = int(value)
         except TypeError:
-            raise TypeError("Value must be parsable to integer") from None
+            raise TypeError('Value must be parsable to integer') from None
         if _min is not None and value < _min:
-            raise ValueError(f"Value must be >= {_min}")
+            raise ValueError(f'Value must be >= {_min}')
         if _max is not None and value > _max:
-            raise ValueError(f"Value must be <= {_max}")
+            raise ValueError(f'Value must be <= {_max}')
         return value
 
     return _parser
@@ -159,14 +164,21 @@ def parse_int(_min: Optional[int] = None, _max: Optional[int] = None):
 @dataclass
 class ModuleConfig(Validated):
     """Configuration Properties to modify/alter how the `syntrend` utility behaves"""
-    max_generator_retries: int = dc.field(default=int(getenv(f"{DEFAULT_ENVVAR_PREFIX}_MAX_GENERATOR_RETRIES", 20)))
+
+    max_generator_retries: int = dc.field(
+        default=int(getenv(f'{DEFAULT_ENV_VAR_PREFIX}_MAX_GENERATOR_RETRIES', 20))
+    )
     """Maximum number of retries a Generator can perform before failing.
 
     *Useful for when a distribution is applied
     """
-    max_historian_buffer: int = dc.field(default=int(getenv(f"{DEFAULT_ENVVAR_PREFIX}_MAX_HISTORIAN_BUFFER", 20)))
+    max_historian_buffer: int = dc.field(
+        default=int(getenv(f'{DEFAULT_ENV_VAR_PREFIX}_MAX_HISTORIAN_BUFFER', 20))
+    )
     """Maximum values to be kept in a buffer of previous values"""
-    generator_dir: str = dc.field(default=getenv(f"{DEFAULT_ENVVAR_PREFIX}_GENERATOR_DIR", ""))
+    generator_dir: str = dc.field(
+        default=getenv(f'{DEFAULT_ENV_VAR_PREFIX}_GENERATOR_DIR', '')
+    )
     """Source Directory of Custom Generators"""
 
     parse_max_generator_retries = parse_int(_min=1)
@@ -183,19 +195,20 @@ class ModuleConfig(Validated):
             return ADD_GENERATOR_DIR
         parsed_path = Path(value).absolute()
         if not parsed_path.is_dir():
-            raise ValueError("Source Generator Directory does not exist")
+            raise ValueError('Source Generator Directory does not exist')
         return parsed_path
 
 
 @dataclass
 class OutputConfig(Validated):
     """Configuration Properties used for Global and Object-specific outputs"""
-    format: str = dc.field(default="json")
-    directory: Path = dc.field(default="-")
-    filename_format: str = dc.field(default="{name}_{id}.{format}")
+
+    format: str = dc.field(default='json')
+    directory: Path = dc.field(default='-')
+    filename_format: str = dc.field(default='{name}_{id}.{format}')
     collection: bool = dc.field(default=False)
     count: int = dc.field(default=1)
-    time_field: str = dc.field(default="")
+    time_field: str = dc.field(default='')
 
     def parse_collection(self, value):
         return bool(value)
@@ -203,12 +216,12 @@ class OutputConfig(Validated):
     def parse_directory(self, value):
         if isinstance(value, Path):
             return value
-        if value == "-":
+        if value == '-':
             return OUTPUT_STDOUT
         p = Path(value).absolute()
         if not p.exists():
             p.mkdir(parents=True)
-        assert p.is_dir(), "Path must be a directory"
+        assert p.is_dir(), 'Path must be a directory'
         return p
 
 
@@ -243,7 +256,7 @@ class SeriesConfig(Validated):
 @dataclass
 class PropertyDistribution(Validated):
     type: DistributionTypes = DistributionTypes.NoDistribution
-    std_dev_factor: float = 0.
+    std_dev_factor: float = 0.0
     min_offset: Union[int, float] = 0
     max_offset: Union[int, float] = 1
 
@@ -254,19 +267,21 @@ class PropertyDistribution(Validated):
 
     def validate(self):
         if self.min_offset > self.max_offset:
-            raise ValueError("Distribution Min value must be lower than the Max value")
+            raise ValueError('Distribution Min value must be lower than the Max value')
 
 
 @dc.dataclass
 class PropertyDefinition(Validated):
     name: str
     type: str
-    distribution: Union[DistributionTypes, PropertyDistribution] = dc.field(default=DistributionTypes.NoDistribution)
+    distribution: Union[DistributionTypes, PropertyDistribution] = dc.field(
+        default=DistributionTypes.NoDistribution
+    )
     conditions: list[str] = dc.field(default_factory=list)
-    expression: str = dc.field(default="")
+    expression: str = dc.field(default='')
     start: any = dc.field(default=None)
     items: list[any] = dc.field(default_factory=list)
-    properties: dict[str, "PropertyDefinition"] = dc.field(default_factory=dict)
+    properties: dict[str, 'PropertyDefinition'] = dc.field(default_factory=dict)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -275,7 +290,7 @@ class PropertyDefinition(Validated):
         if isinstance(dist_type, str):
             dist_type = DistributionTypes(dist_type)
         if isinstance(dist_type, DistributionTypes):
-            dist_type = {"type": dist_type}
+            dist_type = {'type': dist_type}
         if isinstance(dist_type, dict):
             dist_type = PropertyDistribution(**dist_type)
         return dist_type
@@ -283,9 +298,13 @@ class PropertyDefinition(Validated):
     def parse_properties(self, props):
         return {
             prop: (
-                val if isinstance(val, PropertyDefinition) else
-                PropertyDefinition(name=prop if "name" not in val else val["name"], **val)
-            ) for prop, val in props.items()
+                val
+                if isinstance(val, PropertyDefinition)
+                else PropertyDefinition(
+                    name=prop if 'name' not in val else val['name'], **val
+                )
+            )
+            for prop, val in props.items()
         }
 
 
@@ -307,6 +326,7 @@ class ProjectConfig(Validated):
 
     Provides
     """
+
     objects: dict[str, ObjectDefinition]
     output: OutputConfig = dc.field(default_factory=OutputConfig)
     config: ModuleConfig = dc.field(default_factory=ModuleConfig)
@@ -323,5 +343,8 @@ class ProjectConfig(Validated):
 
     def parse_objects(self, objects):
         if len(objects) == 0:
-            raise ValueError("Project Config must include one object to generate")
-        return {obj_name: ObjectDefinition(name=obj_name, **objects[obj_name]) for obj_name in objects}
+            raise ValueError('Project Config must include one object to generate')
+        return {
+            obj_name: ObjectDefinition(name=obj_name, **objects[obj_name])
+            for obj_name in objects
+        }

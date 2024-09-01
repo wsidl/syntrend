@@ -14,13 +14,13 @@ def error(message):
         ERRORS.append(message)
 
 
-@click.group(name="app")
+@click.group(name='app')
 def _app():
     pass
 
 
 @_app.command()
-@click.argument("project_file", nargs=1, type=click.Path(exists=True))
+@click.argument('project_file', nargs=1, type=click.Path(exists=True))
 def generate(project_file: pathlib.Path):
     """
     Uses the available project file to generate datasets
@@ -33,7 +33,7 @@ def generate(project_file: pathlib.Path):
 
 
 @_app.command()
-@click.argument("project_file", nargs=1, type=click.Path(exists=True))
+@click.argument('project_file', nargs=1, type=click.Path(exists=True))
 def validate(config_file: pathlib.Path):
     """
     Validates and summarizes a project file
@@ -41,5 +41,5 @@ def validate(config_file: pathlib.Path):
     pass
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     _app()

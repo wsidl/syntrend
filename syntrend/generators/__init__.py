@@ -9,7 +9,7 @@ import logging
 from syntrend.generators.__base_types import load_type
 
 LOG = logging.getLogger(__name__)
-GENERATORS: dict[str, Type["PropertyGenerator"]] = {}
+GENERATORS: dict[str, Type['PropertyGenerator']] = {}
 
 
 def default_generator(new, **kwargs):
@@ -18,7 +18,7 @@ def default_generator(new, **kwargs):
 
 class PropertyGenerator:
     type: Type = None
-    name: str = ""
+    name: str = ''
     default_config: dict[str, any] = {}
     required_modules: list[str] = []
 
@@ -32,7 +32,7 @@ class PropertyGenerator:
         self.__distribution = None
 
         kwargs_names = list(self.config.kwargs)
-        __modules_nt_type = namedtuple("RequiredModules", self.required_modules)
+        __modules_nt_type = namedtuple('RequiredModules', self.required_modules)
         __kwargs_nt_type = namedtuple(self.name, kwargs_names)
         self.modules: __modules_nt_type = __modules_nt_type(*self.required_modules)
         self.kwargs: __kwargs_nt_type = __kwargs_nt_type(**self.config.kwargs)
@@ -43,14 +43,13 @@ class PropertyGenerator:
         self.__kwargs_nt_type = __kwargs_nt_type
 
     def __repr__(self):
-        return f"<{self.__class__.__name__}: current={self.iteration_value}>"
+        return f'<{self.__class__.__name__}: current={self.iteration_value}>'
 
     def load(self, manager):
         self.root_manager = manager
-        self.modules = self.__modules_nt_type(**{
-            mod_name: import_module(mod_name) for mod_name in
-            self.required_modules
-        })
+        self.modules = self.__modules_nt_type(
+            **{mod_name: import_module(mod_name) for mod_name in self.required_modules}
+        )
         kwargs = self.load_kwargs(self.config.kwargs)
         kwargs_tpl = namedtuple(self.name, list(kwargs))
         self.start = self.config.start
@@ -87,9 +86,7 @@ class PropertyGenerator:
         generated = self.generate()
         try:
             self.iteration_value = self.expression(
-                new=generated,
-                interval=self.iteration,
-                kwargs=self.kwargs
+                new=generated, interval=self.iteration, kwargs=self.kwargs
             )
         except exceptions.ExpressionError as e:
             exceptions.process_exception(e)
@@ -102,21 +99,25 @@ class PropertyGenerator:
         self.iteration -= 1
 
     def generate(self):
-        raise NotImplementedError("Generator has not implemented `generate` method")
+        raise NotImplementedError('Generator has not implemented `generate` method')
 
 
 def register(property_generator: Type[PropertyGenerator]):
-    assert property_generator.name, "Property Generator must have a name specified"
-    assert property_generator.name not in GENERATORS, (f"Property Generator "
-                                                       f"'{property_generator.name}' "
-                                                       f"already registered")
+    assert property_generator.name, 'Property Generator must have a name specified'
+    assert property_generator.name not in GENERATORS, (
+        f'Property Generator ' f"'{property_generator.name}' " f'already registered'
+    )
     GENERATORS[property_generator.name] = load_type(property_generator)
     return property_generator
 
 
-def get_generator(object_name: str, config: model.PropertyDefinition, manager) -> PropertyGenerator:
+def get_generator(
+    object_name: str, config: model.PropertyDefinition, manager
+) -> PropertyGenerator:
     prop_gen_cls = GENERATORS[config.type]
-    new_config = model.PropertyDefinition(name=config.name, type=config.type, **prop_gen_cls.default_config)
+    new_config = model.PropertyDefinition(
+        name=config.name, type=config.type, **prop_gen_cls.default_config
+    )
     model.update(new_config, config)
     new_gen = prop_gen_cls(object_name, new_config)
     new_gen.load(manager)
@@ -125,18 +126,23 @@ def get_generator(object_name: str, config: model.PropertyDefinition, manager) -
 
 def _load_generator_dir(module_name: str, directory: Path):
     for _file in directory.iterdir():
-        if not _file.suffix.startswith(".py") or _file.is_dir() or _file.name.startswith("_"):
+        if (
+            not _file.suffix.startswith('.py')
+            or _file.is_dir()
+            or _file.name.startswith('_')
+        ):
             continue
-        basename = _file.name.split(".")[0]
-        _ = import_module(f"{module_name}.{basename}")
+        basename = _file.name.split('.')[0]
+        _ = import_module(f'{module_name}.{basename}')
 
 
 def load_generators():
-    _load_generator_dir("syntrend.generators", Path(__file__).parent)
+    _load_generator_dir('syntrend.generators', Path(__file__).parent)
     add_generator_pkg = Path(CONFIG.config.generator_dir).absolute()
     if not (add_generator_pkg.is_dir() and add_generator_pkg.exists()):
         return
     import sys
+
     generator_pkg_name = add_generator_pkg.name
     sys.path.append(str(add_generator_pkg))
     _load_generator_dir(generator_pkg_name, add_generator_pkg)
