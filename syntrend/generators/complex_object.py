@@ -3,7 +3,7 @@ from syntrend.generators import register, PropertyGenerator, get_generator
 from random import randint
 
 
-class ComplexGenerator(PropertyGenerator):
+class BaseComplexGenerator(PropertyGenerator):
     def get_children(self) -> list[str]:
         raise NotImplementedError(
             f"{str(type(self))}: 'get_children' is not implemented"
@@ -11,7 +11,8 @@ class ComplexGenerator(PropertyGenerator):
 
 
 @register
-class UnionGenerator(ComplexGenerator):
+class UnionGeneratorBase(BaseComplexGenerator):
+    """Generates a single value based on a random selection of many provided generator options"""
     name = 'union'
 
     def get_children(self):
@@ -20,7 +21,7 @@ class UnionGenerator(ComplexGenerator):
     def load_items(self, items: list[any]) -> list[any]:
         _gens = []
         for item in items:
-            _gens.append(get_generator(self.path, item, self.root_manager))
+            _gens.append(get_generator(self.kwargs.path, item, self.root_manager))
         return _gens
 
     def generate(self) -> any:
@@ -28,7 +29,8 @@ class UnionGenerator(ComplexGenerator):
 
 
 @register
-class ListGenerator(ComplexGenerator):
+class ListGeneratorBase(BaseComplexGenerator):
+    """Generates a list-object of 1 or many values of the specified generator type"""
     name = 'list'
     default_config = {
         'min_length': 1,
@@ -60,7 +62,8 @@ class ListGenerator(ComplexGenerator):
 
 
 @register
-class ObjectGenerator(ComplexGenerator):
+class ObjectGeneratorBase(BaseComplexGenerator):
+    """Generates an object based on a defined mapping of properties"""
     name = 'object'
     type = dict
 
@@ -81,6 +84,6 @@ class ObjectGenerator(ComplexGenerator):
         return {key: self.properties[key].render() for key in self.properties}
 
     def undo(self):
-        super(ComplexGenerator, self).undo()
+        super(BaseComplexGenerator, self).undo()
         for key in self.properties:
             self.properties[key].undo()
