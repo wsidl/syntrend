@@ -18,3 +18,4 @@ Documentation
    quickstart
    project_file
    use_cases
+   contributing
