@@ -13,6 +13,7 @@ class BaseComplexGenerator(PropertyGenerator):
 @register
 class UnionGeneratorBase(BaseComplexGenerator):
     """Generates a single value based on a random selection of many provided generator options"""
+
     name = 'union'
 
     def get_children(self):
@@ -31,6 +32,7 @@ class UnionGeneratorBase(BaseComplexGenerator):
 @register
 class ListGeneratorBase(BaseComplexGenerator):
     """Generates a list-object of 1 or many values of the specified generator type"""
+
     name = 'list'
     default_config = {
         'min_length': 1,
@@ -64,6 +66,7 @@ class ListGeneratorBase(BaseComplexGenerator):
 @register
 class ObjectGeneratorBase(BaseComplexGenerator):
     """Generates an object based on a defined mapping of properties"""
+
     name = 'object'
     type = dict
 
