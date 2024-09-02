@@ -41,6 +41,5 @@ def test_to_datetime(value, result):
     ],
 )
 def test_to_datetime_delta(delta, new_time):
-    print(filters.to_datetime(delta))
     returned = datetime(2024, 1, 1, tzinfo=timezone.utc) + filters.to_datetime(delta)
     assert returned == new_time, 'Generated datetime should convert to datetime'
