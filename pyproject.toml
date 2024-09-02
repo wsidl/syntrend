@@ -1,13 +1,13 @@
 [tool.poetry]
 name = "syntrend"
-version = "24.1.1"
+version = "0.1.0"
 description = ""
 authors = ["Will Siddall <will.siddall@gmail.com>"]
 readme = "README.md"
 packages = [{include = "syntrend"}]
 
 [tool.poetry.scripts]
-syntrend = "syntrend.cli:_app"
+syntrend = "syntrend.cli:app"
 
 [tool.poetry.dependencies]
 python = "^3.11"

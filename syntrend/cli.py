@@ -15,11 +15,11 @@ def error(message):
 
 
 @click.group(name='app')
-def _app():
+def app():
     pass
 
 
-@_app.command()
+@app.command()
 @click.argument('project_file', nargs=1, type=click.Path(exists=True))
 def generate(project_file: pathlib.Path):
     """
@@ -32,7 +32,7 @@ def generate(project_file: pathlib.Path):
     manager.ROOT_MANAGER.start()
 
 
-@_app.command()
+@app.command()
 @click.argument('project_file', nargs=1, type=click.Path(exists=True))
 def validate(config_file: pathlib.Path):
     """
@@ -42,4 +42,4 @@ def validate(config_file: pathlib.Path):
 
 
 if __name__ == '__main__':
-    _app()
+    app()
