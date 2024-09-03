@@ -1,10 +1,12 @@
 [tool.poetry]
-name = "syntrend"
-version = "24.1.1"
-description = ""
+name = "Syntrend"
+version = "0.1.0"
+description = "Make up any data for any use case quickly"
 authors = ["Will Siddall <will.siddall@gmail.com>"]
 readme = "README.md"
 packages = [{include = "syntrend"}]
+repository = "https://github.com/wsidl/syntrend"
+homepage = "https://syntrend.github-pages.io"
 
 [tool.poetry.scripts]
 syntrend = "syntrend.cli:_app"
@@ -25,6 +27,7 @@ poethepoet = "^0.28.0"
 
 [tool.poe.tasks]
 build = "poetry build --format=wheel"
+docs = "sphinx-build docs dist"
 lint-test = "ruff check"
 format-test = "ruff format --check"
 unit-test = "pytest -m unit"

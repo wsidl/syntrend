@@ -1,7 +1,7 @@
 Common Use Cases for Synthetic Trend Data Generation
 ====================================================
 
-The "SynTrend" utility is intended to be highly configurable to support a range of use cases.
+|project_title| is intended to be highly configurable to support a range of use cases.
 Some use cases are intuitive to support while others require some creativity to provide the
 intended outcome.
 

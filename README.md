@@ -1,1 +1,1 @@
-# SynTrend Synthetic Data Generation
+# Syntrend Synthetic Data Generation
