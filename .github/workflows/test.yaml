@@ -25,10 +25,12 @@ on:
       - "chore/*"
 
 jobs:
-  linters:
-    name: Run Linters
+  tests:
+    name: Run Test Suite
     runs-on: ubuntu-24.04
     steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
       - name: Setup Project
         uses: ./.github/actions/env_setup
         with:
@@ -37,14 +39,6 @@ jobs:
         run: poe format-test --output-format=github
       - name: Run Linter Check
         run: poe lint-test --output-format=github
-  tests:
-    name: Run Tests and Coverage
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Setup Project
-        uses: ./.github/actions/env_setup
-        with:
-          sync_args: --no-dev
       - name: Run Test Suite
         run: poe test-report
       - name: Upload Test Artifact
