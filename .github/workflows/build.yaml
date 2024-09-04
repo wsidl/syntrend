@@ -49,8 +49,9 @@ jobs:
           path: ./dist
           key: release-${{ github.sha }}
       - name: Create Release
-        run: >
-          gh release create --draft --repo ${{ github.repository }}
-          ${{ github.ref_name }} dist/syntrend-*
+        run: |
+          ls -al .
+          ls -al dist
+          gh release create --draft --repo ${{ github.repository }} ${{ github.sha }} dist/syntrend-*
         env:
           GH_TOKEN: ${{ github.token }}
