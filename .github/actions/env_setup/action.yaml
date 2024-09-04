@@ -5,7 +5,6 @@ inputs:
     description: Extra Arguments to provide to `uv sync`
     required: false
     default: ""
-outputs:
 runs:
   using: composite
   steps:
@@ -14,6 +13,7 @@ runs:
       with:
         python-version-file: pyproject.toml
     - name: Setup UV
+      shell: bash
       run: |
         apt-get update
         python -m pip install --upgrade pip
@@ -23,4 +23,5 @@ runs:
         ruff --version
         pytest --version
     - name: Install Project Dependencies
+      shell: bash
       run: uv sync --all-extras --no-install-project --frozen ${{ inputs.sync_args }}

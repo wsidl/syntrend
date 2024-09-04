@@ -7,7 +7,9 @@ env:
   POETRY_HOME: /opt/poetry
   DEV_HOME: /opt/syntrend/dev
   BUILD_HOME: /opt/syntrend/build
-
+defaults:
+  run:
+    shell: bash
 on:
   push:
     branches:

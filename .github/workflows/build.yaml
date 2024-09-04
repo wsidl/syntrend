@@ -11,7 +11,9 @@ env:
   PYTHON_BUILD_VER: "3.11"
   DEV_HOME: /opt/syntrend/dev
   BUILD_HOME: /opt/syntrend/build
-
+defaults:
+  run:
+    shell: bash
 jobs:
   build-prerelease:
     runs-on: ubuntu-24.04
