@@ -27,7 +27,7 @@ jobs:
       - name: Build Wheel
         run: uv build
       - name: Build Docker
-        run: docker build -f Containerfile -t syntrend:$GITHUB_SHA .
+        run: docker build -f Containerfile -t syntrend:$GITHUB_SHA --build-arg SYNTREND_VERSION=$(grep "^version = " pyproject.toml | tr '"' "\n" | tail -n 2 | head -n 1) .
       - name: Export Docker
         run: docker save syntrend:$GITHUB_SHA | gzip > dist/syntrend.container.tar.gz
       - name: Upload Artifacts
