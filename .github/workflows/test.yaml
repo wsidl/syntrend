@@ -3,7 +3,6 @@ name: Test Syntrend
 env:
   GH_REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  AGENT_IMAGE: python:3.11-slim
   POETRY_VERSION: 1.8.3
   POETRY_HOME: /opt/poetry
   DEV_HOME: /opt/syntrend/dev
@@ -28,44 +27,24 @@ on:
 jobs:
   linters:
     name: Run Linters
-    runs-on: ${{ env.AGENT_IMAGE }}
+    runs-on: ubuntu-24.04
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Setup Project
+        uses: ./.github/actions/env_setup
         with:
-          python-version: 3.11
-      - name: Setup Poetry
-        run: |
-          apt-get update
-          export POETRY_HOME=${{ env.POETRY_HOME }}
-          python -m venv $POETRY_HOME
-          $POETRY_HOME/bin/pip install poetry==${{ env.POETRY_VERSION }}
-          poetry config virtualenvs.create false --local
-          poetry install -G dev
+          sync_args: --no-dev
       - name: Run Format Check
         run: poe format-test --output-format=github
       - name: Run Linter Check
         run: poe lint-test --output-format=github
   tests:
     name: Run Tests and Coverage
-    runs-on: ${{ env.AGENT_IMAGE }}
+    runs-on: ubuntu-24.04
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Setup Project
+        uses: ./.github/actions/env_setup
         with:
-          python-version: 3.11
-      - name: Setup Poetry
-        run: |
-          apt-get update
-          export POETRY_HOME=${{ env.POETRY_HOME }}
-          python -m venv $POETRY_HOME
-          $POETRY_HOME/bin/pip install poetry==${{ env.POETRY_VERSION }}
-          poetry config virtualenvs.create false --local
-          poetry install -G dev
+          sync_args: --no-dev
       - name: Run Test Suite
         run: poe test-report
       - name: Upload Test Artifact

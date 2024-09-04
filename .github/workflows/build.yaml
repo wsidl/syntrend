@@ -7,29 +7,19 @@ on:
 env:
   GH_REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  POETRY_VERSION: 1.8.3
-  POETRY_HOME: /opt/poetry
+  UV_VERSION: 0.4.5
+  PYTHON_BUILD_VER: "3.11"
   DEV_HOME: /opt/syntrend/dev
   BUILD_HOME: /opt/syntrend/build
 
 jobs:
-  build:
-    runs-on: python:3.11-slim
+  build-prerelease:
+    runs-on: ubuntu-24.04
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - name: Setup Project
+        uses: ./.github/actions/env_setup
         with:
-          python-version: 3.11
-      - name: Setup Poetry
-        run: |
-          apt-get update
-          export POETRY_HOME=${{ env.POETRY_HOME }}
-          python -m venv $POETRY_HOME
-          $POETRY_HOME/bin/pip install poetry==${{ env.POETRY_VERSION }}
-          poetry config virtualenvs.create false --local
-          poetry install --without=dev --without=doc
+          sync_args: --no-dev
       - name: Build Wheel
         run: poetry build
       - name: Build Docker
@@ -43,7 +33,7 @@ jobs:
   create-release:
     needs:
       - build
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     permissions:
       contents: write
     steps:
