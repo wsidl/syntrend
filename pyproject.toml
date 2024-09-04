@@ -18,19 +18,21 @@ faker = "^28.1.0"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.3"
-sphinx = "^8.0.2"
 ruff = "^0.6.1"
 pytest-cov = "^5.0.0"
 poethepoet = "^0.28.0"
 
+[tool.poetry.group.doc.dependencies]
+sphinx = "^8.0.2"
+
 [tool.poe.tasks]
-build = "poetry build --format=wheel"
 lint-test = "ruff check"
 format-test = "ruff format --check"
 unit-test = "pytest -m unit"
 integration-test = "pytest -m integration"
 docs-test = "pytest -m docs"
 coverage-test = "pytest --cov=syntrend --cov-fail-under=70"
+test-report = "pytest --junit-xml=pytest-report.xml --cov=syntrend --cov-report=xml"
 
 [tool.ruff]
 line-length = 88

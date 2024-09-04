@@ -1,0 +1,58 @@
+name: Create and Publish Package and Container Image
+
+on:
+  push:
+    branches: ['feat/*', 'fix/*', 'release/*', 'main']
+
+env:
+  GH_REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  AGENT_IMAGE: python:3.11-slim
+  POETRY_VERSION: 1.8.3
+  POETRY_HOME: /opt/poetry
+  DEV_HOME: /opt/syntrend/dev
+  BUILD_HOME: /opt/syntrend/build
+
+jobs:
+  build:
+    runs-on: ${{ env.AGENT_IMAGE }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.11
+      - name: Setup Poetry
+        run: |
+          apt-get update
+          export POETRY_HOME=${{ env.POETRY_HOME }}
+          python -m venv $POETRY_HOME
+          $POETRY_HOME/bin/pip install poetry==${{ env.POETRY_VERSION }}
+          poetry config virtualenvs.create false --local
+          poetry install --without=dev --without=doc
+      - name: Build Wheel
+        run: poetry build
+      - name: Build Docker
+        run: docker build -f Containerfile -t syntrend:$GITHUB_SHA .
+      - name: Export Docker
+        run: docker save -o syntrend.tar syntrend:$GITHUB_SHA | gzip > syntrend.tar.gz
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          path: ./dist
+  create-release:
+    needs:
+      - build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+      - name: Create Release
+        run: >
+          gh release create --draft --repo ${{ github.repository }}
+          ${{ github.ref_name }}
+          *.intoto.jsonl/* artifact/*
+        env:
+          GH_TOKEN: ${{ github.token }}
