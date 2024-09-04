@@ -25,7 +25,7 @@ jobs:
         with:
           sync_args: --no-dev
       - name: Build Wheel
-        run: poetry build
+        run: uv build
       - name: Build Docker
         run: docker build -f Containerfile -t syntrend:$GITHUB_SHA .
       - name: Export Docker
