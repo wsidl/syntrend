@@ -29,7 +29,7 @@ jobs:
       - name: Build Docker
         run: docker build -f Containerfile -t syntrend:$GITHUB_SHA --build-arg SYNTREND_VERSION=$(grep "^version = " pyproject.toml | tr '"' "\n" | tail -n 2 | head -n 1) .
       - name: Export Docker
-        run: docker save syntrend:$GITHUB_SHA | gzip > dist/syntrend.container.tar.gz
+        run: docker save syntrend:$GITHUB_SHA | gzip > dist/syntrend-container.${{ github.ref_name }}.tar.gz
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -45,7 +45,6 @@ jobs:
       - name: Create Release
         run: >
           gh release create --draft --repo ${{ github.repository }}
-          ${{ github.ref_name }}
-          *.intoto.jsonl/* artifact/*
+          ${{ github.ref_name }} dist/syntrend-*
         env:
           GH_TOKEN: ${{ github.token }}
