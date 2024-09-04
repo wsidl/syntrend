@@ -32,8 +32,10 @@ jobs:
         run: docker save syntrend:$GITHUB_SHA | gzip > dist/syntrend-container.${{ github.sha }}.tar.gz
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
+        id: new_release
         with:
           path: ./dist
+          key: release-${{ github.sha }}
   create-release:
     needs:
       - build-prerelease
@@ -42,6 +44,10 @@ jobs:
       contents: write
     steps:
       - uses: actions/download-artifact@v4
+        id: new_release
+        with:
+          path: ./dist
+          key: release-${{ github.sha }}
       - name: Create Release
         run: >
           gh release create --draft --repo ${{ github.repository }}
