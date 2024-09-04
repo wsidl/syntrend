@@ -25,14 +25,14 @@ jobs:
       - name: Build Docker
         run: docker build -f Containerfile -t syntrend:$GITHUB_SHA .
       - name: Export Docker
-        run: docker save -o syntrend.tar syntrend:$GITHUB_SHA | gzip > syntrend.tar.gz
-      - name: Upload Artifact
+        run: docker save syntrend:$GITHUB_SHA | gzip > dist/syntrend.container.tar.gz
+      - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
           path: ./dist
   create-release:
     needs:
-      - build
+      - build-prerelease
     runs-on: ubuntu-24.04
     permissions:
       contents: write
