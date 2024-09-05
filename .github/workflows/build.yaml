@@ -49,9 +49,6 @@ jobs:
           path: .
           key: release-${{ github.sha }}
       - name: Create Release
-        run: |
-          ls -al .
-          ls -al artifact
-          gh release create --draft --repo ${{ github.repository }} ${{ github.sha }} dist/syntrend-*
+        run: gh release create --draft --repo ${{ github.repository }} ${{ github.sha }} artifact/syntrend-*
         env:
           GH_TOKEN: ${{ github.token }}
