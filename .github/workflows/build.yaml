@@ -46,12 +46,12 @@ jobs:
       - uses: actions/download-artifact@v4
         id: new_release
         with:
-          path: ./dist
+          path: .
           key: release-${{ github.sha }}
       - name: Create Release
         run: |
           ls -al .
-          ls -al dist
+          ls -al artifact
           gh release create --draft --repo ${{ github.repository }} ${{ github.sha }} dist/syntrend-*
         env:
           GH_TOKEN: ${{ github.token }}
