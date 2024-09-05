@@ -28,7 +28,7 @@ jobs:
         with:
           sync_args: --no-dev
       - name: Run Format Check
-        run: uv run poe format-test --output-format=github
+        run: uv run poe format-test
       - name: Run Linter Check
         run: poe lint-test --output-format=github
       - name: Run Test Suite
