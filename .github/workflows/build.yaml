@@ -8,9 +8,6 @@ env:
   GH_REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
   UV_VERSION: 0.4.5
-  PYTHON_BUILD_VER: "3.11"
-  DEV_HOME: /opt/syntrend/dev
-  BUILD_HOME: /opt/syntrend/build
 defaults:
   run:
     shell: bash

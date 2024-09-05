@@ -3,10 +3,7 @@ name: Test Syntrend
 env:
   GH_REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}
-  POETRY_VERSION: 1.8.3
-  POETRY_HOME: /opt/poetry
-  DEV_HOME: /opt/syntrend/dev
-  BUILD_HOME: /opt/syntrend/build
+  UV_VERSION: 0.4.5
 defaults:
   run:
     shell: bash
