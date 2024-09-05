@@ -19,7 +19,7 @@ runs:
         pip install uv==${{ env.UV_VERSION }}
         uv tool install poethepoet
         uv tool install ruff
-        uv tool install pytest-cov
+        uv tool install --with=pytest-cov pytest
     - name: Install Project Dependencies
       shell: bash
       run: uv sync --all-extras --no-install-project --frozen ${{ inputs.sync_args }}
