@@ -15,16 +15,14 @@ on:
     branches:
       - main
       - release/*
+      - "feat/*"
+      - "fix/*"
+      - "chore/*"
     paths:
       - "syntrend"
       - "tests"
       - "Containerfile"
       - "pyproject.toml"
-  pull_request:
-    branches:
-      - "feat/*"
-      - "fix/*"
-      - "chore/*"
 
 jobs:
   tests:

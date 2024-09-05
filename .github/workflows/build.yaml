@@ -35,7 +35,7 @@ jobs:
         id: new_release
         with:
           path: ./dist
-          key: release-${{ github.sha }}
+          name: release-${{ github.sha }}
   create-release:
     needs:
       - build-prerelease
@@ -47,7 +47,7 @@ jobs:
         id: new_release
         with:
           path: .
-          key: release-${{ github.sha }}
+          name: release-${{ github.sha }}
       - name: Create Release
         run: gh release create --draft --repo ${{ github.repository }} ${{ github.sha }} artifact/syntrend-*
         env:
