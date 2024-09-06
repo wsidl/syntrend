@@ -33,13 +33,13 @@ dependencies = [
 syntrend = "syntrend.cli:app"
 
 [tool.poe.tasks]
-build = "poetry build --format=wheel"
 lint-test = "ruff check"
 format-test = "ruff format --check"
 unit-test = "pytest -m unit"
 integration-test = "pytest -m integration"
 docs-test = "pytest -m docs"
 coverage-test = "pytest --cov=syntrend --cov-fail-under=70"
+test-report = "pytest --junit-xml=pytest-report.xml --cov=syntrend --cov-fail-under=70 --cov-report=xml"
 
 [tool.ruff]
 line-length = 88
@@ -65,6 +65,7 @@ markers = [
 
 [tool.uv]
 dev-dependencies = [
+    "pytest-cov>=5.0.0",
     "pytest>=8.3.2",
 ]
 
