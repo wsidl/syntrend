@@ -71,7 +71,12 @@ markers = [
 
 [tool.uv]
 dev-dependencies = [
+    "livereload>=2.7.0",
+    "matplotlib>=3.9.2",
+    "pytest-cov>=5.0.0",
     "pytest>=8.3.2",
+    "sphinx>=8.0.2",
+    "tomli>=2.0.1",
 ]
 
 [build-system]

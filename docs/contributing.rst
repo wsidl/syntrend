@@ -19,22 +19,24 @@ Read the following sections for general information on how to contribute to help
 First Time Contributors
 ```````````````````````
 
-For any developer looking to make contributions to the project, it's helpful to find an Issue tagged with "good first issue"
-
-Documentation
-`````````````
-
-The project uses reStructuredText for it's documentation format. It provides substantial flexibility to add features
-above what Markdown supports while automating tasks using Sphinx. Other formats would be more optimal
+For any developer looking to make contributions to the project, it's helpful to find an Issue tagged with "good first issue".
+These issues have been identified as generally easy items that would allow someone the opportunity to set up the
+development environment and to get familiar with the application's logic.
 
 Submit Bug Reports
-------------------
+``````````````````
+
 
 
 Submit or add to Feature Requests
----------------------------------
+`````````````````````````````````
 
 
 Pull Requests
+`````````````
+
+Documentation
 -------------
 
+The project uses reStructuredText for it's documentation format. It provides substantial flexibility to add features
+above what Markdown supports while automating tasks using Sphinx. Other formats would be more optimal
