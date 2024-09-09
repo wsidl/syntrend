@@ -1,6 +1,6 @@
 from syntrend.config import model
 
-from random import randint, normalvariate
+from random import random, gauss
 
 
 def dist_no_dist(_):
@@ -11,8 +11,9 @@ def dist_no_dist(_):
 
 
 def dist_linear(prop_dist: model.PropertyDistribution):
+    scale = prop_dist.max_offset - prop_dist.min_offset
     def _generator(input_value):
-        return input_value + randint(prop_dist.min_offset, prop_dist.max_offset)
+        return input_value + random() * scale + prop_dist.min_offset
 
     return _generator
 
@@ -32,7 +33,7 @@ def dist_standard_deviation(prop_dist: model.PropertyDistribution):
     #     raise ValueError("Cannot create value in Std Dev with given numbers", alpha, beta)
 
     def _generator(input_value):
-        return normalvariate(input_value, float(prop_dist.std_dev_factor))
+        return gauss(input_value, float(prop_dist.std_dev))
 
     return _generator
 
@@ -40,7 +41,7 @@ def dist_standard_deviation(prop_dist: model.PropertyDistribution):
 DISTRIBUTIONS = {
     model.DistributionTypes.NoDistribution: dist_no_dist,
     model.DistributionTypes.Linear: dist_linear,
-    model.DistributionTypes.StdDev: dist_standard_deviation,
+    model.DistributionTypes.StandardDeviation: dist_standard_deviation,
 }
 
 

@@ -38,7 +38,7 @@ NULL_STR = _NullString('')
 class DistributionTypes(Enum):
     NoDistribution = 'none'
     Linear = 'linear'
-    StdDev = 'stdDev'
+    StandardDeviation = 'std_dev'
 
 
 class Progress(Enum):
@@ -256,7 +256,7 @@ class SeriesConfig(Validated):
 @dataclass
 class PropertyDistribution(Validated):
     type: DistributionTypes = DistributionTypes.NoDistribution
-    std_dev_factor: float = 0.0
+    std_dev: float = 0.0
     min_offset: Union[int, float] = 0
     max_offset: Union[int, float] = 1
 

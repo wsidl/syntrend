@@ -99,6 +99,8 @@ def load_environment(manager: 'SeriesManager'):
         sin=math.sin,
         cos=math.cos,
         tan=math.tan,
+        degrees=math.degrees,
+        radians=math.radians,
         random=random.randint,
     )
     manager.expression_env.filters.update(

@@ -46,5 +46,11 @@ html_theme = 'alabaster'
 html_static_path = ['_static']
 
 
+# -- Matplotlib plot config ---
+plot_include_source = False
+plot_html_show_source_link = False
+plot_formats = ['png']
+
+
 def setup(_app: Sphinx):
     pass

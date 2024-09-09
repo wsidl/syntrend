@@ -11,6 +11,7 @@ Documentation
 
    quickstart
    project_file
+   distributions
    use_cases
    contributing
    faq
