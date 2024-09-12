@@ -2,7 +2,7 @@ import click
 import pathlib
 
 from syntrend import generators, formatters
-from syntrend.utils import manager
+from syntrend.utils import manager, exc
 from syntrend.config import load_config
 
 ERRORS = []
@@ -25,11 +25,14 @@ def generate(project_file: pathlib.Path):
     """
     Uses the available project file to generate datasets
     """
-    load_config(project_file)
-    generators.load_generators()
-    formatters.load_formatters()
-    manager.ROOT_MANAGER.load()
-    manager.ROOT_MANAGER.start()
+    try:
+        load_config(project_file)
+        generators.load_generators()
+        formatters.load_formatters()
+        manager.ROOT_MANAGER.load()
+        manager.ROOT_MANAGER.start()
+    except Exception as e:
+        exc.process_exception(e)
 
 
 @app.command()

@@ -118,7 +118,13 @@ def update(obj: Validated, other: Validated) -> None:
         TypeError: `other` is not a subclass of `Validated`
     """
     if not isinstance(other, Validated):
-        raise TypeError('Only `Validated` subclasses can be supported to update from')
+        raise TypeError(
+            'Only `Validated` subclasses can be supported to update from',
+            {
+                'Original Object Type': type(obj).__name__,
+                'Other Object Type': type(other).__name__,
+            }
+        )
 
     for field in fields(obj):
         setattr(obj, field, getattr(other, field))
@@ -145,11 +151,29 @@ def parse_int(_min: Optional[int] = None, _max: Optional[int] = None):
         try:
             value = int(value)
         except TypeError:
-            raise TypeError('Value must be parsable to integer') from None
+            raise TypeError(
+                'Value must be parsable to integer',
+                {
+                    'Input Value': str(value),
+                    'Input Value Type': type(value).__name__,
+                }
+            ) from None
         if _min is not None and value < _min:
-            raise ValueError(f'Value must be >= {_min}')
+            raise ValueError(
+                'Provided value is less than the minimum allowed',
+                {
+                    'Input Value': str(value),
+                    'Minimum': _min,
+                }
+            )
         if _max is not None and value > _max:
-            raise ValueError(f'Value must be <= {_max}')
+            raise ValueError(
+                'Provided value is greater than the maximum allowed',
+                {
+                    'Input Value': str(value),
+                    'Maximum': _max,
+                }
+            )
         return value
 
     return _parser
@@ -183,7 +207,13 @@ class ModuleConfig(Validated):
             return ADD_GENERATOR_DIR
         parsed_path = Path(value).absolute()
         if not parsed_path.is_dir():
-            raise ValueError('Source Generator Directory does not exist')
+            raise ValueError(
+                'Source Generator Directory does not exist',
+                {
+                    'Input Path': value,
+                    'Parsed Path': str(parsed_path),
+                }
+            )
         return parsed_path
 
 
@@ -256,7 +286,13 @@ class PropertyDistribution(Validated):
 
     def validate(self):
         if self.min_offset > self.max_offset:
-            raise ValueError('Distribution Min value must be lower than the Max value')
+            raise ValueError(
+                'Distribution Min value must be lower than the Max value',
+                {
+                    'Minimum Value': self.min_offset,
+                    'Maximum Value': self.max_offset,
+                }
+            )
 
 
 @dc.dataclass
@@ -358,7 +394,7 @@ class ProjectConfig(Validated):
 
     def parse_objects(self, objects):
         if len(objects) == 0:
-            raise ValueError('Project Config must include one object to generate')
+            raise ValueError('Project Config must include one object to generate', {})
         return {
             obj_name: ObjectDefinition(name=obj_name, **objects[obj_name])
             for obj_name in objects

@@ -71,7 +71,10 @@ class Historian:
             return hex(current)
         if isinstance(current, float):
             return current.hex()
-        raise TypeError('Value in this series cannot be converted to Hexadecimal')
+        raise TypeError(
+            'Value in this series cannot be converted to Hexadecimal',
+            {'Value': str(current), 'Value Type': type(current).__name__},
+        )
 
     def __format__(self, format_spec):
         return format(self.current, format_spec)

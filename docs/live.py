@@ -1,5 +1,4 @@
 from livereload import Server, shell
-import pathlib
 
 CMD = 'uv run poe docs'
 
