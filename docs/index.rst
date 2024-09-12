@@ -12,6 +12,7 @@ Documentation
    quickstart
    project_file
    distributions
+   expressions
    use_cases
    contributing
    faq

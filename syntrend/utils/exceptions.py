@@ -12,6 +12,11 @@ class ExpressionError(ProcessException):
     code = 2
 
 
+class ConfigSyntaxError(ProcessException):
+    name = 'Syntax Error'
+    code = 3
+
+
 def process_exception(e: ProcessException):
     sys.stderr.write(
         linesep.join(
