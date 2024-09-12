@@ -39,13 +39,18 @@ syntrend = "syntrend.cli:app"
 
 [tool.poe.tasks]
 build = "poetry build --format=wheel"
-docs = "sphinx-build docs dist"
 lint-test = "ruff check"
 format-test = "ruff format --check"
 unit-test = "pytest -m unit"
 integration-test = "pytest -m integration"
 docs-test = "pytest -m docs"
 coverage-test = "pytest --cov=syntrend --cov-fail-under=70"
+
+[tool.poe.tasks.build-doc]
+help = "Build Sphinx Documentation"
+sequence = [
+    "sphinx-build docs dist"
+]
 
 [tool.ruff]
 line-length = 88
