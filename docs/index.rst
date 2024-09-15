@@ -37,6 +37,7 @@ Documentation
 
    quickstart
    project_file
+   generators
    distributions
    expressions
    use_cases

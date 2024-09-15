@@ -17,6 +17,13 @@ def default_generator(new, **kwargs):
 
 
 class PropertyGenerator:
+    """Base Property Generator for all generators
+
+    Keyword Args:
+        type (:obj:`str`): Defines the generator to use. See sections below for options
+        start: A Starting Value of any type. Necessary if building an expression using a previous value.
+        expression (:obj:`str`): Parsable expression (using `Jinja <https://jinja.palletsprojects.com/en/3.1.x/>`__) used to generate expected values. More information in `Expressions Doc </expressions>`__)
+    """
     type: Type = None
     name: str = ''
     default_config: dict[str, any] = {}

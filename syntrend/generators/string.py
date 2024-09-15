@@ -5,6 +5,35 @@ from random import randint
 
 @register
 class StringGenerator(PropertyGenerator):
+    """String Generator
+
+    Keyword Args:
+        min_length (:obj:`int`): Minimum length for a random string. Default is `6`
+        max_length (:obj:`int`): Maximum length for a random string. Default is `20`
+        chars (:obj:`list[str] | str`)::
+            List of characters to be used for random string generation. **Changing order or adding
+            duplicates will impact results**. Default is the sequence: "[0-9a-zA-Z]".
+
+    Raises:
+        ValueError::
+            - Length of :attr:`chars` is not greater than one
+            - :attr:`min_length` is less than 1
+            - :attr:`max_length` is less than :attr:`min_length`
+
+    Notes:
+        - Values in :attr:`chars` must be parseable as a string object
+        - :attr:`chars` can be a list
+            - items can be individual characters or multi-character words. Something like the following can create a sequence like `"is bigthisis biglist"`
+
+                type: string
+                min_length: 3
+                max_length: 6
+                chars:
+                    - this
+                    - list
+                    - is big
+
+    """
     name = 'string'
     type = str
     default_config = {

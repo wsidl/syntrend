@@ -12,7 +12,23 @@ class BaseComplexGenerator(PropertyGenerator):
 
 @register
 class UnionGeneratorBase(BaseComplexGenerator):
-    """Generates a single value based on a random selection of many provided generator options"""
+    """Generates a single value based on a random selection of many provided generator options
+
+    Args:
+        items (list[`:obj:PropertyGenerator`]): List of generator types with their own properties
+
+    Example:
+        Selectively choose a generator randomly or through the use of an expression::
+
+            type: union
+            items:
+                - type: integer
+                  min_offset: -4
+                  max_offset: 4
+                - type: integer
+                  min_offset: 10
+                  max_offset: 20
+    """
 
     name = 'union'
 
