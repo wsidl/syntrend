@@ -101,3 +101,4 @@ def yaml_include(loader, node):
 
 
 yaml.Constructor.add_constructor('!include', yaml_include)
+# TODO(ws): Test include constructor
