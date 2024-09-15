@@ -1,35 +1,39 @@
-= Generator Configurations
-:toc:
+Generators
+==========
+
+.. toctree::
 
 These generators are all available to use in a Configuration File. Since all properties are defined by a generator,
 it is possible to provide a number of combinations of generators of the target schema.
 
-> All Configurations require the `type` or `property_type` property in its configuration to know which generator it will use.
+.. important::
 
-== Global Properties
+    All Configurations require the `type` property in its configuration to know which generator it will use.
+
+.. py:currentmodule:: syntrend.generators
+
+Global Properties
+-----------------
 
 These properties are globally available to all generator types.
 
-[cols="1,1,4"]
-|===
-| Property | Default | Description
++----------+---------+-------------+
+| Property | Default | Description |
++==========+=========+=============+
+| type     | <listed below> | Defines the generator to use. See sections below for options |
++----------+----------------+------+
+| start | none | Provides the initial value for a property. Especially helpful for creating a series requiring a static value or a trend with a specified start value. |
++-------+------+-------------------+
+| expression | none | Parsable expression (using `Jinja <https://jinja.palletsprojects.com/en/3.1.x/>`__) used to generate expected values. More information in `Expressions Doc </expressions>`__) |
++------------+------+--------------+
 
-| type
-| <listed below>
-| Defines the generator to use. See sections below for options
+Simple Objects
+--------------
 
-| start
-| none
-| Provides the initial value for a property. Especially helpful for creating a series requiring a static value or a trend with a specified start value.
+String
+``````
 
-| expression
-| none
-| Parsable expression (using https://jinja.palletsprojects.com/en/3.1.x/[Jinja]) used to generate expected values. More information in link:/docs/expressions.adoc[Expressions Doc])
-|===
-
-== Simple Objects
-
-=== String
+.. autoclass:: string.StringGenerator
 
 Random string generator
 

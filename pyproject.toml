@@ -29,6 +29,11 @@ dependencies = [
     "ruamel-yaml",
 ]
 
+[project.urls]
+Homepage = "https://syntrend.github.io/"
+Repository = "https://github.com/wsidl/syntrend"
+Issues = "https://github.com/wsidl/syntrend/issues"
+
 [project.scripts]
 syntrend = "syntrend.cli:app"
 
@@ -40,6 +45,12 @@ unit-test = "pytest -m unit"
 integration-test = "pytest -m integration"
 docs-test = "pytest -m docs"
 coverage-test = "pytest --cov=syntrend --cov-fail-under=70"
+
+[tool.poe.tasks.build-doc]
+help = "Build Sphinx Documentation"
+sequence = [
+    {cmd = "sphinx-build docs dist"},
+]
 
 [tool.ruff]
 line-length = 88
@@ -65,7 +76,13 @@ markers = [
 
 [tool.uv]
 dev-dependencies = [
+    "hatchling>=1.25.0",
+    "livereload>=2.7.0",
+    "matplotlib>=3.9.2",
+    "pytest-cov>=5.0.0",
     "pytest>=8.3.2",
+    "sphinx>=8.0.2",
+    "tomli>=2.0.1",
 ]
 
 [build-system]

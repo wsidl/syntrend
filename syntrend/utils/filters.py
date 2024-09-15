@@ -22,24 +22,21 @@ def to_timestamp(value: datetime.datetime):
     return value.timestamp()
 
 
-def to_datetime(value_string):
-    try:
-        return datetime.datetime.fromisoformat(value_string)
-    except ValueError:
-        pass
-    try:
-        return datetime.date.fromisoformat(value_string)
-    except ValueError:
-        pass
-    try:
-        return datetime.time.fromisoformat(value_string)
-    except ValueError:
-        pass
+def to_datetime(value_string, format_str: str = None):
+    for formatter in [datetime.datetime.fromisoformat, datetime.date.fromisoformat, datetime.time.fromisoformat]:
+        try:
+            return formatter(value_string)
+        except (TypeError, ValueError) as e:
+            print(e)
+            pass
+    if format_str is not None:
+        try:
+            return datetime.datetime.strptime(value_string, format_str)
+        except ValueError:
+            pass
     time_parts = {}
     for match in R_DELTA.finditer(value_string):
-        print(match)
         time_parts[DELTA_ABBR_MAP[match.group(2)]] = int(match.group(1))
-    print(time_parts)
     return datetime.timedelta(**time_parts)
 
 
@@ -99,6 +96,8 @@ def load_environment(manager: 'SeriesManager'):
         sin=math.sin,
         cos=math.cos,
         tan=math.tan,
+        degrees=math.degrees,
+        radians=math.radians,
         random=random.randint,
     )
     manager.expression_env.filters.update(

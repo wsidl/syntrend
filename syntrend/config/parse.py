@@ -43,11 +43,11 @@ def retrieve_source(
 
     try:
         for doc in yaml.load_all(content):
-            yield parse_object(doc)
-    except error.YAMLError as exc:
+            yield doc
+    except error.YAMLError as err:
         raise ValueError(
-            f'Invalid content format provided for parsing - {type(exc).__name__}: {exc.args}',
-            f'Content being parsed begins with the following: "{content[:20]}..."',
+            f'Invalid content format provided for parsing - {type(err).__name__}: {err.args}',
+            {"File Header": content[:20]}
         ) from None
 
 
@@ -69,6 +69,7 @@ def load_config(config_file: Union[dict, str, Path]) -> model.ProjectConfig:
             }
         else:
             raise ValueError(
-                f'Unhandled Configuration Type: {repr(config_obj)}', config_obj
+                f'Unhandled Configuration Type: {repr(config_obj)}',
+                {'Config Object Type': type(config_obj).__name__}
             )
     return new_config

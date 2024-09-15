@@ -9,7 +9,7 @@ class BaseType:
         return str(self.render())
 
     def render(self):
-        raise NotImplementedError()
+        raise NotImplementedError("Generator Class has not updated it's `render` method")
 
     def __hash__(self):
         return hash(self.render())
