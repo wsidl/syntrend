@@ -98,7 +98,8 @@ def load_environment(manager: 'SeriesManager'):
         tan=math.tan,
         degrees=math.degrees,
         radians=math.radians,
-        random=random.randint,
+        random=random.random,
+        pi=math.pi,
     )
     manager.expression_env.filters.update(
         to_timestamp=to_timestamp,
