@@ -1,5 +1,5 @@
 from syntrend.config import model, CONFIG
-from syntrend.utils import distributions, exceptions
+from syntrend.utils import distributions, exc
 from typing import Type, Callable
 from pathlib import Path
 from importlib import import_module
@@ -17,6 +17,13 @@ def default_generator(new, **kwargs):
 
 
 class PropertyGenerator:
+    """Base Property Generator for all generators
+
+    Keyword Args:
+        type (:obj:`str`): Defines the generator to use. See sections below for options
+        start: A Starting Value of any type. Necessary if building an expression using a previous value.
+        expression (:obj:`str`): Parsable expression (using `Jinja <https://jinja.palletsprojects.com/en/3.1.x/>`__) used to generate expected values. More information in `Expressions Doc </expressions>`__)
+    """
     type: Type = None
     name: str = ''
     default_config: dict[str, any] = {}
@@ -88,8 +95,8 @@ class PropertyGenerator:
             self.iteration_value = self.expression(
                 new=generated, interval=self.iteration, kwargs=self.kwargs
             )
-        except exceptions.ExpressionError as e:
-            exceptions.process_exception(e)
+        except (ValueError, TypeError) as e:
+            exc.process_exception(e)
         self.iteration_value = self.__distribution(self.iteration_value)
         if self.type is not None and not isinstance(self.iteration_value, self.type):
             self.iteration_value = self.type(self.iteration_value)

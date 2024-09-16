@@ -2,16 +2,20 @@ from syntrend.config import model
 
 from typing import Union, Generator, Any
 from pathlib import Path
+import re
 
 from ruamel.yaml import YAML, error
 
-yaml = YAML(typ='safe')
+RE_INCLUDE_REF = re.compile(r"^(.*?) ?(\d*)")
 CONFIG_MODULES = [
     model.ProjectConfig,
     model.OutputConfig,
     model.ModuleConfig,
 ]
 MODULE_KEYS = {}
+T_CONFIG_INPUT = list[dict] | dict | str | Path
+
+yaml = YAML(typ='safe')
 for module in CONFIG_MODULES:
     yaml.register_class(module)
     MODULE_KEYS[module] = set(model.fields(module))
@@ -25,15 +29,13 @@ def parse_object(config_dict: dict) -> Union[dict, model.Validated]:
     return config_dict
 
 
-def retrieve_source(
-    config_file: Union[list[dict], dict, str, Path],
-) -> Generator[dict[str, Any], None, None]:
+def retrieve_source(config_file: T_CONFIG_INPUT) -> Generator[dict[str, Any], None, None]:
     if isinstance(config_file, list):
         for inner_dict in config_file:
-            yield parse_object(inner_dict)
+            yield inner_dict
         return
     if isinstance(config_file, dict):
-        yield parse_object(config_file)
+        yield config_file
         return
 
     content = config_file
@@ -43,17 +45,18 @@ def retrieve_source(
 
     try:
         for doc in yaml.load_all(content):
-            yield parse_object(doc)
-    except error.YAMLError as exc:
+            yield doc
+    except error.YAMLError as err:
         raise ValueError(
-            f'Invalid content format provided for parsing - {type(exc).__name__}: {exc.args}',
-            f'Content being parsed begins with the following: "{content[:20]}..."',
+            f'Invalid content format provided for parsing - {type(err).__name__}: {err.args}',
+            {"File Header": content[:20]}
         ) from None
 
 
 def load_config(config_file: Union[dict, str, Path]) -> model.ProjectConfig:
     new_config = model.ProjectConfig(objects={'test': {'type': 'string'}})
-    for config_obj in retrieve_source(config_file):
+    for config_dict in retrieve_source(config_file):
+        config_obj = parse_object(config_dict)
         if isinstance(config_obj, model.ProjectConfig):
             new_config = config_obj
         elif isinstance(config_obj, model.OutputConfig):
@@ -69,6 +72,33 @@ def load_config(config_file: Union[dict, str, Path]) -> model.ProjectConfig:
             }
         else:
             raise ValueError(
-                f'Unhandled Configuration Type: {repr(config_obj)}', config_obj
+                f'Unhandled Configuration Type: {repr(config_obj)}',
+                {'Config Object Type': type(config_obj).__name__}
             )
     return new_config
+
+
+def yaml_include(loader, node):
+    if not (match := RE_INCLUDE_REF.fullmatch(node.value)):
+        raise ValueError(
+            'Invalid "!include" reference',
+            {
+                "Value": node.value
+            }
+        )
+    path_ref, index = match.groups()
+    y = loader.loader
+    _yaml = YAML(typ=y.typ, pure=y.pure)  # same values as including YAML
+    _yaml.composer.anchors = loader.composer.anchors
+    if not index:
+        index = 0
+    index = int(index)
+    count = 0
+    for doc in retrieve_source(Path(path_ref)):
+        if count == index:
+            return doc
+        count += 1
+
+
+yaml.Constructor.add_constructor('!include', yaml_include)
+# TODO(ws): Test include constructor

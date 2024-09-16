@@ -1,7 +1,7 @@
 Common Use Cases for Synthetic Trend Data Generation
 ====================================================
 
-The "SynTrend" utility is intended to be highly configurable to support a range of use cases.
+|project_title| is intended to be highly configurable to support a range of use cases.
 Some use cases are intuitive to support while others require some creativity to provide the
 intended outcome.
 
@@ -26,7 +26,7 @@ to define the generator to use and any following properties are provided along w
 In this example, `type: string` is defined for String generation with `min_length` and `max_length` properties
 to set how long the random string will be.
 
-.. literalinclude:: ../../tests/assets/uc_single_value_string.yaml
+.. literalinclude:: ../tests/assets/uc_single_value_string.yaml
    :language: yaml
    :emphasize-lines: 1
 
@@ -41,7 +41,7 @@ Integer Value
 Implementing an Integer-Type Value (to generate any number between 5 and 10) is simple by providing
 the `type: integer` property.
 
-.. literalinclude:: ../../tests/assets/uc_single_value_integer.yaml
+.. literalinclude:: ../tests/assets/uc_single_value_integer.yaml
    :language: yaml
 
 .. code-block:: shell-session
@@ -55,7 +55,7 @@ Random Value Selection
 It's also possible to provide a list of pre-defined values using the `type: choice` generator and
 the list of values it would use.
 
-.. literalinclude:: ../../tests/assets/uc_random_choice.yaml
+.. literalinclude:: ../tests/assets/uc_random_choice.yaml
    :language: yaml
 
 .. code-block:: shell-session
@@ -68,7 +68,7 @@ Object Value
 
 Object-Type Value with properties containing their own definitions
 
-.. literalinclude:: ../../tests/assets/uc_single_value_object.yaml
+.. literalinclude:: ../tests/assets/uc_single_value_object.yaml
    :language: yaml
 
 .. code-block:: shell-session
@@ -81,7 +81,7 @@ Multiple Objects
 
 Creating multiple objects is simple by defining object names for each Object Definition.
 
-.. literalinclude:: ../../tests/assets/uc_multi_object.yaml
+.. literalinclude:: ../tests/assets/uc_multi_object.yaml
    :language: yaml
 
 .. TODO: show new example of output
@@ -102,7 +102,7 @@ Simple Sequence
 
 Creating a sequence of 5 randomly generated strings
 
-.. literalinclude:: ../../tests/assets/uc_multi_value_string.yaml
+.. literalinclude:: ../tests/assets/uc_multi_value_string.yaml
    :language: yaml
    :emphasize-lines: 2-3
 
@@ -128,7 +128,7 @@ the expression look-back method below
 
 Using this in a project could look like this:
 
-.. literalinclude:: ../../tests/assets/uc_static_ref_events.yaml
+.. literalinclude:: ../tests/assets/uc_static_ref_events.yaml
    :language: yaml
 
 .. code-block::
@@ -144,7 +144,7 @@ Alternatively, it's also possible to have `syntrend` generate a random starting 
 static value. The only different is instead of using the `static` type and `value` property, use the type of
 choice and set `expression` to copy the last value.
 
-.. literalinclude:: ../../tests/assets/uc_static_ref_random_start.yaml
+.. literalinclude:: ../tests/assets/uc_static_ref_random_start.yaml
    :language: yaml
 
 .. code-block::
@@ -161,7 +161,7 @@ Conditional Logic
 
 It's possible to implement conditional logic to allow for static values that change within the dataset.
 
-.. literalinclude:: ../../tests/assets/uc_cond_status_change.yaml
+.. literalinclude:: ../tests/assets/uc_cond_status_change.yaml
    :language: yaml
    :emphasize-lines: 10
    :name: yaml_cond_status_change
@@ -182,7 +182,7 @@ Numerical Trends
 
 Creating numerical trends/patterns in your projects are provided through the use of the `expression` property and using the previous values using the current object's offset parameter.
 
-.. literalinclude:: ../../tests/assets/uc_num_trend.yaml
+.. literalinclude:: ../tests/assets/uc_num_trend.yaml
    :language: yaml
    :name: yaml_num_trend
 
@@ -199,7 +199,7 @@ Creating numerical trends/patterns in your projects are provided through the use
 
 The following example will generate a single wave length of a sine wave with an amplitude of 20 and a frequency of approximately 10.
 
-.. literalinclude:: ../../tests/assets/uc_sine_wave.yaml
+.. literalinclude:: ../tests/assets/uc_sine_wave.yaml
    :language: yaml
    :name: yaml_sine_wave
    :emphasize-lines: 4

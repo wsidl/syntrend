@@ -38,17 +38,12 @@ NULL_STR = _NullString('')
 class DistributionTypes(Enum):
     NoDistribution = 'none'
     Linear = 'linear'
-    StdDev = 'stdDev'
+    StandardDeviation = 'std_dev'
 
 
 class Progress(Enum):
     Trend = 'trend'
     Last = 'last'
-
-
-class SeriesType(Enum):
-    Sequence = 'sequence'
-    Reference = 'reference'
 
 
 def fields(obj: dc.dataclass, include_field=False) -> list[str | dc.Field]:
@@ -90,7 +85,6 @@ class Validated:
         return f'<{type(self).__name__}({_fields})>'
 
     def validate(self):
-        """Validation Method to confirm conditions are correct across multiple fields/properties"""
         return
 
 
@@ -124,7 +118,13 @@ def update(obj: Validated, other: Validated) -> None:
         TypeError: `other` is not a subclass of `Validated`
     """
     if not isinstance(other, Validated):
-        raise TypeError('Only `Validated` subclasses can be supported to update from')
+        raise TypeError(
+            'Only `Validated` subclasses can be supported to update from',
+            {
+                'Original Object Type': type(obj).__name__,
+                'Other Object Type': type(other).__name__,
+            }
+        )
 
     for field in fields(obj):
         setattr(obj, field, getattr(other, field))
@@ -151,11 +151,29 @@ def parse_int(_min: Optional[int] = None, _max: Optional[int] = None):
         try:
             value = int(value)
         except TypeError:
-            raise TypeError('Value must be parsable to integer') from None
+            raise TypeError(
+                'Value must be parsable to integer',
+                {
+                    'Input Value': str(value),
+                    'Input Value Type': type(value).__name__,
+                }
+            ) from None
         if _min is not None and value < _min:
-            raise ValueError(f'Value must be >= {_min}')
+            raise ValueError(
+                'Provided value is less than the minimum allowed',
+                {
+                    'Input Value': str(value),
+                    'Minimum': _min,
+                }
+            )
         if _max is not None and value > _max:
-            raise ValueError(f'Value must be <= {_max}')
+            raise ValueError(
+                'Provided value is greater than the maximum allowed',
+                {
+                    'Input Value': str(value),
+                    'Maximum': _max,
+                }
+            )
         return value
 
     return _parser
@@ -168,10 +186,7 @@ class ModuleConfig(Validated):
     max_generator_retries: int = dc.field(
         default=int(getenv(f'{DEFAULT_ENV_VAR_PREFIX}_MAX_GENERATOR_RETRIES', 20))
     )
-    """Maximum number of retries a Generator can perform before failing.
-
-    *Useful for when a distribution is applied
-    """
+    """Maximum number of retries a Generator can perform before failing."""
     max_historian_buffer: int = dc.field(
         default=int(getenv(f'{DEFAULT_ENV_VAR_PREFIX}_MAX_HISTORIAN_BUFFER', 20))
     )
@@ -182,20 +197,23 @@ class ModuleConfig(Validated):
     """Source Directory of Custom Generators"""
 
     parse_max_generator_retries = parse_int(_min=1)
-    """Parse `max_generator_retries` and validates if value >= 1"""
     parse_max_historian_buffer = parse_int(_min=1)
-    """Parse `max_historian_buffer` and validates if value >= 1"""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
     def parse_generator_dir(self, value: str) -> Path:
-        """Parse `generator_dir` and validates path exists and is a directory"""
         if not value:
             return ADD_GENERATOR_DIR
         parsed_path = Path(value).absolute()
         if not parsed_path.is_dir():
-            raise ValueError('Source Generator Directory does not exist')
+            raise ValueError(
+                'Source Generator Directory does not exist',
+                {
+                    'Input Path': value,
+                    'Parsed Path': str(parsed_path),
+                }
+            )
         return parsed_path
 
 
@@ -245,18 +263,19 @@ class OutputConfig(Validated):
 
 
 @dataclass
-class SeriesConfig(Validated):
-    type: SeriesType
-    count: int = dc.field(default=1)
-    series_cfg: dict = dc.field(default_factory=dict)
-
-    parse_count = parse_int(_min=1)
-
-
-@dataclass
 class PropertyDistribution(Validated):
+    """Distribution Definition
+
+    Configurations to support how values will vary from its original value
+
+    Attributes:
+        type (:obj:`DistributionTypes`): The type of distribution to apply. Defaults to "none"
+        std_dev (:obj:`float`, optional): The standard deviation of the distribution
+        min_offset (:obj:`float`, optional): The minimum offset of the distribution
+        max_offset (:obj:`float`, optional): The maximum offset of the distribution
+    """
     type: DistributionTypes = DistributionTypes.NoDistribution
-    std_dev_factor: float = 0.0
+    std_dev: float = 0.0
     min_offset: Union[int, float] = 0
     max_offset: Union[int, float] = 1
 
@@ -267,11 +286,33 @@ class PropertyDistribution(Validated):
 
     def validate(self):
         if self.min_offset > self.max_offset:
-            raise ValueError('Distribution Min value must be lower than the Max value')
+            raise ValueError(
+                'Distribution Min value must be lower than the Max value',
+                {
+                    'Minimum Value': self.min_offset,
+                    'Maximum Value': self.max_offset,
+                }
+            )
 
 
 @dc.dataclass
 class PropertyDefinition(Validated):
+    """Property Definition
+
+    Definition of how a value is generated and any associated properties to modify its behaviour
+
+    Attributes:
+        type (:obj:`str`): Generator Type to be used for this Property Definition
+        distribution (:obj:`PropertyDistribution`): Property to define how the generated values will vary using a
+            :obj:`DistributionTypes`. Defaults to "none"
+        expression (:obj:`str`): String Expression to define a trend, behaviour, or conditions to apply.
+
+            See Also:
+                For more information on Expressions, see `Expressions <docs/expressions>`__.
+        start: Any value associated with :obj:`type` for when a previous value is expected but none available.
+        items (:obj:`list`): List of items required for Generator Types needing a list of objects to choose from.
+        properties (:obj:`dict[str, PropertyDefinition]`): Mapping of sub properties namely to support nested objects.
+    """
     name: str
     type: str
     distribution: Union[DistributionTypes, PropertyDistribution] = dc.field(
@@ -310,8 +351,14 @@ class PropertyDefinition(Validated):
 
 @dataclass
 class ObjectDefinition(PropertyDefinition):
+    """Object Definition
+
+    Extended definition of :obj:`PropertyDefinition` to support root-level object behaviour
+
+    Attributes:
+        output (:obj:`OutputConfig`): Properties to define how and where results are generated
+    """
     output: OutputConfig = dc.field(default_factory=OutputConfig)
-    series: SeriesType = dc.field(default=SeriesType.Reference)
 
     def parse_output(self, value):
         if isinstance(value, OutputConfig):
@@ -321,10 +368,14 @@ class ObjectDefinition(PropertyDefinition):
 
 @dataclass
 class ProjectConfig(Validated):
-    """
-    Project File Configuration
+    """Project File Configuration
 
-    Provides
+    Root-Level configuration for project files.
+
+    Attributes:
+        objects (:obj:`dict[str, ObjectDefinition]`): Mapping of Object Definitions
+        output (:obj:`OutputConfig`): Default properties to define how and where results are generated
+        config (:obj:`ModuleConfig`): Syntrend configuration properties to modify tool behaviour
     """
 
     objects: dict[str, ObjectDefinition]
@@ -343,7 +394,7 @@ class ProjectConfig(Validated):
 
     def parse_objects(self, objects):
         if len(objects) == 0:
-            raise ValueError('Project Config must include one object to generate')
+            raise ValueError('Project Config must include one object to generate', {})
         return {
             obj_name: ObjectDefinition(name=obj_name, **objects[obj_name])
             for obj_name in objects

@@ -49,15 +49,15 @@ def test_linear_distribution_numeric(_type_str: str):
 
 
 @mark.unit
-@mark.parametrize('std_dev_factor', [0.2, 0.5, 1.0, 2.0, 5.0])
-def test_std_dev_distribution(std_dev_factor):
+@mark.parametrize('std_dev', [0.2, 0.5, 1.0, 2.0, 5.0])
+def test_std_dev_distribution(std_dev):
     prop_cfg = Prop_Def(
         type='float',
         distribution=model.PropertyDistribution(
-            type=model.DistributionTypes.StdDev, std_dev_factor=std_dev_factor
+            type=model.DistributionTypes.StandardDeviation, std_dev=std_dev
         ),
     )
-    offset = std_dev_factor * 6
+    offset = std_dev * 6
     dist_func = d.get_distribution(prop_cfg.distribution)
     gen_values = [dist_func(5) for _ in range(1000)]
     assert (
