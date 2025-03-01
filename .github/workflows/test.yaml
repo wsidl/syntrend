@@ -56,7 +56,7 @@ jobs:
           fi
       - name: Run Work Unit Tests
         if: steps.change_type.outputs.branch_type == 'pr'
-        run: uv run pytest -m issue_${{ steps.change_type.work_id }}
+        run: uv run pytest -m "issue(id=${{ steps.change_type.work_id }})"
       - name: Run Test Suite
         run: uv run pytest --junit-xml=pytest-report.xml --cov=syntrend --cov-fail-under=70 --cov-report=xml
       - name: Publish Test Artifact
