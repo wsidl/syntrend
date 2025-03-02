@@ -91,10 +91,10 @@ class PropertyGenerator:
             self.iteration_value = self.start
             return self.start
 
-        generated = self.generate()
+        generated = self.generate(**kwargs)
         try:
             self.iteration_value = self.expression(
-                new=generated, interval=self.iteration, kwargs=self.kwargs
+                new=generated, interval=self.iteration, kwargs=self.kwargs._asdict() | kwargs
             )
         except (ValueError, TypeError) as e:
             exc.process_exception(e)
@@ -106,7 +106,7 @@ class PropertyGenerator:
     def undo(self):
         self.iteration -= 1
 
-    def generate(self):
+    def generate(self, **kwargs):
         raise NotImplementedError('Generator has not implemented `generate` method')
 
 

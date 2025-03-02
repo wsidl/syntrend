@@ -46,7 +46,7 @@ class UnionGeneratorBase(BaseComplexGenerator):
             )
         return _gens
 
-    def generate(self) -> any:
+    def generate(self, **_) -> any:
         return self.items[randint(0, len(self.items) - 1)].render()
 
 
@@ -73,18 +73,20 @@ class ListGeneratorBase(BaseComplexGenerator):
         assert 'sub_type' in kwargs, (
             "Must provide a 'sub_type' property for the values to be generated"
         )
-        kwargs['sub_type'] = get_generator(
+        kwargs['sub_type_generator'] = get_generator(
             self.root_object,
-            PropertyDefinition(**kwargs['sub_type']),
+            PropertyDefinition(index=0, **kwargs['sub_type']),
             self.root_manager,
         )
         return kwargs
 
-    def generate(self) -> list[any]:
-        return [
-            self.kwargs.sub_type.generate()
-            for _ in range(randint(self.kwargs.min_length, self.kwargs.max_length))
-        ]
+    def generate(self, **kwargs) -> list[any]:
+        result = []
+        kwargs['force'] = True
+        for index in range(randint(self.kwargs.min_length, self.kwargs.max_length)):
+            kwargs['index'] = index
+            result.append(self.kwargs.sub_type_generator.render(**kwargs))
+        return result
 
 
 @register
@@ -105,10 +107,8 @@ class ObjectGeneratorBase(BaseComplexGenerator):
             for key in properties
         }
 
-    def generate(self):
-        for key in self.properties:
-            self.properties[key].render()
-        return {key: self.properties[key].render() for key in self.properties}
+    def generate(self, **kwargs):
+        return {key: self.properties[key].render(force=True, **kwargs) for key in self.properties}
 
     def undo(self):
         super(BaseComplexGenerator, self).undo()

@@ -29,7 +29,7 @@ def test_load_default_generator():
 class RandomTestGenerator(generators.PropertyGenerator):
     name = 'test'
 
-    def generate(self):
+    def generate(self, **_):
         return 1, 'test', self.config.kwargs
 
 
