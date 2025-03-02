@@ -89,9 +89,16 @@ def test_index_support_from_object():
     generator = prepare_generator(
         {
             'type': 'list',
-            'sub_type': {'type': 'object', 'properties': {'index': {'type': 'integer', 'expression': 'kwargs.index'}}},
+            'sub_type': {
+                'type': 'object',
+                'properties': {
+                    'index': {'type': 'integer', 'expression': 'kwargs.index'}
+                },
+            },
         }
     )
     result = generator.generate()
     for index, value in enumerate(result):
-        assert value['index'] == index, "`index` value in object should be it's index position in the list"
+        assert value['index'] == index, (
+            "`index` value in object should be it's index position in the list"
+        )
