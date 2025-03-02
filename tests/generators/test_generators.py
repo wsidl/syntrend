@@ -4,14 +4,9 @@ import syntrend.generators.string as string_gen
 
 from functools import partial
 
-from pytest import mark, fixture
+from pytest import mark
 
 Prop_Def = partial(model.PropertyDefinition, name='test')
-
-
-@fixture(scope='function', autouse=True)
-def load_generators():
-    generators.load_generators()
 
 
 @mark.unit
