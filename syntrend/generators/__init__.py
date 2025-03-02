@@ -81,9 +81,9 @@ class PropertyGenerator:
     def validate(self):
         pass
 
-    def render(self):
+    def render(self, force=False, **kwargs):
         iteration = self.root_manager.current_iteration(self.root_object)
-        if self.iteration == iteration:
+        if self.iteration == iteration and not force:
             return self.iteration_value
 
         self.iteration = iteration
