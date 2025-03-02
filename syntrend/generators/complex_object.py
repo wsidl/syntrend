@@ -108,7 +108,10 @@ class ObjectGeneratorBase(BaseComplexGenerator):
         }
 
     def generate(self, **kwargs):
-        return {key: self.properties[key].render(force=True, **kwargs) for key in self.properties}
+        return {
+            key: self.properties[key].render(force=True, **kwargs)
+            for key in self.properties
+        }
 
     def undo(self):
         super(BaseComplexGenerator, self).undo()

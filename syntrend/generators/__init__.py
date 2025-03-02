@@ -94,7 +94,9 @@ class PropertyGenerator:
         generated = self.generate(**kwargs)
         try:
             self.iteration_value = self.expression(
-                new=generated, interval=self.iteration, kwargs=self.kwargs._asdict() | kwargs
+                new=generated,
+                interval=self.iteration,
+                kwargs=self.kwargs._asdict() | kwargs,
             )
         except (ValueError, TypeError) as e:
             exc.process_exception(e)
