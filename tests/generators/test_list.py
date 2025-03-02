@@ -81,3 +81,17 @@ def test_complex_string_list():
         assert value['text'] != previous, (
             'Previous "text" value should be unique from other values'
         )
+
+
+@mark.issue(id=18)
+@mark.unit
+def test_index_support_from_object():
+    generator = prepare_generator(
+        {
+            'type': 'list',
+            'sub_type': {'type': 'object', 'properties': {'index': {'type': 'integer', 'expression': 'kwargs.index'}}},
+        }
+    )
+    result = generator.generate()
+    for index, value in enumerate(result):
+        assert value['index'] == index, "`index` value in object should be it's index position in the list"

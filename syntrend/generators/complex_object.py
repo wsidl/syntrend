@@ -75,7 +75,7 @@ class ListGeneratorBase(BaseComplexGenerator):
         )
         kwargs['sub_type_generator'] = get_generator(
             self.root_object,
-            PropertyDefinition(index=0, **kwargs['sub_type']),
+            PropertyDefinition(**kwargs['sub_type']),
             self.root_manager,
         )
         return kwargs
