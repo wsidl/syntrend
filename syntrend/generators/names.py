@@ -10,7 +10,7 @@ class NameGenerator(PropertyGenerator):
     type = str
     name = 'name'
 
-    def generate(self):
+    def generate(self, **_):
         return fake.name()
 
 
@@ -19,7 +19,7 @@ class FirstNameGenerator(PropertyGenerator):
     type = str
     name = 'first_name'
 
-    def generate(self):
+    def generate(self, **_):
         return fake.first_name()
 
 
@@ -28,5 +28,5 @@ class LastNameGenerator(PropertyGenerator):
     type = str
     name = 'last_name'
 
-    def generate(self):
+    def generate(self, **_):
         return fake.last_name()
