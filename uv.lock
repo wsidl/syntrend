@@ -1,4 +1,5 @@
 version = 1
+revision = 1
 requires-python = ">=3.11, <4"
 
 [[package]]
@@ -786,7 +787,7 @@ wheels = [
 
 [[package]]
 name = "syntrend"
-version = "0.1.1"
+version = "0.1.0"
 source = { editable = "." }
 dependencies = [
     { name = "click" },
