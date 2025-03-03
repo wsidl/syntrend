@@ -52,7 +52,7 @@ class DateTimeGenerator(PropertyGenerator):
         datetime_aware(kwargs)
         return kwargs
 
-    def generate(self):
+    def generate(self, **_):
         return (self.kwargs.generate(self) + self.kwargs.time_offset).strftime(
             self.kwargs.format
         )
@@ -71,5 +71,5 @@ class TimestampGenerator(PropertyGenerator):
         kwargs['time_offset'] = int(kwargs['time_offset'])
         return kwargs
 
-    def generate(self):
+    def generate(self, **_):
         return int(self.kwargs.generate(self).timestamp()) + self.kwargs.time_offset

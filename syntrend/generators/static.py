@@ -9,5 +9,5 @@ class StaticGenerator(PropertyGenerator):
         if not hasattr(self.kwargs, 'value'):
             raise AttributeError("Static Generator requires a 'value' property")
 
-    def generate(self):
+    def generate(self, **_):
         return self.kwargs.value
