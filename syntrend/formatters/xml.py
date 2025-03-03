@@ -77,7 +77,7 @@ def xml_formatter(object_name: str):
     def __formatter(events: Collection) -> list[str]:
         root = None
         if is_collection:
-            root = ElementTree.Element(object_root.output.get('xml_tag', 'data'))
+            root = ElementTree.Element(object_root.output.kwargs.get('xml_tag', 'data'))
 
         for event in events:
             if is_collection:
