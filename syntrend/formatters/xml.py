@@ -26,7 +26,8 @@ def xml_formatter(object_name: str):
                     'Property Definition': str(properties),
                 },
             )
-        return value
+        str_value = str(value)
+        return str_value
 
     def handle_sub_element(
         parent: ElementTree.Element,
@@ -48,10 +49,12 @@ def xml_formatter(object_name: str):
             parent.append(generate_xml(name, properties, value))
             return
 
+        str_value = str(value)
+
         if parent.text:
-            parent.text += value
+            parent.text += str_value
         else:
-            parent.text = value
+            parent.text = str_value
 
     def generate_xml(
         name: str, object_properties: model.PropertyDefinition, event: dict
