@@ -346,16 +346,24 @@ class PropertyDefinition(Validated):
         return dist_type
 
     def parse_properties(self, props):
-        return {
-            prop: (
-                val
-                if isinstance(val, PropertyDefinition)
-                else PropertyDefinition(
-                    name=prop if 'name' not in val else val['name'], **val
+        new_properties = {}
+        for prop_name, prop in props.items():
+            if isinstance(prop, PropertyDefinition):
+                new_properties[prop_name] = prop
+                continue
+            if not isinstance(prop, dict):
+                raise ValueError(
+                    '`properties` block was not provided a "Name => Definition" mapping',
+                    {
+                        'Object': self.name,
+                        'Property Name': prop_name,
+                        'Property Value': str(prop),
+                    }
                 )
+            new_properties[prop_name] = PropertyDefinition(
+                name=prop_name if 'name' not in prop else prop['name'], **prop
             )
-            for prop, val in props.items()
-        }
+        return new_properties
 
 
 @dataclass
