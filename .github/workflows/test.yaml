@@ -52,7 +52,9 @@ jobs:
           then
             echo ::set-output name=branch_type::main
           else
-            echo "::error title=Invalid Branch Name::Source Branch Names must match a convention matching to following regex: (main|release/v[0-9][0-9._]*|(fix|feat|bug|chore)/[0-9]+_.*)" 
+            echo "::error title=Invalid Branch Name::Source Branch Names must match a convention matching to following regex: (main|release/v[0-9][0-9._]*|(fix|feat|bug|chore)/[0-9]+_.*)"
+            echo Provided branch: $GITHUB_REF
+            exit 1
           fi
       - name: Run Work Unit Tests
         if: steps.change_type.outputs.branch_type == 'pr'
