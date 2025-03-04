@@ -301,7 +301,7 @@ properties:
 ```
 
 ```xml
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <root attr="mmiOBE8Uf2">
   <child attr="uaTQex3q5HKnVjywgtAG">0OzxfgIQJ</child>
 </root>
@@ -377,7 +377,7 @@ objects:
 ```
 
 ```xml
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <html>
   <head>
     <title>Craig Barnes</title>
@@ -435,9 +435,6 @@ Feature:
               type: float
               min_offset: -90
               max_offset: 90
-            space:
-              type: static
-              value: " "
             lon:
               type: float
               min_offset: -180
@@ -445,10 +442,13 @@ Feature:
 ```
 
 ```xml
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <Feature fid="0" Description="9QARr9V3gMPC">
   <Point srsName="urn:ogc:def:crs:EPSG::4326" srsDimension="2">
-    <pos>-24.076383 19.308395</pos>
+    <pos>
+      -24.076383
+      19.308395
+    </pos>
   </Point>
 </Feature>
 ```
@@ -472,21 +472,30 @@ Feature:
 ```
 
 ```xml
-<?xml version='1.0' encoding='utf-8'?>
+<?xml version="1.0" encoding="utf-8"?>
 <FeatureCollection>
   <Feature fid="0" Description="rLWWnWr">
     <Point srsName="urn:ogc:def:crs:EPSG::4326" srsDimension="2">
-      <pos>-38.472894 -64.3371</pos>
+      <pos>
+        -38.472894
+        -64.3371
+      </pos>
     </Point>
   </Feature>
   <Feature fid="1" Description="pLnYqyA3ObdA">
     <Point srsName="urn:ogc:def:crs:EPSG::4326" srsDimension="2">
-      <pos>-64.808272 -107.701463</pos>
+      <pos>
+        -64.808272
+        -107.701463
+      </pos>
     </Point>
   </Feature>
   <Feature fid="2" Description="n3Fyu349M5HeTMyX">
     <Point srsName="urn:ogc:def:crs:EPSG::4326" srsDimension="2">
-      <pos>-71.014564 67.249924</pos>
+      <pos>
+        -71.014564
+        67.249924
+      </pos>
     </Point>
   </Feature>
 </FeatureCollection>
