@@ -1,5 +1,5 @@
 from syntrend.config import CONFIG
-from syntrend.generators import get_generator, PropertyGenerator
+from syntrend.generators import get_generator, PropertyGenerator, RenderValue
 from syntrend.utils import historian, filters
 from syntrend.formatters import load_formatter
 
@@ -59,26 +59,28 @@ class SeriesManager:
         filters.load_environment(self)
 
     def start(self):
-        next_events: dict[int, list[tuple[str, Any]]] = {}
+        next_events: dict[int, list[tuple[str, RenderValue]]] = {}
 
         def _run(_obj_name: str):
-            _value = self.generators[_obj_name].render()
-            self.formatters[_obj_name].format(_value)
-            self.historians[_obj_name].append(_value)
+            rendered_value: RenderValue = self.generators[_obj_name].render()
+            if rendered_value.visible:
+                self.formatters[_obj_name].format(rendered_value.visible)
+            self.historians[_obj_name].append(rendered_value.hidden)
 
         def _get_next_event(_obj_name: str, _current_time: int):
             if self.__renderers[_obj_name] == CONFIG.objects[_obj_name].output.count:
                 return True
-            _value = self.generators[_obj_name].render()
-            time_value = _value[CONFIG.objects[_obj_name].output.time_field]
+            rendered_value: RenderValue = self.generators[_obj_name].render()
+            time_value = rendered_value.hidden[CONFIG.objects[_obj_name].output.time_field]
             if isinstance(time_value, datetime):
                 time_value = time_value.timestamp()
             if _current_time and time_value <= _current_time:
+
                 self.generators[_obj_name].undo()
                 return False
             if time_value not in next_events:
                 next_events[time_value] = []
-            next_events[time_value].append((_obj_name, _value))
+            next_events[time_value].append((_obj_name, rendered_value))
             self.__renderers[_obj_name] += 1
             return True
 
@@ -128,8 +130,9 @@ class SeriesManager:
                 time.sleep(new_time - current_time - (time.time() - start))
             start = time.time()
             for obj_name, value in next_events.pop(new_time):
-                self.formatters[obj_name].format(value)
-                self.historians[obj_name].append(value)
+                if value.visible:
+                    self.formatters[obj_name].format(value.visible)
+                self.historians[obj_name].append(value.hidden)
                 failed_count = 0
                 while _get_next_event(obj_name, new_time) is False:
                     failed_count += 1

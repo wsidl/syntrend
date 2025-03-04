@@ -330,6 +330,7 @@ class PropertyDefinition(Validated):
     conditions: list[str] = dc.field(default_factory=list)
     expression: str = dc.field(default='')
     start: any = dc.field(default=None)
+    hidden: bool = dc.field(default=False)
     items: list[any] = dc.field(default_factory=list)
     properties: dict[str, 'PropertyDefinition'] = dc.field(default_factory=dict)
 

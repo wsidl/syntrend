@@ -16,6 +16,12 @@ def default_generator(new, **kwargs):
     return new
 
 
+class RenderValue:
+    def __init__(self, visible, hidden):
+        self.visible = visible
+        self.hidden = hidden
+
+
 class PropertyGenerator:
     """Base Property Generator for all generators
 
@@ -81,20 +87,20 @@ class PropertyGenerator:
     def validate(self):
         pass
 
-    def render(self, force=False, **kwargs):
+    def render(self, force=False, **kwargs) -> RenderValue:
         iteration = self.root_manager.current_iteration(self.root_object)
         if self.iteration == iteration and not force:
-            return self.iteration_value
+            return RenderValue(... if self.config.hidden else self.iteration_value, self.iteration_value)
 
         self.iteration = iteration
         if not iteration and self.start is not None:
             self.iteration_value = self.start
-            return self.start
+            return RenderValue(... if self.config.hidden else self.start, self.start)
 
         generated = self.generate(**kwargs)
         try:
             self.iteration_value = self.expression(
-                new=generated,
+                new=generated.hidden if type(generated) is RenderValue else generated,
                 interval=self.iteration,
                 kwargs=self.kwargs._asdict() | kwargs,
             )
@@ -103,7 +109,11 @@ class PropertyGenerator:
         self.iteration_value = self.__distribution(self.iteration_value)
         if self.type is not None and not isinstance(self.iteration_value, self.type):
             self.iteration_value = self.type(self.iteration_value)
-        return self.iteration_value
+        rendered = RenderValue(
+            ... if self.config.hidden else self.iteration_value,
+            self.iteration_value,
+        )
+        return rendered
 
     def undo(self):
         self.iteration -= 1

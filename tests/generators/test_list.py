@@ -24,9 +24,9 @@ def test_simple_string_list():
         }
     )
     result = generator.generate()
-    assert type(result) is list, 'List Generators should generate a list'
-    assert len(result) == 6, 'The list should have 6 elements'
-    assert all([type(value) is str for value in result]), (
+    assert type(result.visible) is list, 'List Generators should generate a list'
+    assert len(result.visible) == 6, 'The list should have 6 elements'
+    assert all([type(value) is str for value in result.visible]), (
         'The list should contain all strings'
     )
 
@@ -43,9 +43,9 @@ def test_simple_number_list():
         }
     )
     result = generator.generate()
-    assert type(result) is list, 'List Generators should generate a list'
-    assert len(result) == 6, 'The list should have 6 elements'
-    assert all([type(value) is int for value in result]), (
+    assert type(result.visible) is list, 'List Generators should generate a list'
+    assert len(result.visible) == 6, 'The list should have 6 elements'
+    assert all([type(value) is int for value in result.visible]), (
         'The list should contain all strings'
     )
 
@@ -56,9 +56,9 @@ def test_simple_incremental_list():
     generator = prepare_generator(
         {'type': 'list', 'sub_type': {'type': 'integer', 'expression': 'kwargs.index'}}
     )
-    result = generator.render()
+    result = generator.generate()
     current = -1
-    for value in result:
+    for value in result.visible:
         assert value == current + 1, 'Values in list should increment by one'
         current = value
 
@@ -74,7 +74,7 @@ def test_complex_string_list():
     )
     result = generator.generate()
     previous = ''
-    for value in result:
+    for value in result.visible:
         assert type(value) is dict, 'Values in list should be a dictionary/object'
         assert 'text' in value, 'Value object should contain a "text" property'
         assert type(value['text']) is str, 'Text Value should contain a string'
@@ -98,7 +98,7 @@ def test_index_support_from_object():
         }
     )
     result = generator.generate()
-    for index, value in enumerate(result):
+    for index, value in enumerate(result.visible):
         assert value['index'] == index, (
             "`index` value in object should be it's index position in the list"
         )

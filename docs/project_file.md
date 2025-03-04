@@ -114,6 +114,7 @@ Definition of how a value is generated and any associated properties to modify i
 | **type**         | (required)   | Generator Type to be used for this Property Definition                                                                                                                                     |
 | **distribution** | {type: none} | Property to define how the generated values will vary using a [Distribution Type](#distribution-Types). Defaults to "none" (defined as a [Property Distribution](#property-distribution)). |
 | **expression**   | -            | String Expression to define a trend, behaviour, or conditions to apply. For more information on Expressions, see [Expressions](expressions.md).                                            |
+| **hidden**       | false        | Flag to identify the property as a hidden object. Will not get rendered on final output but may be used in the [Expressions](expressions.md) in another property or object                 |
 | **items**        | []           | List of items required for Generator Types needing a list of objects to choose from.                                                                                                       |
 | **properties**   | {}           | Mapping of sub properties namely to support nested objects. Commonly used for `object` types.                                                                                              |
 
