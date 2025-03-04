@@ -358,7 +358,7 @@ class PropertyDefinition(Validated):
                         'Object': self.name,
                         'Property Name': prop_name,
                         'Property Value': str(prop),
-                    }
+                    },
                 )
             new_properties[prop_name] = PropertyDefinition(
                 name=prop_name if 'name' not in prop else prop['name'], **prop
