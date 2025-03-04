@@ -37,19 +37,11 @@ Issues = "https://github.com/wsidl/syntrend/issues"
 [project.scripts]
 syntrend = "syntrend.cli:app"
 
-[tool.poe.tasks]
-build = "poetry build --format=wheel"
-lint-test = "ruff check"
-format-test = "ruff format --check"
-unit-test = "pytest -m unit"
-integration-test = "pytest -m integration"
-docs-test = "pytest -m docs"
-coverage-test = "pytest --cov=syntrend --cov-fail-under=70"
-
-[tool.poe.tasks.build-doc]
-help = "Build Sphinx Documentation"
-sequence = [
-    {cmd = "sphinx-build docs dist"},
+[project.optional-dependencies]
+test = [
+    "pytest>=8.3.2",
+    "pytest-cov>=5.0.0",
+    "ruff>=0.9.6",
 ]
 
 [tool.ruff]
@@ -75,16 +67,14 @@ markers = [
     "issue",
 ]
 
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "hatchling>=1.25.0",
     "livereload>=2.7.0",
-    "matplotlib>=3.9.2",
-    "pytest-cov>=5.0.0",
+    "matplotlib>=3.10.0",
     "pytest>=8.3.2",
+    "pytest-cov>=5.0.0",
     "ruff>=0.9.6",
-    "sphinx>=8.0.2",
-    "tomli>=2.0.1",
 ]
 
 [build-system]
