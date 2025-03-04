@@ -1,16 +1,26 @@
 from syntrend.formatters import xml, Event, Collection
 
-from pytest import mark
+from pytest import mark, fixture
+
+
+@fixture(scope='function')
+def xml_formatter(project):
+    def _setup(config: dict):
+        project(xml, config)
+        return xml.xml_formatter('test')
+
+    return _setup
 
 
 @mark.issue(id=15)
 @mark.unit
-def test_minimum_xml(project):
-    project(xml, {'type': 'object', 'properties': {'value': {'type': 'string'}}})
-    formatter = xml.xml_formatter('test')
+def test_minimum_xml(xml_formatter):
+    formatter = xml_formatter(
+        {'type': 'object', 'properties': {'value': {'type': 'string'}}}
+    )
     output = formatter(Collection(Event({'value': 'generated_string'})))
     assert len(output) == 2, 'Generated XML should contain 4 lines'
-    assert output[0] == "<?xml version='1.0' encoding='utf-8'?>", (
+    assert output[0] == '<?xml version="1.0" encoding="utf-8"?>', (
         'Output String should contain the namespace xml header'
     )
     assert output[1] == '<test>generated_string</test>', (
@@ -20,38 +30,34 @@ def test_minimum_xml(project):
 
 @mark.issue(id=15)
 @mark.unit
-def test_two_values(project):
-    project(
-        xml,
+def test_two_values(xml_formatter):
+    formatter = xml_formatter(
         {
             'type': 'object',
             'properties': {'attr': {'type': 'string'}, 'value': {'type': 'string'}},
-        },
+        }
     )
-    formatter = xml.xml_formatter('test')
     output = formatter(
         Collection(Event({'attr': 'attribute', 'value': 'value_string'}))
     )
-    assert len(output) == 2, 'Generated XML should contain 2 lines'
-    assert output[1] == '<test>attributevalue_string</test>', (
+    assert len(output) == 5, 'Generated XML should contain 2 lines'
+    assert output[1:] == ['<test>', '  attribute', '  value_string', '</test>'], (
         'Generated XML should have both properties concatenated'
     )
 
 
 @mark.issue(id=15)
 @mark.unit
-def test_value_as_attribute(project):
-    project(
-        xml,
+def test_value_as_attribute(xml_formatter):
+    formatter = xml_formatter(
         {
             'type': 'object',
             'properties': {
                 'attr': {'type': 'string', 'xml_attr': True},
                 'value': {'type': 'string'},
             },
-        },
+        }
     )
-    formatter = xml.xml_formatter('test')
     output = formatter(
         Collection(Event({'attr': 'attribute', 'value': 'value_string'}))
     )
@@ -63,9 +69,8 @@ def test_value_as_attribute(project):
 
 @mark.issue(id=15)
 @mark.unit
-def test_nested_object(project):
-    project(
-        xml,
+def test_mixed_type_nested_objects(xml_formatter):
+    formatter = xml_formatter(
         {
             'type': 'object',
             'properties': {
@@ -77,9 +82,8 @@ def test_nested_object(project):
                 },
                 'child3': {'type': 'integer'},
             },
-        },
+        }
     )
-    formatter = xml.xml_formatter('test')
     output = formatter(
         Collection(
             Event(
@@ -92,21 +96,20 @@ def test_nested_object(project):
             )
         )
     )
-    assert len(output) == 4, 'Generated XML should contain 4 lines'
+    assert len(output) == 6, 'Generated XML should contain 4 lines'
     assert output[1] == '<test attr="attribute">', (
         'Nested Objects span multiple lines, should have the opening xml tag'
     )
-    assert output[2] == '  first_element<child2>string2</child2>9000', (
-        'nested objects are concatenated'
-    )
-    assert output[3] == '</test>', 'Closing tag should be last'
+    assert output[2] == '  first_element', 'First string is the first test element'
+    assert output[3] == '  <child2>string2</child2>', 'Followed by nested element'
+    assert output[4] == '  9000', 'Ends with number added after'
+    assert output[5] == '</test>', 'Closing tag should be last'
 
 
 @mark.issue(id=15)
 @mark.unit
-def test_hybrid_nested_types(project):
-    project(
-        xml,
+def test_hybrid_nested_types(xml_formatter):
+    formatter = xml_formatter(
         {
             'type': 'object',
             'properties': {
@@ -120,9 +123,8 @@ def test_hybrid_nested_types(project):
                     'properties': {'content': {'type': 'string'}},
                 },
             },
-        },
+        }
     )
-    formatter = xml.xml_formatter('test')
     output = formatter(
         Collection(
             Event(
@@ -149,9 +151,8 @@ def test_hybrid_nested_types(project):
 
 @mark.issue(id=15)
 @mark.unit
-def test_nested_objects(project):
-    project(
-        xml,
+def test_nested_objects(xml_formatter):
+    formatter = xml_formatter(
         {
             'type': 'object',
             'properties': {
@@ -167,9 +168,8 @@ def test_nested_objects(project):
                     'properties': {'content': {'type': 'string'}},
                 },
             },
-        },
+        }
     )
-    formatter = xml.xml_formatter('test')
     output = formatter(
         Collection(
             Event(
@@ -196,9 +196,8 @@ def test_nested_objects(project):
 
 @mark.issue(id=15)
 @mark.unit
-def test_nested_list_of_objects(project):
-    project(
-        xml,
+def test_nested_list_of_objects(xml_formatter):
+    formatter = xml_formatter(
         {
             'type': 'object',
             'properties': {
@@ -212,7 +211,7 @@ def test_nested_list_of_objects(project):
                     },
                 },
             },
-        },
+        }
     )
     formatter = xml.xml_formatter('test')
     output = formatter(
@@ -240,9 +239,8 @@ def test_nested_list_of_objects(project):
 
 @mark.issue(id=15)
 @mark.unit
-def test_collection_nested_list_of_object(project):
-    project(
-        xml,
+def test_collection_nested_list_of_object(xml_formatter):
+    formatter = xml_formatter(
         {
             'output': {'collection': True, 'xml_tag': 'root'},
             'type': 'object',
@@ -257,9 +255,8 @@ def test_collection_nested_list_of_object(project):
                     },
                 },
             },
-        },
+        }
     )
-    formatter = xml.xml_formatter('test')
     output = formatter(
         Collection(
             Event(

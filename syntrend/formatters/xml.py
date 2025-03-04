@@ -4,10 +4,12 @@ from syntrend.formatters import register_formatter, Collection
 
 @register_formatter('xml')
 def xml_formatter(object_name: str):
-    from xml.etree import ElementTree
+    from xml.dom import minidom
 
+    dom_impl = minidom.getDOMImplementation()
     object_root = CONFIG.objects[object_name]
     is_collection = object_root.output.collection
+    doc = dom_impl.createDocument(None, None, None)
 
     def handle_attribute(name: str, value: any, properties: model.PropertyDefinition):
         if properties.type == 'list':
@@ -30,7 +32,7 @@ def xml_formatter(object_name: str):
         return str_value
 
     def handle_sub_element(
-        parent: ElementTree.Element,
+        parent: minidom.Element,
         name: str,
         value: any,
         properties: model.PropertyDefinition,
@@ -46,27 +48,23 @@ def xml_formatter(object_name: str):
             return
 
         if type(value) is dict:
-            parent.append(generate_xml(name, properties, value))
-            return
-
-        str_value = str(value)
-
-        if parent.text:
-            parent.text += str_value
+            new_node = generate_xml(name, properties, value)
         else:
-            parent.text = str_value
+            str_value = str(value)
+            new_node = doc.createTextNode(str_value)
+        parent.appendChild(new_node)
 
     def generate_xml(
         name: str, object_properties: model.PropertyDefinition, event: dict
     ):
         tag_name = object_properties.kwargs.get('xml_tag', name)
-        element = ElementTree.Element(tag_name)
+        element = doc.createElement(tag_name)
 
         for prop_name, prop in object_properties.properties.items():
             tag = prop.kwargs.get('xml_tag', prop_name)
 
             if prop.kwargs.get('xml_attr', False):
-                element.attrib[tag] = handle_attribute(
+                element.attributes[tag] = handle_attribute(
                     prop_name, event[prop_name], prop
                 )
                 continue
@@ -75,21 +73,18 @@ def xml_formatter(object_name: str):
         return element
 
     def __formatter(events: Collection) -> list[str]:
-        root = None
+        root = doc
         if is_collection:
-            root = ElementTree.Element(object_root.output.kwargs.get('xml_tag', 'data'))
+            root = doc.createElement(object_root.output.kwargs.get('xml_tag', 'data'))
+            doc.appendChild(root)
 
         for event in events:
-            if is_collection:
-                root.append(generate_xml(object_root.name, object_root, event))
-            else:
-                root = generate_xml(object_root.name, object_root, event)
+            root.appendChild(generate_xml(object_root.name, object_root, event))
 
-        ElementTree.indent(root)
         buffer = (
-            ElementTree.tostring(root, encoding='utf-8', xml_declaration=True)
+            doc.toprettyxml(indent='  ', encoding='utf-8')
             .decode('utf-8')
-            .split('\n')
+            .split('\n')[:-1]
         )
         return buffer
 
