@@ -48,7 +48,7 @@ jobs:
           then
             echo ::set-output name=branch_type::release
             echo ::set-output name=work_id::${BASH_REMATCH[1]}
-          elif [[ $GITHUB_REF == /refs/head/main ]]s
+          elif [[ $GITHUB_REF == /refs/head/main ]]
           then
             echo ::set-output name=branch_type::main
           else
