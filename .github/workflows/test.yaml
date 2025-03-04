@@ -67,7 +67,13 @@ jobs:
           fi
       - name: Run Work Unit Tests
         if: steps.change_type.outputs.branch_type == 'pr' && steps.task-filter.outputs.python == 'true'
-        run: uv run pytest -m "issue(id=${{ steps.change_type.outputs.work_id }})"
+        run: |
+          if [[ $(pytest --collect-only -m 'issue(id=${{ steps.change_type.outputs.work_id }})' 2>/dev/null | grep selected | head -n 1 | sed -E 's/^collected .*([0-9]+) selected/\1/') == "0" ]]
+          then
+            echo "::error title=No Work Tests Provided::Modifications to Functional code requires a Work Unit Test to confirm resolution"
+            echo Work Unit Tests are marked with a test marker `issue(id=<issue_id>)`
+          fi
+          uv run pytest -m "issue(id=${{ steps.change_type.outputs.work_id }})"
       - name: Run Test Suite
         run: uv run pytest --junit-xml=pytest-report.xml --cov=syntrend --cov-fail-under=70 --cov-report=xml
       - name: Publish Test Artifact
