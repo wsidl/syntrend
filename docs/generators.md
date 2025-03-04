@@ -393,6 +393,10 @@ Generates a list of values of a specific type (using another generator type defi
 * `min_length` must be equal or greater than 0 
 * `min_length` must be equal or less than `max_length`
 
+#### Additional Notes
+
+* a new expression value (`kwargs.index`) value is added to support expressions requiring to know the index of the list item
+
 #### Example
 
 <caption>Simple List Example</caption>
@@ -427,6 +431,24 @@ max_length: 3
 ["df", "aaeff", "fcb"]
 ["fd", "affe"]
 ["edbb", "cadfe"]
+```
+
+<caption>Nested Object Example</caption>
+
+```yaml
+type: list
+sub_type:
+  type: object
+  properties:
+    index:
+      type: integer
+      expression: kwargs.index
+    text:
+      type: string
+```
+
+```text
+[{"index": 0, "text": "9tt27VDy"}, {"index": 1, "text": "aYsy5PlhnfhAV"}, {"index": 2, "text": "31ZCuqzULTHOr"}, {"index": 3, "text": "fAdrIQnL85RT9UYe"}]
 ```
 
 ### Object / Mapping

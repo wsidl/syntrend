@@ -18,7 +18,7 @@ class UUIDGenerator(PropertyGenerator):
         kwargs['separator'] = str(kwargs['separator'])
         return kwargs
 
-    def generate(self):
+    def generate(self, **_):
         uuid_val = self.modules.uuid.uuid4()
         if self.kwargs.compact:
             uuid_val = uuid_val.hex

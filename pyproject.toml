@@ -1,6 +1,6 @@
 [project]
 name = "syntrend"
-version = "0.1.0"
+version = "0.1.2"
 description = ""
 authors = [
     { name = "Will Siddall", email = "will.siddall@gmail.com" }
@@ -64,12 +64,8 @@ markers = [
     "docs",
     "unit",
     "integration",
-    "issue"
+    "issue",
 ]
-
-[build-system]
-requires = ["hatchling"]
-build-backend = "hatchling.build"
 
 [dependency-groups]
 dev = [
@@ -80,3 +76,7 @@ dev = [
     "pytest-cov>=5.0.0",
     "ruff>=0.9.6",
 ]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
