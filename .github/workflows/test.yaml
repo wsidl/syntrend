@@ -43,16 +43,16 @@ jobs:
         run: |
           if [[ $BRANCH_NAME =~ ^(feat|fix|bug|chore)/([0-9]+)[-_](.*) ]]
           then
-            echo ::set-output name=branch_type::pr
-            echo ::set-output name=work_id::${BASH_REMATCH[2]}
-            echo ::set-output name=work_name::${BASH_REMATCH[3]}
+            echo branch_type=pr >> $GITHUB_OUTPUT
+            echo work_id=${BASH_REMATCH[2]} >> $GITHUB_OUTPUT
+            echo work_name=${BASH_REMATCH[3]} >> $GITHUB_OUTPUT
           elif [[ $BRANCH_NAME =~ ^release/v([0-9][0-9a-z.-_]*) ]]
           then
-            echo ::set-output name=branch_type::release
-            echo ::set-output name=work_id::${BASH_REMATCH[1]}
+            echo branch_type=release >> $GITHUB_OUTPUT
+            echo work_id=${BASH_REMATCH[1]} >> $GITHUB_OUTPUT
           elif [[ $BRANCH_NAME == main ]]
           then
-            echo ::set-output name=branch_type::main
+            echo branch_type=main >> $GITHUB_OUTPUT
           else
             echo "::error title=Invalid Branch Name::Source Branch Names must match a convention matching to following regex: (main|release/v[0-9][0-9._]*|(fix|feat|bug|chore)/[0-9]+_.*)"
             echo Provided branch: $BRANCH_NAME
