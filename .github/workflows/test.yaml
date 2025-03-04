@@ -43,16 +43,16 @@ jobs:
         run: |
           if [[ $BRANCH_NAME =~ ^(feat|fix|bug|chore)/([0-9]+)[-_](.*) ]]
           then
-            echo branch_type=pr >> $GITHUB_ENV
-            echo work_id=${BASH_REMATCH[2]} >> $GITHUB_ENV
-            echo work_name=${BASH_REMATCH[3]} >> $GITHUB_ENV
+            echo branch_type=pr >> $GITHUB_OUTPUT
+            echo work_id=${BASH_REMATCH[2]} >> $GITHUB_OUTPUT
+            echo work_name=${BASH_REMATCH[3]} >> $GITHUB_OUTPUT
           elif [[ $BRANCH_NAME =~ ^release/v([0-9][0-9a-z.-_]*) ]]
           then
-            echo branch_type=release >> $GITHUB_ENV
-            echo work_id=${BASH_REMATCH[1]} >> $GITHUB_ENV
+            echo branch_type=release >> $GITHUB_OUTPUT
+            echo work_id=${BASH_REMATCH[1]} >> $GITHUB_OUTPUT
           elif [[ $BRANCH_NAME == main ]]
           then
-            echo branch_type=main >> $GITHUB_ENV
+            echo branch_type=main >> $GITHUB_OUTPUT
           else
             echo "::error title=Invalid Branch Name::Source Branch Names must match a convention matching to following regex: (main|release/v[0-9][0-9._]*|(fix|feat|bug|chore)/[0-9]+_.*)"
             echo Provided branch: $BRANCH_NAME
@@ -60,7 +60,7 @@ jobs:
           fi
       - name: Run Work Unit Tests
         if: steps.change_type.outputs.branch_type == 'pr'
-        run: uv run pytest -m "issue(id=$work_id)"
+        run: uv run pytest -m "issue(id=${{ steps.change_type.outputs.work_id }})"
       - name: Run Test Suite
         run: uv run pytest --junit-xml=pytest-report.xml --cov=syntrend --cov-fail-under=70 --cov-report=xml
       - name: Publish Test Artifact
