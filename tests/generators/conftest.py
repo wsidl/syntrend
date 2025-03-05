@@ -15,16 +15,18 @@ class FakeManager:
         return 0
 
 
-FAKE_MANAGER = FakeManager()
+@fixture(scope='function')
+def manager():
+    return FakeManager()
 
 
 @fixture(scope='function')
-def load_generator(monkeypatch):
+def load_generator(manager, monkeypatch):
     def _config(generator_type, config):
         project_config = model.ProjectConfig(**{'objects': {'test': config}})
         monkeypatch.setattr(generators, 'CONFIG', project_config)
         generator = generator_type('test', project_config.objects['test'])
-        generator.load(FAKE_MANAGER)
+        generator.load(manager)
         return generator
 
     return _config
