@@ -38,7 +38,11 @@ class PropertyGenerator:
 
     def __init__(self, object_name: str, config: model.PropertyDefinition):
         self.root_object = object_name
-        self.config = config
+        new_config = model.PropertyDefinition(
+            name=config.name, type=config.type, **self.default_config
+        )
+        model.update(new_config, config)
+        self.config = new_config
         self.properties: dict[str, any] = {}
         self.items: list[any] = []
         self.expression: Callable = default_generator
@@ -149,11 +153,7 @@ def get_generator(
     object_name: str, config: model.PropertyDefinition, manager
 ) -> PropertyGenerator:
     prop_gen_cls = GENERATORS[config.type]
-    new_config = model.PropertyDefinition(
-        name=config.name, type=config.type, **prop_gen_cls.default_config
-    )
-    model.update(new_config, config)
-    new_gen = prop_gen_cls(object_name, new_config)
+    new_gen = prop_gen_cls(object_name, config)
     new_gen.load(manager)
     return new_gen
 

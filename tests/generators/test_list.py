@@ -19,7 +19,6 @@ def test_simple_string_list(load_generator):
         'type': 'list',
         'min_length': 6,
         'max_length': 6,
-        'hidden': False,
         'sub_type': {'type': 'string'},
     })
     result = generator.generate()
@@ -70,9 +69,6 @@ def test_complex_string_list(load_generator):
         ListGeneratorBase,
         {
             'type': 'list',
-            'min_length': ListGeneratorBase.default_config['min_length'],
-            'max_length': ListGeneratorBase.default_config['max_length'],
-            'hidden': False,
             'sub_type': {'type': 'object', 'properties': {'text': {'type': 'string'}}},
         }
     )
