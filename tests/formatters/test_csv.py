@@ -4,24 +4,24 @@ from pytest import mark
 
 
 @mark.unit
-def test_single_string(project, monkeypatch):
-    project(csv, {'type': 'string'})
+def test_single_string(patch_formatter):
+    patch_formatter(csv, {'type': 'string'})
     formatter = csv.csv_formatter('test')
     output = formatter(Collection(Event('generated_string')))
     assert output[0] == '"generated_string"', 'Should generate a quoted string'
 
 
 @mark.unit
-def test_single_number(project, monkeypatch):
-    project(csv, {'type': 'integer'})
+def test_single_number(patch_formatter):
+    patch_formatter(csv, {'type': 'integer'})
     formatter = csv.csv_formatter('test')
     output = formatter(Collection(Event(10)))
     assert output[0] == '10', 'Should generate an encoded number string'
 
 
 @mark.unit
-def test_single_object(project, monkeypatch):
-    project(csv, {'type': 'object'})
+def test_single_object(patch_formatter):
+    patch_formatter(csv, {'type': 'object'})
     formatter = csv.csv_formatter('test')
     output = formatter(Collection(Event({'f1': 'string', 'f2': 10})))
     assert output[0] == '"string",10', (
@@ -30,8 +30,8 @@ def test_single_object(project, monkeypatch):
 
 
 @mark.unit
-def test_multiple_objects(project, monkeypatch):
-    project(csv, {'type': 'object'})
+def test_multiple_objects(patch_formatter):
+    patch_formatter(csv, {'type': 'object'})
     formatter = csv.csv_formatter('test')
     output = formatter(
         Collection(
@@ -49,8 +49,8 @@ def test_multiple_objects(project, monkeypatch):
 
 
 @mark.unit
-def test_multiple_objects_as_collection(project, monkeypatch):
-    project(csv, {'type': 'object', 'output': {'collection': True}})
+def test_multiple_objects_as_collection(patch_formatter):
+    patch_formatter(csv, {'type': 'object', 'output': {'collection': True}})
     formatter = csv.csv_formatter('test')
     output = formatter(
         Collection(
