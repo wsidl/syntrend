@@ -97,12 +97,18 @@ class PropertyGenerator:
 
         self.iteration = iteration
         if not iteration and self.start is not None:
-            self.iteration_value = RenderValue(... if self.config.hidden else self.start, self.start)
+            self.iteration_value = RenderValue(
+                ... if self.config.hidden else self.start, self.start
+            )
             return self.iteration_value
 
         if not isinstance(generated := self.generate(**kwargs), RenderValue):
             generated = RenderValue(... if self.config.hidden else generated, generated)
-        if not self.__expression_loaded and self.config.expression and isinstance(self.config.expression, str):
+        if (
+            not self.__expression_loaded
+            and self.config.expression
+            and isinstance(self.config.expression, str)
+        ):
             self.expression = self.root_manager.load_expression(self)
         if self.expression != default_generator:
             try:
@@ -127,7 +133,11 @@ class PropertyGenerator:
         else:
             self.iteration_value = generated
         self.iteration_value.hidden = self.__distribution(self.iteration_value.hidden)
-        if self.type is not None and not isinstance(self.iteration_value.visible, self.type) and self.iteration_value.hidden is not ...:
+        if (
+            self.type is not None
+            and not isinstance(self.iteration_value.visible, self.type)
+            and self.iteration_value.hidden is not ...
+        ):
             if self.iteration_value.visible is not ...:
                 self.iteration_value.visible = self.type(self.iteration_value.visible)
             self.iteration_value.hidden = self.type(self.iteration_value.hidden)

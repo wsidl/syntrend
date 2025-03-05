@@ -31,7 +31,9 @@ def test_single_object(patch_formatter):
 
 @mark.unit
 def test_single_object_w_col_sep(patch_formatter):
-    patch_formatter(ascii_table, {'type': 'object', 'output': {'column_separator': '|'}})
+    patch_formatter(
+        ascii_table, {'type': 'object', 'output': {'column_separator': '|'}}
+    )
     formatter = ascii_table.table_formatter('test')
     output = formatter(Collection(Event({'f1': 'string', 'f2': 10})))
     assert output[0] == ' string | 10 ', (

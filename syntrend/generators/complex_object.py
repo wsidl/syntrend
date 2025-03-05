@@ -1,7 +1,6 @@
 from syntrend.generators import register, PropertyGenerator, get_generator, RenderValue
 from syntrend.config.model import PropertyDefinition
 
-from collections import namedtuple
 from random import randint
 
 
@@ -129,7 +128,7 @@ class ObjectGeneratorBase(BaseComplexGenerator):
         }
 
     def generate(self, **kwargs):
-        result = RenderValue(... if self.config.hidden else {} , {})
+        result = RenderValue(... if self.config.hidden else {}, {})
         for key in self.properties:
             new_value = self.properties[key].render(force=True, **kwargs)
             if new_value.visible is not ... and not self.config.hidden:

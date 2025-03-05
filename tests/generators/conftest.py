@@ -26,4 +26,5 @@ def load_generator(monkeypatch):
         generator = generator_type('test', project_config.objects['test'])
         generator.load(FAKE_MANAGER)
         return generator
+
     return _config

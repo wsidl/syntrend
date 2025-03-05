@@ -15,12 +15,15 @@ def prepare_generator(object_def: dict) -> PropertyGenerator:
 @mark.issue(id=18)
 @mark.unit
 def test_simple_string_list(load_generator):
-    generator = load_generator(ListGeneratorBase, {
-        'type': 'list',
-        'min_length': 6,
-        'max_length': 6,
-        'sub_type': {'type': 'string'},
-    })
+    generator = load_generator(
+        ListGeneratorBase,
+        {
+            'type': 'list',
+            'min_length': 6,
+            'max_length': 6,
+            'sub_type': {'type': 'string'},
+        },
+    )
     result = generator.generate()
     assert type(result.visible) is list, 'List Generators should generate a list'
     assert len(result.visible) == 6, 'The list should have 6 elements'
@@ -39,7 +42,7 @@ def test_simple_number_list(load_generator):
             'min_length': 6,
             'max_length': 6,
             'sub_type': {'type': 'integer'},
-        }
+        },
     )
     result = generator.generate()
     assert type(result.visible) is list, 'List Generators should generate a list'
@@ -70,7 +73,7 @@ def test_complex_string_list(load_generator):
         {
             'type': 'list',
             'sub_type': {'type': 'object', 'properties': {'text': {'type': 'string'}}},
-        }
+        },
     )
     result = generator.generate()
     previous = ''

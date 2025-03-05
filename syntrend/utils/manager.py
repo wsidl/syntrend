@@ -8,7 +8,6 @@ from jinja2 import Environment, BaseLoader, exceptions
 import re
 import time
 from datetime import datetime
-from typing import Any
 
 RE_EXPR_PATH_FUNC = re.compile(r"path\(['\"](.*?)['\"]\)")
 
@@ -71,11 +70,12 @@ class SeriesManager:
             if self.__renderers[_obj_name] == CONFIG.objects[_obj_name].output.count:
                 return True
             rendered_value: RenderValue = self.generators[_obj_name].render()
-            time_value = rendered_value.hidden[CONFIG.objects[_obj_name].output.time_field]
+            time_value = rendered_value.hidden[
+                CONFIG.objects[_obj_name].output.time_field
+            ]
             if isinstance(time_value, datetime):
                 time_value = time_value.timestamp()
             if _current_time and time_value <= _current_time:
-
                 self.generators[_obj_name].undo()
                 return False
             if time_value not in next_events:
