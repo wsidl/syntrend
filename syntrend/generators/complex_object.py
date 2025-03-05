@@ -1,6 +1,7 @@
 from syntrend.generators import register, PropertyGenerator, get_generator, RenderValue
 from syntrend.config.model import PropertyDefinition
 
+from collections import namedtuple
 from random import randint
 
 
@@ -60,6 +61,10 @@ class ListGeneratorBase(BaseComplexGenerator):
         'max_length': 5,
     }
 
+    def __init__(self, *args, **kwargs):
+        super(ListGeneratorBase, self).__init__(*args, **kwargs)
+        self.__iter_index = 0
+
     def get_children(self):
         return []
 
@@ -90,6 +95,19 @@ class ListGeneratorBase(BaseComplexGenerator):
                 new_render.visible.append(new_value.visible)
             new_render.hidden.append(new_value.hidden)
         return new_render
+
+    def __getitem__(self, index):
+        return self.iteration_value.hidden[index]
+
+    def __iter__(self):
+        self.__iter_index = -1
+        return self
+
+    def __next__(self):
+        self.__iter_index += 1
+        if self.__iter_index == len(self.iteration_value.hidden):
+            raise StopIteration
+        return self.iteration_value.hidden[self.__iter_index]
 
 
 @register

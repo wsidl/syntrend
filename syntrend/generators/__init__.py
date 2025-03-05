@@ -42,6 +42,7 @@ class PropertyGenerator:
         self.properties: dict[str, any] = {}
         self.items: list[any] = []
         self.expression: Callable = default_generator
+        self.__expression_loaded: bool = False
         self.start = None
         self.__distribution = None
 
@@ -52,7 +53,7 @@ class PropertyGenerator:
         self.kwargs: __kwargs_nt_type = __kwargs_nt_type(**self.config.kwargs)
         self.root_manager = None
         self.iteration = -1
-        self.iteration_value = None
+        self.iteration_value: RenderValue = RenderValue(..., ...)
         self.__modules_nt_type = __modules_nt_type
         self.__kwargs_nt_type = __kwargs_nt_type
 
@@ -72,8 +73,6 @@ class PropertyGenerator:
         self.items = self.load_items(self.config.items)
         self.validate()
         self.__distribution = distributions.get_distribution(self.config.distribution)
-        if self.config.expression and isinstance(self.config.expression, str):
-            self.expression = manager.load_expression(self)
 
     def load_items(self, items: list[any]) -> list[any]:
         return items
@@ -90,30 +89,45 @@ class PropertyGenerator:
     def render(self, force=False, **kwargs) -> RenderValue:
         iteration = self.root_manager.current_iteration(self.root_object)
         if self.iteration == iteration and not force:
-            return RenderValue(... if self.config.hidden else self.iteration_value, self.iteration_value)
+            return self.iteration_value
 
         self.iteration = iteration
         if not iteration and self.start is not None:
-            self.iteration_value = self.start
-            return RenderValue(... if self.config.hidden else self.start, self.start)
+            self.iteration_value = RenderValue(... if self.config.hidden else self.start, self.start)
+            return self.iteration_value
 
-        generated = self.generate(**kwargs)
-        try:
-            self.iteration_value = self.expression(
-                new=generated.hidden if type(generated) is RenderValue else generated,
-                interval=self.iteration,
-                kwargs=self.kwargs._asdict() | kwargs,
-            )
-        except (ValueError, TypeError) as e:
-            exc.process_exception(e)
-        self.iteration_value = self.__distribution(self.iteration_value)
-        if self.type is not None and not isinstance(self.iteration_value, self.type):
-            self.iteration_value = self.type(self.iteration_value)
-        rendered = RenderValue(
-            ... if self.config.hidden else self.iteration_value,
-            self.iteration_value,
-        )
-        return rendered
+        if not isinstance(generated := self.generate(**kwargs), RenderValue):
+            generated = RenderValue(... if self.config.hidden else generated, generated)
+        if not self.__expression_loaded and self.config.expression and isinstance(self.config.expression, str):
+            self.expression = self.root_manager.load_expression(self)
+        if self.expression != default_generator:
+            try:
+                calculated = self.expression(
+                    new=generated.hidden,
+                    interval=self.iteration,
+                    kwargs=self.kwargs._asdict() | kwargs,
+                )
+                generated.hidden = calculated
+                if not self.config.hidden:
+                    generated.visible = calculated
+                self.iteration_value = generated
+            except (ValueError, TypeError) as e:
+                print(e)
+                print(self.name, self.root_object)
+                e.args = {
+                    'Generator': self.name,
+                    'Property': self.root_object,
+                    'Expression': self.config.expression,
+                }
+                exc.process_exception(e)
+        else:
+            self.iteration_value = generated
+        self.iteration_value.hidden = self.__distribution(self.iteration_value.hidden)
+        if self.type is not None and not isinstance(self.iteration_value.visible, self.type) and self.iteration_value.hidden is not ...:
+            if self.iteration_value.visible is not ...:
+                self.iteration_value.visible = self.type(self.iteration_value.visible)
+            self.iteration_value.hidden = self.type(self.iteration_value.hidden)
+        return self.iteration_value
 
     def undo(self):
         self.iteration -= 1

@@ -6,7 +6,7 @@ class BaseType:
         super().__init__(self, *args, **kwargs)
 
     def __str__(self):
-        return str(self.render())
+        return str(self.render().hidden)
 
     def render(self):
         raise NotImplementedError(
@@ -14,109 +14,109 @@ class BaseType:
         )
 
     def __hash__(self):
-        return hash(self.render())
+        return hash(self.render().hidden)
 
     def __eq__(self, other):
-        return self.render() == other
+        return self.render().hidden == other
 
     def __ne__(self, other):
-        return self.render() != other
+        return self.render().hidden != other
 
 
 class CollectionType(BaseType):
     def __getitem__(self, item):
-        return self.render()[item]
+        return self.render().hidden[item]
 
     def __len__(self):
-        return len(self.render())
+        return len(self.render().hidden)
 
     def __contains__(self, item):
-        return item in self.render()
+        return item in self.render().hidden
 
 
 class BooleanType(BaseType):
     def __and__(self, other):
-        return self.render() & other
+        return self.render().hidden & other
 
     def __or__(self, other):
-        return self.render() | other
+        return self.render().hidden | other
 
     def __xor__(self, other):
-        return self.render() ^ other
+        return self.render().hidden ^ other
 
     def __rxor__(self, other):
-        return other ^ self.render()
+        return other ^ self.render().hidden
 
     def __invert__(self):
-        return ~self.render()
+        return ~self.render().hidden
 
     def __bool__(self):
-        return bool(self.render())
+        return bool(self.render().hidden)
 
 
 class NumericType(BaseType):
     def __int__(self):
-        return int(self.render())
+        return int(self.render().hidden)
 
     def __float__(self):
-        return float(self.render())
+        return float(self.render().hidden)
 
     def __add__(self, other):
-        return self.render() + other
+        return self.render().hidden + other
 
     def __radd__(self, other):
-        return other + self.render()
+        return other + self.render().hidden
 
     def __sub__(self, other):
-        return self.render() - other
+        return self.render().hidden - other
 
     def __rsub__(self, other):
-        return other - self.render()
+        return other - self.render().hidden
 
     def __mul__(self, other):
-        return self.render() * other
+        return self.render().hidden * other
 
     def __rmul__(self, other):
-        return other * self.render()
+        return other * self.render().hidden
 
     def __truediv__(self, other):
-        return self.render() / other
+        return self.render().hidden / other
 
     def __rtruediv__(self, other):
-        return other / self.render()
+        return other / self.render().hidden
 
     def __floordiv__(self, other):
-        return self.render() // other
+        return self.render().hidden // other
 
     def __rfloordiv__(self, other):
-        return other // self.render()
+        return other // self.render().hidden
 
     def __mod__(self, other):
-        return self.render() % other
+        return self.render().hidden % other
 
     def __rmod__(self, other):
-        return other % self.render()
+        return other % self.render().hidden
 
     def __pow__(self, other):
-        return self.render() ** other
+        return self.render().hidden ** other
 
     def __rpow__(self, other):
-        return other ** self.render()
+        return other ** self.render().hidden
 
     def __lt__(self, other):
-        return self.render() < other
+        return self.render().hidden < other
 
     def __le__(self, other):
-        return self.render() <= other
+        return self.render().hidden <= other
 
     def __gt__(self, other):
-        return self.render() > other
+        return self.render().hidden > other
 
     def __ge__(self, other):
-        return self.render() >= other
+        return self.render().hidden >= other
 
     def __abs__(self):
-        return abs(self.render())
+        return abs(self.render().hidden)
 
 
 class StringType(CollectionType):
@@ -125,15 +125,15 @@ class StringType(CollectionType):
 
 class IntegerType(NumericType):
     def __rshift__(self, other):
-        return self.render() >> other
+        return self.render().hidden >> other
 
     def __lshift__(self, other):
-        return self.render() << other
+        return self.render().hidden << other
 
 
 class FloatType(NumericType):
     def __round__(self, n=None):
-        return round(self.render(), n)
+        return round(self.render().hidden, n)
 
 
 class ListType(CollectionType):
