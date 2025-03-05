@@ -49,6 +49,12 @@ def test_generator_with_hidden_simple_value(manager):
     generate_result = generator.generate()
     assert isinstance(generate_result, str), 'Generator should return a string'
     render_result = generator.render()
-    assert isinstance(render_result, generators.RenderValue), 'Generator should return a RenderValue'
-    assert isinstance(render_result.hidden, str), 'Render from Generator should have a string in the hidden Render Value'
-    assert render_result.visible is ..., 'Render from Generator should have an Ellipsis in the visible Render Value'
+    assert isinstance(render_result, generators.RenderValue), (
+        'Generator should return a RenderValue'
+    )
+    assert isinstance(render_result.hidden, str), (
+        'Render from Generator should have a string in the hidden Render Value'
+    )
+    assert render_result.visible is ..., (
+        'Render from Generator should have an Ellipsis in the visible Render Value'
+    )

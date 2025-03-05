@@ -44,7 +44,7 @@ jobs:
       - name: Run Format Check
         run: uv run ruff format --check
       - name: Run Linter Check
-        run: uv run ruff check
+        run: uv run ruff check --exclude=tests
       - name: Get Change Type
         id: change_type
         run: |
