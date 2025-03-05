@@ -1,5 +1,5 @@
 from syntrend.config import load_config
-from syntrend.generators import PropertyGenerator
+from syntrend.generators.complex_object import ListGeneratorBase, PropertyGenerator
 from syntrend.utils.manager import ROOT_MANAGER
 
 from pytest import mark
@@ -14,15 +14,14 @@ def prepare_generator(object_def: dict) -> PropertyGenerator:
 
 @mark.issue(id=18)
 @mark.unit
-def test_simple_string_list():
-    generator = prepare_generator(
-        {
-            'type': 'list',
-            'min_length': 6,
-            'max_length': 6,
-            'sub_type': {'type': 'string'},
-        }
-    )
+def test_simple_string_list(load_generator):
+    generator = load_generator(ListGeneratorBase, {
+        'type': 'list',
+        'min_length': 6,
+        'max_length': 6,
+        'hidden': False,
+        'sub_type': {'type': 'string'},
+    })
     result = generator.generate()
     assert type(result.visible) is list, 'List Generators should generate a list'
     assert len(result.visible) == 6, 'The list should have 6 elements'
@@ -33,8 +32,9 @@ def test_simple_string_list():
 
 @mark.issue(id=18)
 @mark.unit
-def test_simple_number_list():
-    generator = prepare_generator(
+def test_simple_number_list(load_generator):
+    generator = load_generator(
+        ListGeneratorBase,
         {
             'type': 'list',
             'min_length': 6,
@@ -65,10 +65,14 @@ def test_simple_incremental_list():
 
 @mark.issue(id=18)
 @mark.unit
-def test_complex_string_list():
-    generator = prepare_generator(
+def test_complex_string_list(load_generator):
+    generator = load_generator(
+        ListGeneratorBase,
         {
             'type': 'list',
+            'min_length': ListGeneratorBase.default_config['min_length'],
+            'max_length': ListGeneratorBase.default_config['max_length'],
+            'hidden': False,
             'sub_type': {'type': 'object', 'properties': {'text': {'type': 'string'}}},
         }
     )
