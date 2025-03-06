@@ -98,7 +98,7 @@ properties:
 
 ![Output Sequence of events to console with no time simulations](assets/output_seq_no_time_sim.gif)
 
-By introducing the `time_field` property to the [Output Config](project_file.md#output-config) block set to the `timestamp` field in the object, we now have defined the object is to simulate event updates based on the increments present in that field.
+By introducing the `time_field` property to the [Output Config](project_file.md#output-config) block and set it to the `timestamp` field, we now have defined the object to simulate event updates based on the increments presented by that field.
 
 ```yaml
 output:
@@ -260,7 +260,251 @@ properties:
 2,"agpofNhQ1GovrD",85
 ```
 
+### XML
+
+> [!NOTE]
+> `format: xml`
+
+XML is a complex format compared to many of these other formats. XML Elements (tags) behave like JSON/YAML Objects **AND** Ordered Lists, so to find ways to define it can be tricky.
+
+How Syntrend supports this is to look at each element as an object. The properties of this object can either be an attribute of the element or a child element.
+
+#### Properties
+
+| Property     | Where                                                      | Default       | Description                                                                 |
+|--------------|------------------------------------------------------------|---------------|-----------------------------------------------------------------------------|
+| **xml_tag**  | `output`                                                   | object name   | The XML Tag name used to encapsulate all elements when `collection: true`   |
+| **xml_tag**  | [Property Definition](project_file.md#property-definition) | property name | Alternative XML Tag used for the attribute/child element                    |
+| **xml_attr** | [Property Definition](project_file.md#property-definition) | "false"       | Flag to identify the property as an XML Attribute                           |
+
+#### Examples
+
+##### Simple XML Example
+
+```yaml
+output:
+  format: xml
+type: object
+xml_tag: root
+properties:
+  attr:
+    type: string
+    xml_attr: true
+  child:
+    type: object
+    properties:
+      attr:
+        type: string
+        xml_attr: true
+      content:
+        type: string
+```
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<root attr="mmiOBE8Uf2">
+  <child attr="uaTQex3q5HKnVjywgtAG">0OzxfgIQJ</child>
+</root>
+```
+
+##### Hybrid Statis/Dynamic XML Generation
+Of course, XML can support many nested elements (HTML is a great example of many types of nested objects under one parent). Sometimes you need to clearly define the element, and sometimes you want to have a random number of those elements provided.
+
+Syntrend can support this use case through the use of the [List Generator](generators.md#list) as an object type. Since XML Elements are naturally Objects and Lists, any List object within a Syntrend project will have it's child objects collapse to the parent in the order where the List object was situated.
+
+```yaml
+objects:
+  html:
+    output:
+      format: xml
+    type: object
+    properties:
+      head:
+        type: object
+        properties:
+          title:
+            type: object
+            properties:
+              string:
+                type: name
+      body:
+        type: object
+        properties:
+          header:
+            type: object
+            xml_tag: h1
+            properties:
+              string:
+                type: string
+                expression: html().head.title.string
+          paragraph1:
+            type: object
+            xml_tag: p
+            properties:
+              class:
+                type: string
+                xml_attr: true
+              string:
+                type: string
+          new_list:
+            type: object
+            xml_tag: ul
+            properties:
+              first_item:
+                type: object
+                xml_tag: li
+                properties:
+                  string:
+                    type: static
+                    value: First Item
+              list_items:
+                type: list
+                min_length: 2
+                max_length: 4
+                sub_type:
+                  type: object
+                  xml_tag: li
+                  properties:
+                    string:
+                      type: string
+              last_item:
+                type: object
+                xml_tag: li
+                properties:
+                  string:
+                    type: static
+                    value: Last Item
+```
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<html>
+  <head>
+    <title>Craig Barnes</title>
+  </head>
+  <body>
+    <h1>Craig Barnes</h1>
+    <p class="GKbrm8gDlIqtz">HgL4gwHzxIEqMaB</p>
+    <ul>
+      <li>First Item</li>
+      <li>wdQgaB2DcTcu9r8pZA9</li>
+      <li>JYvuPWXdDATDbweIa</li>
+      <li>i1qerN2YCmXXQv</li>
+      <li>Last Item</li>
+    </ul>
+  </body>
+</html>
+```
+
+##### Collections
+
+Since XML is a document, a collection of documents would be separated into multiple files or entities. So for Syntrend to support collections of XML documents, it needs to enclose the whole collection in another XML element.
+
+An example of this is a Geographic Markup Language (GML) Feature Collection. If creating a single Feature element, we can define a project as follows.
+
+<caption>Single GML Feature Element</caption>
+
+```yaml
+Feature:
+  output:
+    format: xml
+  type: object
+  properties:
+    fid:
+      type: integer
+      expression: interval
+      xml_attr: true
+    Description:
+      type: string
+      xml_attr: true
+    Point:
+      type: object
+      properties:
+        srsName:
+          type: static
+          value: urn:ogc:def:crs:EPSG::4326
+          xml_attr: true
+        srsDimension:
+          type: static
+          value: 2
+          xml_attr: true
+        pos:
+          type: object
+          properties:
+            lat:
+              type: float
+              min_offset: -90
+              max_offset: 90
+            lon:
+              type: float
+              min_offset: -180
+              max_offset: 180
+```
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<Feature fid="0" Description="9QARr9V3gMPC">
+  <Point srsName="urn:ogc:def:crs:EPSG::4326" srsDimension="2">
+    <pos>
+      -24.076383
+      19.308395
+    </pos>
+  </Point>
+</Feature>
+```
+
+> [!NOTE]
+> Notice how multiple child values used in the `pos` object
+> (`lat`, `space`, and `lon`) is concatenated in the 
+> final result (as `-24.076383 19.308395`)
+
+Adding `collection: true` to the [Output Config](project_file.md#output-config) of the object along with the XML Tag to be used (`xml_tag`) will encapsulate all generated elements by that tag.
+
+<caption>Collection of Features in a FeatureCollection element</caption>
+
+```yaml
+Feature:
+  output:
+    format: xml
+    collection: true
+    xml_tag: FeatureCollection
+    count: 3
+```
+
+```xml
+<?xml version="1.0" encoding="utf-8"?>
+<FeatureCollection>
+  <Feature fid="0" Description="rLWWnWr">
+    <Point srsName="urn:ogc:def:crs:EPSG::4326" srsDimension="2">
+      <pos>
+        -38.472894
+        -64.3371
+      </pos>
+    </Point>
+  </Feature>
+  <Feature fid="1" Description="pLnYqyA3ObdA">
+    <Point srsName="urn:ogc:def:crs:EPSG::4326" srsDimension="2">
+      <pos>
+        -64.808272
+        -107.701463
+      </pos>
+    </Point>
+  </Feature>
+  <Feature fid="2" Description="n3Fyu349M5HeTMyX">
+    <Point srsName="urn:ogc:def:crs:EPSG::4326" srsDimension="2">
+      <pos>
+        -71.014564
+        67.249924
+      </pos>
+    </Point>
+  </Feature>
+</FeatureCollection>
+```
+
 ### SQL
+
+> [!NOTE]
+> `format: sql`
 
 For creating a Generic SQL output file that can be used with database processors to populate a database.
 

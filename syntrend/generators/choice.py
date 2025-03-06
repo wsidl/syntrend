@@ -24,5 +24,5 @@ class ChoiceGenerator(PropertyGenerator):
     def validate(self):
         assert len(self.items) > 0, 'Cannot generate items from an empty list'
 
-    def generate(self):
+    def generate(self, **_):
         return self.items[randint(0, len(self.items) - 1)]

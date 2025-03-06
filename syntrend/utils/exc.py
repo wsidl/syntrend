@@ -13,5 +13,5 @@ def process_exception(e: Exception):
             lines.append(f'  | {arg}')
     sys.stderr.write(linesep.join(lines) + linesep)
     if environ.get('SYNTREND_DEBUG', 0):
-        print_tb(e.__traceback__)
+        print_tb(e.__traceback__, file=sys.stderr)
     sys.exit(1)

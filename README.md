@@ -1,10 +1,11 @@
 # Syntrend Synthetic Data Generation
 
-<!-- Add Badges --> 
-
 Syntrend is a Python Package and Command Line tool for generating synthetic data to express very specific behaviours and trends across multiple inputs.
 
-For example, a simple Project looks like this.
+[![Tests](https://github.com/wsidl/syntrend/actions/workflows/test.yaml/badge.svg)](https://github.com/wsidl/syntrend/actions/workflows/test.yaml)
+<!-- Add Badges --> 
+
+A simple Project may only contain a few lines of YAML
 
 ```shell
 $ cat 5_numbers.yaml

@@ -1,0 +1,83 @@
+name: Test PR Changes
+
+env:
+  GH_REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+  UV_VERSION: "0.5.30"
+defaults:
+  run:
+    shell: bash
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build-dev:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    env:
+      BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+      - name: Determine which files changed
+        uses: dorny/paths-filter@v3
+        id: task-filter
+        with:
+          filters: |
+            python:
+              - 'syntrend/**/*.py'
+      - name: Setup UV
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: pyproject.toml
+      - name: Setup Project for Testing
+        shell: bash
+        run: uv sync --all-extras --no-install-project --frozen
+      - name: Run Format Check
+        run: uv run ruff format --check
+      - name: Run Linter Check
+        run: uv run ruff check --exclude=tests
+      - name: Get Change Type
+        id: change_type
+        run: |
+          if [[ $BRANCH_NAME =~ ^(feat|fix|bug|chore)/([0-9]+)[-_](.*) ]]
+          then
+            echo branch_type=pr >> $GITHUB_OUTPUT
+            echo work_id=${BASH_REMATCH[2]} >> $GITHUB_OUTPUT
+            echo work_name=${BASH_REMATCH[3]} >> $GITHUB_OUTPUT
+          elif [[ $BRANCH_NAME =~ ^release/v([0-9][0-9a-z.-_]*) ]]
+          then
+            echo branch_type=release >> $GITHUB_OUTPUT
+            echo work_id=${BASH_REMATCH[1]} >> $GITHUB_OUTPUT
+          elif [[ $BRANCH_NAME == main ]]
+          then
+            echo branch_type=main >> $GITHUB_OUTPUT
+          else
+            echo "::error title=Invalid Branch Name::Source Branch Names must match a convention matching to following regex: (main|release/v[0-9][0-9._]*|(fix|feat|bug|chore)/[0-9]+_.*)"
+            echo Provided branch: $BRANCH_NAME
+            exit 1
+          fi
+      - name: Run Work Unit Tests
+        if: steps.change_type.outputs.branch_type == 'pr' && steps.task-filter.outputs.python == 'true'
+        run: |
+          if [[ $(pytest --collect-only -m 'issue(id=${{ steps.change_type.outputs.work_id }})' 2>/dev/null | grep selected | head -n 1 | sed -E 's/^collected .*([0-9]+) selected/\1/') == "0" ]]
+          then
+            echo "::error title=No Work Tests Provided::Modifications to Functional code requires a Work Unit Test to confirm resolution"
+            echo Work Unit Tests are marked with a test marker `issue(id=<issue_id>)`
+          fi
+          uv run pytest -m "issue(id=${{ steps.change_type.outputs.work_id }})"
+      - name: Run Test Suite
+        run: uv run pytest --junit-xml=pytest-report.xml --cov=syntrend --cov-fail-under=70 --cov-report=xml
+      - name: Publish Test Artifact
+        uses: mikepenz/action-junit-report@v5
+        if: success() || failure()
+        with:
+          report_paths: pytest-report.xml

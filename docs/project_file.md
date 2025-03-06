@@ -53,13 +53,14 @@ Configuration Properties used for Global and Object-specific outputs
 
 These properties are useful for specific Formatters or Output Targets.
 
-| Property                      | Condition       | Default | Description                                                                                                              |
-|-------------------------------|-----------------|---------|--------------------------------------------------------------------------------------------------------------------------|
-| **console_collection_format** | `directory: ""` | {body}  | A display format to display a collection dataset. See more in [Console Output Formats](#console-output-formats).         |
-| **console_event_format**      | `directory: ""` | {body}  | A display format to display an event dataset. See more in [Console Output Formats](#console-output-formats).             |
-| **header_separator**          | `format: table` | "="     | Character seperating the header row from the table body (see more in [Table Formatting](outputs.md#ascii-table))         |
-| **column_separator**          | `format: table` | " "     | Character between columns of the table. Any string will be used (see more in [Table Formatting](outputs.md#ascii-table)) |
-| **row_separator**             | `format: table` | ""      | Character between table records (see more in [Table Formatting](outputs.md#ascii-table))                                 |
+| Property                      | Condition       | Default     | Description                                                                                                              |
+|-------------------------------|-----------------|-------------|--------------------------------------------------------------------------------------------------------------------------|
+| **console_collection_format** | `directory: ""` | "{body}"    | A display format to display a collection dataset. See more in [Console Output Formats](#console-output-formats).         |
+| **console_event_format**      | `directory: ""` | "{body}"    | A display format to display an event dataset. See more in [Console Output Formats](#console-output-formats).             |
+| **xml_tag**                   | `format: xml`   | object name | The XML Element Tag Name used to encapsulate all elements when `collection: true` (see [XML Output](outputs.md#xml))     |
+| **header_separator**          | `format: table` | "="         | Character separating the header row from the table body (see more in [Table Formatting](outputs.md#ascii-table))         |
+| **column_separator**          | `format: table` | " "         | Character between columns of the table. Any string will be used (see more in [Table Formatting](outputs.md#ascii-table)) |
+| **row_separator**             | `format: table` | ""          | Character between table records (see more in [Table Formatting](outputs.md#ascii-table))                                 |
 
 #### Filename Format Template
 
@@ -114,8 +115,16 @@ Definition of how a value is generated and any associated properties to modify i
 | **type**         | (required)   | Generator Type to be used for this Property Definition                                                                                                                                     |
 | **distribution** | {type: none} | Property to define how the generated values will vary using a [Distribution Type](#distribution-Types). Defaults to "none" (defined as a [Property Distribution](#property-distribution)). |
 | **expression**   | -            | String Expression to define a trend, behaviour, or conditions to apply. For more information on Expressions, see [Expressions](expressions.md).                                            |
+| **hidden**       | false        | Flag to identify the property as a hidden object. Will not get rendered on final output but may be used in the [Expressions](expressions.md) in another property or object                 |
 | **items**        | []           | List of items required for Generator Types needing a list of objects to choose from.                                                                                                       |
 | **properties**   | {}           | Mapping of sub properties namely to support nested objects. Commonly used for `object` types.                                                                                              |
+
+#### Conditional Properties
+
+There are many conditional properties depending on the Generator or Formatter being used.
+
+- For Generator-specific properties, see [Generators](generators.md)
+- For Formatter-specific properties, see [Formatters](outputs.md)
 
 ### Object Definition
 
