@@ -4,9 +4,9 @@ from pytest import mark, fixture
 
 
 @fixture(scope='function')
-def xml_formatter(project):
+def xml_formatter(patch_formatter):
     def _setup(config: dict):
-        project(xml, config)
+        patch_formatter(xml, config)
         return xml.xml_formatter('test')
 
     return _setup
