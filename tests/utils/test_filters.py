@@ -29,6 +29,21 @@ def test_to_datetime(value, result):
 
 @mark.unit
 @mark.parametrize(
+    'value,format_str',
+    [
+        ('2024-01-23', '%Y-%m-%d'),
+        ('23-01-2024', '%d-%m-%Y'),
+        ('Jan 23, 2024', '%b %d, %Y'),
+        ('2024-01-23', 'invalid'),
+    ],
+)
+def test_to_datetime_with_formatting(value, format_str):
+    returned = filters.to_datetime(value, format_str)
+    assert returned == datetime(2024, 1, 23), 'Generated datetime should convert to datetime'
+
+
+@mark.unit
+@mark.parametrize(
     'delta,new_time',
     [
         ('1d', datetime(2024, 1, 2, tzinfo=timezone.utc)),
