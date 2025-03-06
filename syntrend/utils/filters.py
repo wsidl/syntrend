@@ -62,7 +62,7 @@ def get_object(object_name):
 
 ITER_MAP_ALTERNATIVES = {
     'format': lambda x, *y: y[0].format(item=x),
-    'iter': lambda x, *y: iter_map(x, *y)
+    'iter': lambda x, *y: iter_map(x, *y),
 }
 
 

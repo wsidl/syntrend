@@ -39,7 +39,9 @@ def test_to_datetime(value, result):
 )
 def test_to_datetime_with_formatting(value, format_str):
     returned = filters.to_datetime(value, format_str)
-    assert returned == datetime(2024, 1, 23), 'Generated datetime should convert to datetime'
+    assert returned == datetime(2024, 1, 23), (
+        'Generated datetime should convert to datetime'
+    )
 
 
 @mark.unit

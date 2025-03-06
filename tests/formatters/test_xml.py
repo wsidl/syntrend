@@ -303,24 +303,30 @@ def test_invalid_attribute_type_definition(xml_formatter):
                 'attr': {
                     'type': 'list',
                     'xml_attr': True,
-                    'sub_type': {
-                        'type': 'string'
-                    },
+                    'sub_type': {'type': 'string'},
                 },
             },
         }
     )
     with raises(TypeError) as result:
         formatter(Collection(Event({'attr': 'test_string'})))
-        assert result.type is TypeError, 'Formatting of an attribute list type should raise TypeError'
+        assert result.type is TypeError, (
+            'Formatting of an attribute list type should raise TypeError'
+        )
 
 
 @mark.unit
 def test_invalid_attribute_value_type(xml_formatter):
-    formatter = xml_formatter({'type': 'object', 'properties': {'attr': {'type': 'string', 'xml_attr': True}}})
+    formatter = xml_formatter(
+        {'type': 'object', 'properties': {'attr': {'type': 'string', 'xml_attr': True}}}
+    )
     with raises(ValueError) as result:
         formatter(Collection(Event({'attr': ['test_string']})))
-        assert result.type is ValueError, 'Formatting of an attribute list value should raise ValueError'
+        assert result.type is ValueError, (
+            'Formatting of an attribute list value should raise ValueError'
+        )
     with raises(ValueError) as result:
         formatter(Collection(Event({'attr': {'a': 'test_string'}})))
-        assert result.type is ValueError, 'Formatting of an attribute dict value should raise ValueError'
+        assert result.type is ValueError, (
+            'Formatting of an attribute dict value should raise ValueError'
+        )
