@@ -45,38 +45,6 @@ def to_datetime(value_string, format_str: str = None):
     return datetime.timedelta(**time_parts)
 
 
-def series(generator, series_length):
-    class _Comparator:
-        def __init__(self):
-            self._v = [
-                generator.condition_historian(i) for i in range(0, -series_length, -1)
-            ]
-            self.__iter_index = 0
-
-        def __eq__(self, other):
-            return all([a == other for a in self._v])
-
-        def __ne__(self, other):
-            return all([a != other for a in self._v])
-
-        def __gt__(self, other):
-            return all([a > other for a in self._v])
-
-        def __ge__(self, other):
-            return all([a >= other for a in self._v])
-
-        def __lt__(self, other):
-            return all([a < other for a in self._v])
-
-        def __le__(self, other):
-            return all([a <= other for a in self._v])
-
-        def __contains__(self, item):
-            return item in self._v
-
-    return _Comparator()
-
-
 def get_object(object_name):
     historian = MANAGER.historians[object_name]
     generator = MANAGER.generators[object_name]
