@@ -5,6 +5,7 @@ import logging
 from collections import namedtuple
 from typing import Union, TYPE_CHECKING
 import math
+import builtins
 
 if TYPE_CHECKING:
     from syntrend.utils.manager import SeriesManager
@@ -59,12 +60,19 @@ def get_object(object_name):
     return get_index
 
 
-def iter_map(value, filter_string: str):
+ITER_MAP_ALTERNATIVES = {
+    'format': lambda x, *y: y[0].format(item=x),
+    'iter': lambda x, *y: iter_map(x, *y)
+}
+
+
+def iter_map(value, function_name: str, *filter_arguments: str):
     results = []
+    func = ITER_MAP_ALTERNATIVES.get(function_name, getattr(builtins, function_name))
     for item in value:
         if isinstance(item, dict):
             item = namedtuple('item', list(item.keys()))(**item)
-        results.append(filter_string.format(item=item))
+        results.append(func(item, *filter_arguments))
     return results
 
 
@@ -86,7 +94,6 @@ def load_environment(manager: 'SeriesManager'):
     manager.expression_env.filters.update(
         to_timestamp=to_timestamp,
         to_datetime=to_datetime,
-        series=series,
         iter=iter_map,
         # path=get_path,
     )
