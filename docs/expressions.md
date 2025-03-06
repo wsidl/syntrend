@@ -101,3 +101,12 @@ e.g. `interval * 10 / pi | sin * 5 + 2` will pipe the result of the arithmetic a
 | **degrees** | Translates a number from Radians to Degrees.                                                                         |
 | **radians** | Translates a number from Degrees to Radians.                                                                         |
 | **random**  | Provides access to Python's `random.randint` method giving a lower- and upper-bound for a random number (inclusive). |
+
+
+### Iteration Filters
+
+Filters/Functions that assists with performing a function across each item of an object/list.
+
+| Filter   | Description                                                                                                                                                                     |
+|----------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| **iter** | Much like a `map` function, perform a task across items of a list or keys of an object. \nHas been included as `map` is a reserved filter for Jinja with specific functionality |

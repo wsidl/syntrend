@@ -12,7 +12,7 @@ def xml_formatter(object_name: str):
     doc = dom_impl.createDocument(None, None, None)
 
     def handle_attribute(name: str, value: any, properties: model.PropertyDefinition):
-        if properties.type == 'list':
+        if properties.type in {'object', 'list'}:
             raise TypeError(
                 'XML Attributes cannot have multiples or be lists',
                 {
@@ -21,7 +21,7 @@ def xml_formatter(object_name: str):
                 },
             )
         if type(value) in {dict, list}:
-            raise TypeError(
+            raise ValueError(
                 'XML Attributes must contain simple values',
                 {
                     'Property Name': name,

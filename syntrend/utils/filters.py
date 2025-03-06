@@ -5,6 +5,7 @@ import logging
 from collections import namedtuple
 from typing import Union, TYPE_CHECKING
 import math
+import builtins
 
 if TYPE_CHECKING:
     from syntrend.utils.manager import SeriesManager
@@ -45,38 +46,6 @@ def to_datetime(value_string, format_str: str = None):
     return datetime.timedelta(**time_parts)
 
 
-def series(generator, series_length):
-    class _Comparator:
-        def __init__(self):
-            self._v = [
-                generator.condition_historian(i) for i in range(0, -series_length, -1)
-            ]
-            self.__iter_index = 0
-
-        def __eq__(self, other):
-            return all([a == other for a in self._v])
-
-        def __ne__(self, other):
-            return all([a != other for a in self._v])
-
-        def __gt__(self, other):
-            return all([a > other for a in self._v])
-
-        def __ge__(self, other):
-            return all([a >= other for a in self._v])
-
-        def __lt__(self, other):
-            return all([a < other for a in self._v])
-
-        def __le__(self, other):
-            return all([a <= other for a in self._v])
-
-        def __contains__(self, item):
-            return item in self._v
-
-    return _Comparator()
-
-
 def get_object(object_name):
     historian = MANAGER.historians[object_name]
     generator = MANAGER.generators[object_name]
@@ -91,12 +60,19 @@ def get_object(object_name):
     return get_index
 
 
-def iter_map(value, filter_string: str):
+ITER_MAP_ALTERNATIVES = {
+    'format': lambda x, *y: y[0].format(item=x),
+    'iter': lambda x, *y: iter_map(x, *y),
+}
+
+
+def iter_map(value, function_name: str, *filter_arguments: str):
     results = []
+    func = ITER_MAP_ALTERNATIVES.get(function_name, getattr(builtins, function_name))
     for item in value:
         if isinstance(item, dict):
             item = namedtuple('item', list(item.keys()))(**item)
-        results.append(filter_string.format(item=item))
+        results.append(func(item, *filter_arguments))
     return results
 
 
@@ -118,7 +94,6 @@ def load_environment(manager: 'SeriesManager'):
     manager.expression_env.filters.update(
         to_timestamp=to_timestamp,
         to_datetime=to_datetime,
-        series=series,
         iter=iter_map,
         # path=get_path,
     )
