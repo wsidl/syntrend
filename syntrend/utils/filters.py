@@ -2,6 +2,7 @@ import datetime
 import random
 import re
 import logging
+from collections import namedtuple
 from typing import Union, TYPE_CHECKING
 import math
 
@@ -50,6 +51,7 @@ def series(generator, series_length):
             self._v = [
                 generator.condition_historian(i) for i in range(0, -series_length, -1)
             ]
+            self.__iter_index = 0
 
         def __eq__(self, other):
             return all([a == other for a in self._v])
@@ -89,6 +91,15 @@ def get_object(object_name):
     return get_index
 
 
+def iter_map(value, filter_string: str):
+    results = []
+    for item in value:
+        if isinstance(item, dict):
+            item = namedtuple('item', list(item.keys()))(**item)
+        results.append(filter_string.format(item=item))
+    return results
+
+
 def load_environment(manager: 'SeriesManager'):
     global MANAGER
     MANAGER = manager
@@ -108,6 +119,7 @@ def load_environment(manager: 'SeriesManager'):
         to_timestamp=to_timestamp,
         to_datetime=to_datetime,
         series=series,
+        iter=iter_map,
         # path=get_path,
     )
     for object_name in manager.historians:

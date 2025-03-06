@@ -1,4 +1,4 @@
-from syntrend.generators import register, PropertyGenerator, get_generator
+from syntrend.generators import register, PropertyGenerator, get_generator, RenderValue
 from syntrend.config.model import PropertyDefinition
 
 from random import randint
@@ -60,6 +60,10 @@ class ListGeneratorBase(BaseComplexGenerator):
         'max_length': 5,
     }
 
+    def __init__(self, *args, **kwargs):
+        super(ListGeneratorBase, self).__init__(*args, **kwargs)
+        self.__iter_index = 0
+
     def get_children(self):
         return []
 
@@ -80,13 +84,29 @@ class ListGeneratorBase(BaseComplexGenerator):
         )
         return kwargs
 
-    def generate(self, **kwargs) -> list[any]:
-        result = []
+    def generate(self, **kwargs) -> RenderValue:
         kwargs['force'] = True
+        new_render = RenderValue(... if self.config.hidden else [], [])
         for index in range(randint(self.kwargs.min_length, self.kwargs.max_length)):
             kwargs['index'] = index
-            result.append(self.kwargs.sub_type_generator.render(**kwargs))
-        return result
+            new_value = self.kwargs.sub_type_generator.render(**kwargs)
+            if new_value.visible is not ... and not self.config.hidden:
+                new_render.visible.append(new_value.visible)
+            new_render.hidden.append(new_value.hidden)
+        return new_render
+
+    def __getitem__(self, index):
+        return self.iteration_value.hidden[index]
+
+    def __iter__(self):
+        self.__iter_index = -1
+        return self
+
+    def __next__(self):
+        self.__iter_index += 1
+        if self.__iter_index == len(self.iteration_value.hidden):
+            raise StopIteration
+        return self.iteration_value.hidden[self.__iter_index]
 
 
 @register
@@ -108,10 +128,13 @@ class ObjectGeneratorBase(BaseComplexGenerator):
         }
 
     def generate(self, **kwargs):
-        return {
-            key: self.properties[key].render(force=True, **kwargs)
-            for key in self.properties
-        }
+        result = RenderValue(... if self.config.hidden else {}, {})
+        for key in self.properties:
+            new_value = self.properties[key].render(force=True, **kwargs)
+            if new_value.visible is not ... and not self.config.hidden:
+                result.visible[key] = new_value.visible
+            result.hidden[key] = new_value.hidden
+        return result
 
     def undo(self):
         super(BaseComplexGenerator, self).undo()

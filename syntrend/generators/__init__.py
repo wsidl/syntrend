@@ -16,6 +16,12 @@ def default_generator(new, **kwargs):
     return new
 
 
+class RenderValue:
+    def __init__(self, visible, hidden):
+        self.visible = visible
+        self.hidden = hidden
+
+
 class PropertyGenerator:
     """Base Property Generator for all generators
 
@@ -32,10 +38,15 @@ class PropertyGenerator:
 
     def __init__(self, object_name: str, config: model.PropertyDefinition):
         self.root_object = object_name
-        self.config = config
+        new_config = model.PropertyDefinition(
+            name=config.name, type=config.type, **self.default_config
+        )
+        model.update(new_config, config)
+        self.config = new_config
         self.properties: dict[str, any] = {}
         self.items: list[any] = []
         self.expression: Callable = default_generator
+        self.__expression_loaded: bool = False
         self.start = None
         self.__distribution = None
 
@@ -46,7 +57,7 @@ class PropertyGenerator:
         self.kwargs: __kwargs_nt_type = __kwargs_nt_type(**self.config.kwargs)
         self.root_manager = None
         self.iteration = -1
-        self.iteration_value = None
+        self.iteration_value: RenderValue = RenderValue(..., ...)
         self.__modules_nt_type = __modules_nt_type
         self.__kwargs_nt_type = __kwargs_nt_type
 
@@ -66,8 +77,6 @@ class PropertyGenerator:
         self.items = self.load_items(self.config.items)
         self.validate()
         self.__distribution = distributions.get_distribution(self.config.distribution)
-        if self.config.expression and isinstance(self.config.expression, str):
-            self.expression = manager.load_expression(self)
 
     def load_items(self, items: list[any]) -> list[any]:
         return items
@@ -81,28 +90,57 @@ class PropertyGenerator:
     def validate(self):
         pass
 
-    def render(self, force=False, **kwargs):
+    def render(self, force=False, **kwargs) -> RenderValue:
         iteration = self.root_manager.current_iteration(self.root_object)
         if self.iteration == iteration and not force:
             return self.iteration_value
 
         self.iteration = iteration
         if not iteration and self.start is not None:
-            self.iteration_value = self.start
-            return self.start
-
-        generated = self.generate(**kwargs)
-        try:
-            self.iteration_value = self.expression(
-                new=generated,
-                interval=self.iteration,
-                kwargs=self.kwargs._asdict() | kwargs,
+            self.iteration_value = RenderValue(
+                ... if self.config.hidden else self.start, self.start
             )
-        except (ValueError, TypeError) as e:
-            exc.process_exception(e)
-        self.iteration_value = self.__distribution(self.iteration_value)
-        if self.type is not None and not isinstance(self.iteration_value, self.type):
-            self.iteration_value = self.type(self.iteration_value)
+            return self.iteration_value
+
+        if not isinstance(generated := self.generate(**kwargs), RenderValue):
+            generated = RenderValue(... if self.config.hidden else generated, generated)
+        if (
+            not self.__expression_loaded
+            and self.config.expression
+            and isinstance(self.config.expression, str)
+        ):
+            self.expression = self.root_manager.load_expression(self)
+        if self.expression != default_generator:
+            try:
+                calculated = self.expression(
+                    new=generated.hidden,
+                    interval=self.iteration,
+                    kwargs=self.kwargs._asdict() | kwargs,
+                )
+                generated.hidden = calculated
+                if not self.config.hidden:
+                    generated.visible = calculated
+                self.iteration_value = generated
+            except (ValueError, TypeError) as e:
+                print(e)
+                print(self.name, self.root_object)
+                e.args = {
+                    'Generator': self.name,
+                    'Property': self.root_object,
+                    'Expression': self.config.expression,
+                }
+                exc.process_exception(e)
+        else:
+            self.iteration_value = generated
+        self.iteration_value.hidden = self.__distribution(self.iteration_value.hidden)
+        if (
+            self.type is not None
+            and not isinstance(self.iteration_value.visible, self.type)
+            and self.iteration_value.hidden is not ...
+        ):
+            if self.iteration_value.visible is not ...:
+                self.iteration_value.visible = self.type(self.iteration_value.visible)
+            self.iteration_value.hidden = self.type(self.iteration_value.hidden)
         return self.iteration_value
 
     def undo(self):
@@ -125,11 +163,7 @@ def get_generator(
     object_name: str, config: model.PropertyDefinition, manager
 ) -> PropertyGenerator:
     prop_gen_cls = GENERATORS[config.type]
-    new_config = model.PropertyDefinition(
-        name=config.name, type=config.type, **prop_gen_cls.default_config
-    )
-    model.update(new_config, config)
-    new_gen = prop_gen_cls(object_name, new_config)
+    new_gen = prop_gen_cls(object_name, config)
     new_gen.load(manager)
     return new_gen
 
