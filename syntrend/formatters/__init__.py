@@ -85,6 +85,7 @@ def load_formatter(object_name: str) -> Formatter:
     output_config = CONFIG.objects[object_name].output
     output_handler = writers.setup_event_stream(object_name)
     formatter = FORMATTERS[output_config.format](object_name)
+
     if output_config.collection:
         temp_collector = TempHandler(object_name)
         temp_collector.load()
@@ -96,12 +97,8 @@ def load_formatter(object_name: str) -> Formatter:
         event = Event(event)
         if output_config.collection:
             temp_collector.write(event)
-            if isinstance(output_handler, writers.ConsoleHandler):
-                return
-            clear_target = True
-            event = temp_collector.get_collection()
-        else:
-            event = Collection(event)
+            return
+        event = Collection(event)
         formatted_output = formatter(event)
         output_handler.write(linesep.join(formatted_output) + linesep, clear_target)
 
