@@ -73,6 +73,7 @@ def xml_formatter(object_name: str):
         return element
 
     def __formatter(events: Collection) -> list[str]:
+        doc.childNodes.clear()
         root = doc
         if is_collection:
             root = doc.createElement(object_root.output.kwargs.get('xml_tag', 'data'))
