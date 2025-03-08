@@ -249,6 +249,17 @@ class OutputConfig(Validated):
         assert p.is_dir(), 'Path must be a directory'
         return p
 
+    def validate(self):
+        if self.collection and self.time_field:
+            raise ValueError(
+                'Cannot create a collection when time simulation is being used',
+                {
+                    'Collection': self.collection,
+                    'Time Field': self.time_field,
+                    'Format': self.format,
+                },
+            )
+
 
 # class ValueRange(BaseModel):
 #     min: T_VALUE

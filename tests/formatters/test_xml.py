@@ -213,7 +213,6 @@ def test_nested_list_of_objects(xml_formatter):
             },
         }
     )
-    formatter = xml.xml_formatter('test')
     output = formatter(
         Collection(
             Event(
@@ -330,3 +329,29 @@ def test_invalid_attribute_value_type(xml_formatter):
         assert result.type is ValueError, (
             'Formatting of an attribute dict value should raise ValueError'
         )
+
+
+@mark.issue(id=25)
+@mark.unit
+def test_multiple_documents(xml_formatter):
+    formatter = xml_formatter(
+        {
+            'type': 'object',
+            'properties': {
+                'attr': {'type': 'string', 'xml_attr': True},
+                'value': {'type': 'string'},
+            },
+        }
+    )
+    output1 = formatter(
+        Collection(Event({'attr': 'attribute1', 'value': 'first_string'}))
+    )
+    assert output1[1] == '<test attr="attribute1">first_string</test>', (
+        'Generated XML should have `attr` as the XML Attribute and Value nested within'
+    )
+    output2 = formatter(
+        Collection(Event({'attr': 'attribute2', 'value': 'second_string'}))
+    )
+    assert output2[1] == '<test attr="attribute2">second_string</test>', (
+        'Generated XML should have `attr` as the XML Attribute and Value nested within'
+    )
