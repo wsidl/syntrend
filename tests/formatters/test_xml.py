@@ -337,7 +337,10 @@ def test_multiple_documents(xml_formatter):
     formatter = xml_formatter(
         {
             'type': 'object',
-            'properties': {'attr': {'type': 'string', 'xml_attr': True}, 'value': {'type': 'string'}},
+            'properties': {
+                'attr': {'type': 'string', 'xml_attr': True},
+                'value': {'type': 'string'},
+            },
         }
     )
     output1 = formatter(
