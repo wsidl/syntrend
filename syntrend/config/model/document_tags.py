@@ -1,5 +1,3 @@
-from syntrend.config.model import constants
-
 from pathlib import Path
 from typing import Callable, Any
 
@@ -62,13 +60,14 @@ class DocumentCollection:
             self.retrieve(link.path)
         return self.__sources[hash(link)]
 
-    def get_reference(self, reference: str):
-        if match := constants.RE_BASE_REF_DOC.fullmatch(reference):
-            ref_name = match.group(1)
-            return self.get_tag('ref', ref_name)
-        if match := constants.RE_BASE_LINK_DOC.fullmatch(reference):
-            path_ref, index = match.groups()
-            link = DocumentLink(self.current_dir.joinpath(path_ref), int(index or 0))
+    def get_reference(self, reference: dict):
+        if 'ref' in reference:
+            return self.get_tag('ref', reference['ref'])
+        if 'path' in reference:
+            link = DocumentLink(
+                self.current_dir.joinpath(reference['path']),
+                int(reference.get('index', 0)),
+            )
             return self.get_document(link)
 
     def set_retriever(self, func: Callable[[list[dict] | dict | str | Path], None]):
