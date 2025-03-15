@@ -60,7 +60,7 @@ class StringGenerator(PropertyGenerator):
         if self.kwargs.min_length > self.kwargs.max_length:
             raise ValueError('Min Length must be less than or equal to Max length')
 
-    def generate(self):
+    def generate(self, **_):
         return ''.join(
             [
                 self.kwargs.chars[randint(0, len(self.kwargs.chars) - 1)]
@@ -94,7 +94,7 @@ class HexGenerator(StringGenerator):
         )
         assert self.kwargs.char_length >= 0, 'Cannot generate string from an empty list'
 
-    def generate(self):
+    def generate(self, **_):
         return ''.join(
             [
                 self.kwargs.chars[randint(0, self.kwargs.char_length)]

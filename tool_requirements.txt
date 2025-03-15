@@ -1,0 +1,3 @@
+ruff
+sphinx
+pytest-cov

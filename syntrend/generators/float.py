@@ -23,7 +23,7 @@ class FloatGenerator(PropertyGenerator):
         if self.kwargs.min_offset > self.kwargs.max_offset:
             raise ValueError('Min Offset must be less than or equal to Max Offset')
 
-    def generate(self):
+    def generate(self, **_):
         return round(
             self.modules.random.random() * self.kwargs.range + self.kwargs.min_offset,
             self.kwargs.num_decimals,
