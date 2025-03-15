@@ -123,14 +123,12 @@ class PropertyGenerator:
                     generated.visible = calculated
                 self.iteration_value = generated
             except (ValueError, TypeError) as e:
-                print(e)
-                print(self.name, self.root_object)
                 e.args = {
                     'Generator': self.name,
                     'Property': self.root_object,
                     'Expression': self.config.expression,
                 }
-                exc.process_exception(e)
+                exc.EXCEPTION_HANDLER.error(e)
         else:
             self.iteration_value = generated
         self.iteration_value.hidden = self.__distribution(self.iteration_value.hidden)

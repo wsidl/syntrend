@@ -29,6 +29,8 @@ def parse_object(config_dict: dict, test=False) -> model.Validated | None:
 
     # Failed to parse valid object, attempt project shortcut
     has_nested_objects = isinstance(config_dict[list(config_dict.keys())[0]], dict)
-    if has_nested_objects and (new_object := parse_object({'objects': config_dict}, True)):
+    if has_nested_objects and (
+        new_object := parse_object({'objects': config_dict}, True)
+    ):
         return new_object
     return parse_object({'objects': {'this': config_dict}}, True)

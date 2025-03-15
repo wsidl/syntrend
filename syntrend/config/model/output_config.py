@@ -38,4 +38,3 @@ class OutputConfig(Validated):
                     'Format': self.format,
                 },
             )
-

@@ -24,7 +24,10 @@ class ExceptionHandler(SystemExit):
         self.stderr += lines
         if environ.get('SYNTREND_DEBUG', 0):
             self.stderr += [''] + [
-                sub_line for line in format_tb(exc.__traceback__) for sub_line in line.split(linesep) if sub_line.strip()
+                sub_line
+                for line in format_tb(exc.__traceback__)
+                for sub_line in line.split(linesep)
+                if sub_line.strip()
             ]
         self.exit_code = 1
         self.stderr_output = linesep.join(self.stderr) + linesep
