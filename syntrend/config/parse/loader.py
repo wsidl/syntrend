@@ -21,7 +21,9 @@ def retrieve_source(config_file: list[dict] | dict | str | Path) -> None:
     if (path_ref := Path(config_file).absolute()).exists():
         with path_ref.open('r') as file_obj:
             content = file_obj.read()
-        config_file = path_ref.relative_to(Path.cwd())
+        config_file = path_ref
+        if path_ref.is_relative_to(Path.cwd()):
+            config_file = path_ref.relative_to(Path.cwd())
     try:
         model.DOCUMENTS.current_dir = config_file.parent
         for index, doc in enumerate(yaml.load_all(content)):

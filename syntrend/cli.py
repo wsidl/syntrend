@@ -32,8 +32,7 @@ def generate(project_file: pathlib.Path):
         manager.ROOT_MANAGER.load()
         manager.ROOT_MANAGER.start()
     except Exception as e:
-        print(e)
-        exc.process_exception(e)
+        exc.EXCEPTION_HANDLER.error(e)
 
 
 @app.command()
