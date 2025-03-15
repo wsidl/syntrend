@@ -11,14 +11,11 @@ ROOT_TAG = ('pos', '.')
 
 def retrieve_source(config_file: list[dict] | dict | str | Path) -> None:
     if isinstance(config_file, list | dict):
-        model.DOCUMENTS.add_reference(Path.cwd(), 0, config_file)
+        model.DOCUMENTS.add_document(
+            model.DocumentLink(Path.cwd().joinpath('main'), 0),
+            config_file,
+        )
         return
-    #         # yield parse_object(inner_dict)
-    #     return
-    # if isinstance(config_file, dict):
-    #     yield '-0', config_file
-    #     # yield parse_object(config_file)
-    #     return
 
     content = config_file
     if (path_ref := Path(config_file).absolute()).exists():
@@ -80,7 +77,10 @@ def load_config(config_file: dict | str | Path) -> model.ProjectConfig:
         if isinstance(parsed_obj, model.ProjectConfig):
             new_config = parsed_obj
         else:
-            raise TypeError('wrong type', {'type': type(parsed_obj), 'content': doc})
+            raise TypeError(
+                'Provided `!syntrend/root` Document does not provide a Project Root',
+                {'Parsed Type': type(parsed_obj), 'content': doc},
+            )
     else:
         new_config = model.ProjectConfig(objects={'this': {'type': 'string'}})
         for document in model.DOCUMENTS.iter_documents():

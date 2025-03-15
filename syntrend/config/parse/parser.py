@@ -18,7 +18,7 @@ EXC_SYNTREND_TAG = ValueError(
 )
 
 
-def yaml_include(loader, node):
+def yaml_include(_, node):
     if not (match := RE_INCLUDE_REF.fullmatch(node.value)):
         raise ValueError(
             'Invalid "!include" reference', {'Value': node.value}

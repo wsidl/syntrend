@@ -25,7 +25,7 @@ class PropertyDistribution(Validated):
             return value
         return DistributionTypes(value)
 
-    def validate(self):
+    def validate_(self):
         if self.min_offset > self.max_offset:
             raise ValueError(
                 'Distribution Min value must be lower than the Max value',
