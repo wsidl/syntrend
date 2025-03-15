@@ -1,0 +1,190 @@
+from syntrend.config.model.document_tags import DocumentLink, DOCUMENTS
+import dataclasses as dc
+from functools import partial
+from copy import deepcopy
+from collections.abc import Mapping
+
+dataclass = partial(dc.dataclass, kw_only=True, init=False)
+
+
+class NullValue:
+    pass
+
+
+class _NullInt(NullValue, int):
+    pass
+
+
+class _NullString(NullValue, str):
+    pass
+
+
+NULL_VAL = NullValue()
+NULL_INT = _NullInt(0)
+NULL_STR = _NullString('')
+
+
+def fields(obj: dc.dataclass, include_field=False) -> list[str | dc.Field]:
+    return [field if include_field else field.name for field in dc.fields(obj)]
+
+
+def deep_update(base_object, new_object):
+    for k, v in new_object.items():
+        if isinstance(v, Mapping):
+            base_object[k] = deep_update(base_object.get(k, {}), v)
+        else:
+            base_object[k] = v
+    return base_object
+
+
+@dataclass
+class Validated:
+    """Base Class for Configurations"""
+
+    source__: dict = dc.field(default_factory=dict)
+
+    def __init__(self, **kwargs):
+        """Runs Parsing methods (if declared) to parse dataclass fields and validation method. Requires
+        a method to match the field name with the following signature:
+          `parse_<field.name>(self, value) -> any`
+        """
+        if base_refs := kwargs.pop('bases', []):
+            new_kwargs = {}
+            if isinstance(base_refs, str):
+                base_refs = [base_refs]
+            for base in base_refs:
+                new_doc = DOCUMENTS.get_reference(base)
+                new_kwargs = deep_update(new_kwargs, new_doc)
+            kwargs = deep_update(new_kwargs, kwargs)
+        kwargs.update(kwargs.pop('kwargs', {}))
+        self.source__ = deepcopy(kwargs)
+        for field in fields(self, include_field=True):
+            if field.name.endswith('_'):
+                continue
+            default_val = NULL_VAL
+            if field.default is not dc.MISSING:
+                default_val = field.default
+            elif field.default_factory is not dc.MISSING:
+                default_val = field.default_factory()
+
+            field_value = kwargs.get(field.name, None)
+            if isinstance(field_value, DocumentLink):
+                kwargs[field.name] = field_value.get_reference()
+            elif isinstance(field_value, dict):
+                for field_key in field_value:
+                    if isinstance(field_value[field_key], DocumentLink):
+                        kwargs[field.name][field_key] = field_value[
+                            field_key
+                        ].get_reference()
+            elif isinstance(field_value, list):
+                for list_index in range(len(field_value)):
+                    if isinstance(kwargs[field.name][list_index], DocumentLink):
+                        kwargs[field.name][list_index] = kwargs[field.name][
+                            list_index
+                        ].get_reference()
+
+            setattr(self, field.name, kwargs.pop(field.name, default_val))
+            if callable(method := getattr(self, f'parse_{field.name}', None)):
+                setattr(self, field.name, method(getattr(self, field.name)))
+        self.kwargs = kwargs
+        if hasattr(self, 'parse_kwargs'):
+            self.kwargs = self.parse_kwargs(kwargs)
+        self.validate_()
+
+    def __repr__(self):
+        _fields = [
+            f'{field_name}={repr(getattr(self, field_name))}'
+            for field_name in fields(self) + ['kwargs']
+        ]
+        return f'<{type(self).__name__}({_fields})>'
+
+    def validate_(self):
+        return
+
+    def copy_(self) -> 'Validated':
+        """Generates a duplicate of an object
+
+        Returns:
+            Instance of a `Validated` subclass
+        """
+        new_dict = {
+            f_name: f_val.copy_() if isinstance(f_val, Validated) else f_val
+            for f_name, f_val in [
+                (fld_name, getattr(self, fld_name)) for fld_name in fields(self)
+            ]
+            if not self.source__ or f_name in self.source__
+        }
+        return type(self)(**(new_dict | self.kwargs))
+
+    def update_(self, other: 'Validated') -> None:
+        """Applies any values from one `Validated` instance into another.
+
+        Similar to `dict.update()` but applies specifically to `Validated` instances to preserve
+        class behaviour
+
+        Args:
+            other: Instance of `Validated` subclass to copy values from
+
+        Raises:
+            TypeError: `other` is not a subclass of `Validated`
+        """
+        if not isinstance(other, Validated):
+            raise TypeError(
+                'Only `Validated` subclasses can be supported to update from',
+                {
+                    'Original Object Type': type(self).__name__,
+                    'Other Object Type': type(other).__name__,
+                },
+            )
+
+        for field in fields(self):
+            setattr(self, field, getattr(other, field))
+        self.kwargs.update(other.kwargs)
+        self.source__ = other.source__
+
+
+def parse_int(_min: int | None = None, _max: int | None = None):
+    """Convenience function to parse integer values for `Validated` classes
+
+    Args:
+        _min: Minimum value of the integer range
+        _max: Maximum value of the integer range
+
+    Returns:
+        Callable WrappParsed integer for the field
+
+    Raises:
+        TypeError: Input Value is not a valid Integer type
+        ValueError: Input Value is not within the defined range
+    """
+
+    def _parser(_, value):
+        try:
+            value = int(value)
+        except TypeError:
+            raise TypeError(
+                'Value must be parsable to integer',
+                {
+                    'Input Value': str(value),
+                    'Input Value Type': type(value).__name__,
+                },
+            ) from None
+        if _min is not None and value < _min:
+            raise ValueError(
+                'Provided value is less than the minimum allowed',
+                {
+                    'Input Value': str(value),
+                    'Minimum': _min,
+                },
+            )
+        if _max is not None and value > _max:
+            raise ValueError(
+                'Provided value is greater than the maximum allowed',
+                {
+                    'Input Value': str(value),
+                    'Maximum': _max,
+                },
+            )
+        return value
+
+    return _parser

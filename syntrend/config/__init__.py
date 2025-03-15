@@ -1,4 +1,4 @@
-from syntrend.config.model import ProjectConfig, copy, update
+from syntrend.config.model import ProjectConfig
 from syntrend.config.parse import load_config as _load_config
 
 default_config = {'objects': {'this': {'type': 'integer'}}}
@@ -13,8 +13,8 @@ def load_config(config_file):
     CONFIG.output = _cfg.output
 
     for obj_name in CONFIG.objects:
-        _output = copy(CONFIG.output)
-        update(_output, CONFIG.objects[obj_name].output)
+        _output = CONFIG.output.copy_()
+        _output.update_(CONFIG.objects[obj_name].output)
         CONFIG.objects[obj_name].output = _output
 
 

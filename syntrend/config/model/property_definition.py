@@ -1,0 +1,58 @@
+from syntrend.config.model.base_config import Validated, dataclass, dc
+from syntrend.config.model.property_distribution import PropertyDistribution
+from syntrend.config.model.enum import DistributionTypes
+
+
+@dataclass
+class PropertyDefinition(Validated):
+    """Property Definition
+
+    Definition of how a value is generated and any associated properties to modify its behaviour
+
+    Attributes:
+        type (:obj:`str`): Generator Type to be used for this Property Definition
+        distribution (:obj:`PropertyDistribution`): Property to define how the generated values will vary using a
+            :obj:`DistributionTypes`. Defaults to "none"
+        expression (:obj:`str`): String Expression to define a trend, behaviour, or conditions to apply.
+
+            See Also:
+                For more information on Expressions, see `Expressions <docs/expressions>`__.
+        start: Any value associated with :obj:`type` for when a previous value is expected but none available.
+        items (:obj:`list`): List of items required for Generator Types needing a list of objects to choose from.
+        properties (:obj:`dict[str, PropertyDefinition]`): Mapping of sub properties namely to support nested objects.
+    """
+
+    name: str
+    type: str
+    distribution: DistributionTypes | PropertyDistribution = dc.field(
+        default=DistributionTypes.NoDistribution
+    )
+    conditions: list[str] = dc.field(default_factory=list)
+    expression: str = dc.field(default='')
+    start: any = dc.field(default=None)
+    items: list[any] = dc.field(default_factory=list)
+    properties: dict[str, 'PropertyDefinition'] = dc.field(default_factory=dict)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
+    def parse_distribution(self, dist_type):
+        if isinstance(dist_type, str):
+            dist_type = DistributionTypes(dist_type)
+        if isinstance(dist_type, DistributionTypes):
+            dist_type = {'type': dist_type}
+        if isinstance(dist_type, dict):
+            dist_type = PropertyDistribution(**dist_type)
+        return dist_type
+
+    def parse_properties(self, props):
+        return {
+            prop: (
+                val
+                if isinstance(val, PropertyDefinition)
+                else PropertyDefinition(
+                    name=prop if 'name' not in val else val['name'], **val
+                )
+            )
+            for prop, val in props.items()
+        }

@@ -33,7 +33,7 @@ def test_module_config_default():
     cfg = model.ModuleConfig()
     assert cfg.max_generator_retries == 20
     assert cfg.max_historian_buffer == 20
-    assert cfg.generator_dir == model.ADD_GENERATOR_DIR
+    assert cfg.generator_dir == model.constants.ADD_GENERATOR_DIR
 
 
 @mark.unit
@@ -41,7 +41,7 @@ def test_module_config_max_generator_retries():
     cfg = model.ModuleConfig(**{'max_generator_retries': 10})
     assert cfg.max_generator_retries == 10
     assert cfg.max_historian_buffer == 20
-    assert cfg.generator_dir == model.ADD_GENERATOR_DIR
+    assert cfg.generator_dir == model.constants.ADD_GENERATOR_DIR
 
 
 @mark.unit
@@ -49,7 +49,7 @@ def test_module_config_max_historian_buffer():
     cfg = model.ModuleConfig(**{'max_historian_buffer': 10})
     assert cfg.max_generator_retries == 20
     assert cfg.max_historian_buffer == 10
-    assert cfg.generator_dir == model.ADD_GENERATOR_DIR
+    assert cfg.generator_dir == model.constants.ADD_GENERATOR_DIR
 
 
 @mark.unit
@@ -57,7 +57,7 @@ def test_module_config_generator_dir():
     cfg = model.ModuleConfig(**{'max_historian_buffer': 10})
     assert cfg.max_generator_retries == 20
     assert cfg.max_historian_buffer == 10
-    assert cfg.generator_dir == model.ADD_GENERATOR_DIR
+    assert cfg.generator_dir == model.constants.ADD_GENERATOR_DIR
 
 
 @mark.unit

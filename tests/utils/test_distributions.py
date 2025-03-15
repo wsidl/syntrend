@@ -20,7 +20,7 @@ def manager():
     'prop_cfg',
     [
         {'type': 'string'},
-        {'type': 'string', 'distribution': model.DistributionTypes.NoDistribution},
+        {'type': 'string', 'distribution': model.enum.DistributionTypes.NoDistribution},
     ],
     ids=['default_dist', 'given_dist'],
 )
@@ -36,7 +36,7 @@ def test_linear_distribution_numeric(_type_str: str):
     prop_cfg = Prop_Def(
         type=_type_str,
         distribution=model.PropertyDistribution(
-            type=model.DistributionTypes.Linear, min_offset=0, max_offset=5
+            type=model.enum.DistributionTypes.Linear, min_offset=0, max_offset=5
         ),
         min_offset=0,
         max_offset=5,
@@ -54,7 +54,7 @@ def test_std_dev_distribution(std_dev):
     prop_cfg = Prop_Def(
         type='float',
         distribution=model.PropertyDistribution(
-            type=model.DistributionTypes.StandardDeviation, std_dev=std_dev
+            type=model.enum.DistributionTypes.StandardDeviation, std_dev=std_dev
         ),
     )
     offset = std_dev * 6

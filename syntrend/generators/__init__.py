@@ -126,7 +126,7 @@ def get_generator(
     new_config = model.PropertyDefinition(
         name=config.name, type=config.type, **prop_gen_cls.default_config
     )
-    model.update(new_config, config)
+    new_config.update_(config)
     new_gen = prop_gen_cls(object_name, new_config)
     new_gen.load(manager)
     return new_gen
