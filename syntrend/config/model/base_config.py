@@ -3,6 +3,7 @@ import dataclasses as dc
 from functools import partial
 from copy import deepcopy
 from collections.abc import Mapping
+from os import linesep
 
 dataclass = partial(dc.dataclass, kw_only=True, init=False)
 
@@ -91,12 +92,27 @@ class Validated:
             self.kwargs = self.parse_kwargs(kwargs)
         self.validate_()
 
-    def __repr__(self):
-        _fields = [
-            f'{field_name}={repr(getattr(self, field_name))}'
-            for field_name in fields(self) + ['kwargs']
-        ]
-        return f'<{type(self).__name__}({_fields})>'
+    def __str__(self):
+        _fields = []
+        for field_name in fields(self) + ['kwargs']:
+            new_lines = []
+            obj = getattr(self, field_name)
+            if isinstance(obj, dict):
+                sub_lines = []
+                if len(obj) == 0:
+                    sub_lines = ['{}']
+                else:
+                    sub_lines.append('{')
+                    for key in obj:
+                        sub_lines += [f'    {key}:'] + ['      ' + line for line in str(obj[key]).split(linesep)]
+                    sub_lines.append('  }')
+                new_lines += sub_lines
+            else:
+                new_lines = ['  ' + line for line in str(obj).split(linesep)]
+                new_lines[0] = new_lines[0].strip()
+            _fields.append(f'  {field_name}={linesep.join(new_lines)}')
+
+        return f'<{type(self).__name__}({linesep}{linesep.join(_fields)}{linesep})>'
 
     def validate_(self):
         return
