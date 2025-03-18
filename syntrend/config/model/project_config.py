@@ -1,4 +1,4 @@
-from syntrend.config.model.base_config import Validated, dataclass, dc
+from syntrend.config.model.base_config import Validated, dataclass, dc, parse_bases
 from syntrend.config.model.object_definition import ObjectDefinition
 from syntrend.config.model.module_config import ModuleConfig
 from syntrend.config.model.output_config import OutputConfig
@@ -22,6 +22,9 @@ class ProjectConfig(Validated):
     output: OutputConfig = dc.field(default_factory=OutputConfig)
     config: ModuleConfig = dc.field(default_factory=ModuleConfig)
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
     def parse_output(self, output):
         if isinstance(output, OutputConfig):
             return output
@@ -37,16 +40,21 @@ class ProjectConfig(Validated):
             raise ValueError(
                 'Project Config must include one object to generate', {}
             ) from None
+
         root_output = self.source__.get('output', {})
+        object_configs = parse_bases(objects)
+
         output_configs = {}
-        for object_name in objects:
+        for object_name in object_configs:
             output_configs[object_name] = deepcopy(root_output)
-            output_configs[object_name].update(objects[object_name].pop('output', {}))
-        return {
-            object_name: ObjectDefinition(
-                name=object_name,
-                output=output_configs[object_name],
-                **objects[object_name],
+            output_configs[object_name].update(object_configs[object_name].pop('output', {}))
+
+        parsed_configs = {}
+        for obj_name in object_configs:
+            obj_config = deepcopy(object_configs[obj_name])
+            parsed_configs[obj_name] = ObjectDefinition(
+                name=obj_name,
+                output=output_configs[obj_name],
+                **obj_config,
             )
-            for object_name in objects
-        }
+        return parsed_configs

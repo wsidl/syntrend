@@ -2,7 +2,6 @@ from syntrend.config.model.document_tags import DocumentLink, DOCUMENTS
 import dataclasses as dc
 from functools import partial
 from copy import deepcopy
-from collections.abc import Mapping
 from os import linesep
 
 dataclass = partial(dc.dataclass, kw_only=True, init=False)
@@ -31,11 +30,48 @@ def fields(obj: dc.dataclass, include_field=False) -> list[str | dc.Field]:
 
 def deep_update(base_object, new_object):
     for k, v in new_object.items():
-        if isinstance(v, Mapping):
+        if isinstance(v, dict):
             base_object[k] = deep_update(base_object.get(k, {}), v)
         else:
             base_object[k] = v
     return base_object
+
+
+def parse_bases(base_object: dict) -> dict:
+    if not (base_references := base_object.pop('_bases', [])):
+        if not (base_references := base_object.pop('bases', [])):
+            return base_object
+
+    if isinstance(base_references, dict):
+        base_references = [base_references]
+
+    ref_object = {}
+    for base in base_references:
+        if not base:
+            continue
+        path_ref = DOCUMENTS.current_file
+        if 'path' in base:
+            file_path = base.pop('path', DOCUMENTS.current_file)
+            path_ref = DOCUMENTS.current_file.parent.joinpath(file_path)
+            if not path_ref.exists():
+                raise ValueError(
+                    'Path to Object Reference does not exist',
+                    {
+                        'Current File': DOCUMENTS.current_file,
+                        'Object Summary': str(base_object),
+                        'Given Path': file_path,
+                        'Parsed Path': str(path_ref),
+                    }
+                )
+        base_ref = {
+            'ref': base.pop('ref', ...),
+            'path': path_ref,
+            'index': int(base.pop('index', 0))
+        }
+        new_doc = DOCUMENTS.get_reference(base_ref)
+        ref_object = deep_update(ref_object, new_doc)
+    new_object = deep_update(ref_object, base_object)
+    return new_object
 
 
 @dataclass
@@ -49,15 +85,9 @@ class Validated:
         a method to match the field name with the following signature:
           `parse_<field.name>(self, value) -> any`
         """
-        if base_refs := kwargs.pop('bases', []):
-            new_kwargs = {}
-            if isinstance(base_refs, str):
-                base_refs = [base_refs]
-            for base in base_refs:
-                new_doc = DOCUMENTS.get_reference(base)
-                new_kwargs = deep_update(new_kwargs, new_doc)
-            kwargs = deep_update(new_kwargs, kwargs)
         kwargs.update(kwargs.pop('kwargs', {}))
+        kwargs = parse_bases(kwargs)
+
         self.source__ = deepcopy(kwargs)
         for field in fields(self, include_field=True):
             if field.name.endswith('_'):

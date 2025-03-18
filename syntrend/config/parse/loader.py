@@ -25,7 +25,7 @@ def retrieve_source(config_file: list[dict] | dict | str | Path) -> None:
         if path_ref.is_relative_to(Path.cwd()):
             config_file = path_ref.relative_to(Path.cwd())
     try:
-        model.DOCUMENTS.current_dir = config_file.parent
+        model.DOCUMENTS.current_file = config_file
         for index, doc in enumerate(yaml.load_all(content)):
             doc_link = model.DocumentLink(config_file, index)
             model.DOCUMENTS.add_document(doc_link, doc)
@@ -77,12 +77,11 @@ def load_config(config_file: dict | str | Path) -> model.ProjectConfig:
         doc = model.DOCUMENTS.get_tag(*ROOT_TAG)
         parsed_obj = parse_object(doc)
         if isinstance(parsed_obj, model.ProjectConfig):
-            new_config = parsed_obj
-        else:
-            raise TypeError(
-                'Provided `!syntrend/root` Document does not provide a Project Root',
-                {'Parsed Type': type(parsed_obj), 'content': doc},
-            )
+            return parsed_obj
+        raise TypeError(
+            'Provided `!syntrend/root` Document does not provide a Project Root',
+            {'Parsed Type': type(parsed_obj).__name__, 'content': doc},
+        )
     else:
         new_config = model.ProjectConfig(objects={'this': {'type': 'string'}})
         for document in model.DOCUMENTS.iter_documents():
@@ -90,7 +89,7 @@ def load_config(config_file: dict | str | Path) -> model.ProjectConfig:
             if isinstance(parsed_doc, model.ProjectConfig):
                 return parsed_doc
 
-    # Attach Related Objects
+    # Parse all other documents
     for doc in model.DOCUMENTS.iter_documents():
         parsed_obj = parse_object(doc)
         if isinstance(parsed_obj, model.ProjectConfig):

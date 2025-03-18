@@ -1,4 +1,4 @@
-from syntrend.config.model.base_config import Validated, dataclass, dc
+from syntrend.config.model.base_config import Validated, dataclass, dc, parse_bases
 from syntrend.config.model.property_distribution import PropertyDistribution
 from syntrend.config.model.enum import DistributionTypes
 
@@ -47,8 +47,10 @@ class PropertyDefinition(Validated):
         return dist_type
 
     def parse_properties(self, props):
+        base_properties = parse_bases(props)
         new_properties = {}
-        for prop_name, prop in props.items():
+
+        for prop_name, prop in base_properties.items():
             if isinstance(prop, PropertyDefinition):
                 new_properties[prop_name] = prop
                 continue

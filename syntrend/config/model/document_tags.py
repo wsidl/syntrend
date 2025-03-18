@@ -2,10 +2,30 @@ from pathlib import Path
 from typing import Callable, Any
 
 
+class DocumentReference:
+    def __init__(self, ref: str, path: Path, index: int):
+        self.ref = ... if not ref else ref
+        self.path = path
+        self.index = index
+
+    def get_reference(self):
+        if self.ref is not ...:
+            return DOCUMENTS.get_tag('ref', self.ref)
+
+
+    @classmethod
+    def load(cls, **kwargs) -> 'DocumentReference':
+        ref = kwargs.pop('ref', ...)
+        if not (path := Path(kwargs.pop('path', ''))).is_file():
+            path = DOCUMENTS.current_file.parent.joinpath(path)
+        index = int(kwargs.pop('index', 0))
+        return cls(ref, path, index)
+
+
 class DocumentLink:
     def __init__(self, target_path: Path | str, index: int):
         if isinstance(target_path, str):
-            target_path = DOCUMENTS.current_dir.joinpath(target_path)
+            target_path = DOCUMENTS.current_file.parent.joinpath(target_path)
         self.path = target_path
         self.index = index
 
@@ -29,7 +49,7 @@ class DocumentCollection:
         self.__tags: dict[tuple[str, str], DocumentLink] = {}
         self.__sources: dict[int, Any] = {}
         self.__retriever = lambda x: None
-        self.current_dir: Path | None = None
+        self.current_file: Path | None = None
 
     def clear(self):
         self.__tags = {}
@@ -61,14 +81,27 @@ class DocumentCollection:
         return self.__sources[hash(link)]
 
     def get_reference(self, reference: dict):
-        if 'ref' in reference:
+        if reference.get('ref', ...) is not ...:
             return self.get_tag('ref', reference['ref'])
         if 'path' in reference:
             link = DocumentLink(
-                self.current_dir.joinpath(reference['path']),
+                self.current_file.parent.joinpath(reference['path']),
                 int(reference.get('index', 0)),
             )
             return self.get_document(link)
+        if 'index' in reference:
+            link = DocumentLink(
+                self.current_file,
+                int(reference.get('index', 0))
+            )
+            return self.get_document(link)
+        raise ValueError(
+            'Provided Reference is not valid to retrieve documents',
+            {
+                'reference': str(reference),
+                'expected keys': 'ref, path, and/or index',
+            }
+        )
 
     def set_retriever(self, func: Callable[[list[dict] | dict | str | Path], None]):
         self.__retriever = func

@@ -25,7 +25,7 @@ def yaml_include(_, node):
         ) from None
     path_ref, index = match.groups()
     return model.DocumentLink(
-        model.DOCUMENTS.current_dir.joinpath(path_ref), int(index or 0)
+        model.DOCUMENTS.current_file.parent.joinpath(path_ref), int(index or 0)
     )
 
 
