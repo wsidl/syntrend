@@ -47,7 +47,9 @@ class ProjectConfig(Validated):
         output_configs = {}
         for object_name in object_configs:
             output_configs[object_name] = deepcopy(root_output)
-            output_configs[object_name].update(object_configs[object_name].pop('output', {}))
+            output_configs[object_name].update(
+                object_configs[object_name].pop('output', {})
+            )
 
         parsed_configs = {}
         for obj_name in object_configs:

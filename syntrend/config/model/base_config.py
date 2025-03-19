@@ -62,12 +62,12 @@ def parse_bases(base_object: dict) -> dict:
                         'Object Summary': str(base_object),
                         'Given Path': file_path,
                         'Parsed Path': str(path_ref),
-                    }
+                    },
                 )
         base_ref = {
             'ref': base.pop('ref', ...),
             'path': path_ref,
-            'index': int(base.pop('index', 0))
+            'index': int(base.pop('index', 0)),
         }
         new_doc = DOCUMENTS.get_reference(base_ref)
         ref_object = deep_update(ref_object, new_doc)
@@ -135,7 +135,9 @@ class Validated:
                 else:
                     sub_lines.append('{')
                     for key in obj:
-                        sub_lines += [f'    {key}:'] + ['      ' + line for line in str(obj[key]).split(linesep)]
+                        sub_lines += [f'    {key}:'] + [
+                            '      ' + line for line in str(obj[key]).split(linesep)
+                        ]
                     sub_lines.append('  }')
                 new_lines += sub_lines
             else:

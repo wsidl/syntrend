@@ -12,7 +12,6 @@ class DocumentReference:
         if self.ref is not ...:
             return DOCUMENTS.get_tag('ref', self.ref)
 
-
     @classmethod
     def load(cls, **kwargs) -> 'DocumentReference':
         ref = kwargs.pop('ref', ...)
@@ -90,17 +89,14 @@ class DocumentCollection:
             )
             return self.get_document(link)
         if 'index' in reference:
-            link = DocumentLink(
-                self.current_file,
-                int(reference.get('index', 0))
-            )
+            link = DocumentLink(self.current_file, int(reference.get('index', 0)))
             return self.get_document(link)
         raise ValueError(
             'Provided Reference is not valid to retrieve documents',
             {
                 'reference': str(reference),
                 'expected keys': 'ref, path, and/or index',
-            }
+            },
         )
 
     def set_retriever(self, func: Callable[[list[dict] | dict | str | Path], None]):
