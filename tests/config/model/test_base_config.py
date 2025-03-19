@@ -65,7 +65,7 @@ def test_parse_bases_no_bases():
 @mark.issue(id=7)
 @mark.unit
 def test_parse_bases_ref_base_same_file():
-    mod.DOCUMENTS.current_file = Path.cwd().joinpath('project.yaml')
+    mod.DOCUMENTS.current_file = Path('project.yaml')
     link = mod.DocumentLink('project.yaml', 1)
     mod.DOCUMENTS.add_document(link, {'a': 1, 'b': 2})
     mod.DOCUMENTS.add_tag('ref', 'link', link)
@@ -79,7 +79,7 @@ def test_parse_bases_ref_base_same_file():
 @mark.issue(id=7)
 @mark.unit
 def test_parse_bases_ref_base_different_file():
-    mod.DOCUMENTS.current_file = Path.cwd().joinpath('project.yaml')
+    mod.DOCUMENTS.current_file = Path('project.yaml')
     link = mod.DocumentLink('other_project.yaml', 0)
     mod.DOCUMENTS.add_document(link, {'a': 1, 'b': 2})
     mod.DOCUMENTS.add_tag('ref', 'link', link)
@@ -93,7 +93,7 @@ def test_parse_bases_ref_base_different_file():
 @mark.issue(id=7)
 @mark.unit
 def test_parse_bases_path_base_same_file():
-    mod.DOCUMENTS.current_file = Path.cwd().joinpath('project.yaml')
+    mod.DOCUMENTS.current_file = Path('project.yaml')
     link = mod.DocumentLink('project.yaml', 1)
     mod.DOCUMENTS.add_document(link, {'a': 1, 'b': 2})
 
@@ -108,7 +108,7 @@ def test_parse_bases_path_base_same_file():
 @mark.issue(id=7)
 @mark.unit
 def test_parse_bases_path_base_default_file():
-    mod.DOCUMENTS.current_file = Path.cwd().joinpath('project.yaml')
+    mod.DOCUMENTS.current_file = Path('project.yaml')
     link = mod.DocumentLink('project.yaml', 1)
     mod.DOCUMENTS.add_document(link, {'a': 1, 'b': 2})
 
@@ -121,7 +121,7 @@ def test_parse_bases_path_base_default_file():
 @mark.issue(id=7)
 @mark.unit
 def test_parse_bases_path_base_default_file_only_dict():
-    mod.DOCUMENTS.current_file = Path.cwd().joinpath('project.yaml')
+    mod.DOCUMENTS.current_file = Path('project.yaml')
     link = mod.DocumentLink('project.yaml', 1)
     mod.DOCUMENTS.add_document(link, {'a': 1, 'b': 2})
 
@@ -134,7 +134,7 @@ def test_parse_bases_path_base_default_file_only_dict():
 @mark.issue(id=7)
 @mark.unit
 def test_parse_bases_invalid_path_reference():
-    mod.DOCUMENTS.current_file = Path.cwd().joinpath('project.yaml')
+    mod.DOCUMENTS.current_file = Path('project.yaml')
     link = mod.DocumentLink('project.yaml', 1)
     mod.DOCUMENTS.add_document(link, {'a': 1, 'b': 2})
 
