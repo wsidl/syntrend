@@ -78,11 +78,12 @@ def test_parse_bases_ref_base_same_file():
 
 @mark.issue(id=7)
 @mark.unit
-def test_parse_bases_ref_base_different_file():
+def test_parse_bases_ref_base_different_file(monkeypatch):
     mod.DOCUMENTS.current_file = Path('project.yaml')
     link = mod.DocumentLink('other_project.yaml', 0)
     mod.DOCUMENTS.add_document(link, {'a': 1, 'b': 2})
     mod.DOCUMENTS.add_tag('ref', 'link', link)
+    monkeypatch.setattr(Path, 'exists', lambda _: True)
 
     result = mod.parse_bases({'bases': [{'ref': 'link'}], 'c': 3, 'a': 4})
     assert result == {'a': 4, 'b': 2, 'c': 3}, (
@@ -92,10 +93,11 @@ def test_parse_bases_ref_base_different_file():
 
 @mark.issue(id=7)
 @mark.unit
-def test_parse_bases_path_base_same_file():
+def test_parse_bases_path_base_same_file(monkeypatch):
     mod.DOCUMENTS.current_file = Path('project.yaml')
     link = mod.DocumentLink('project.yaml', 1)
     mod.DOCUMENTS.add_document(link, {'a': 1, 'b': 2})
+    monkeypatch.setattr(Path, 'exists', lambda _: True)
 
     result = mod.parse_bases(
         {'bases': [{'path': 'project.yaml', 'index': 1}], 'c': 3, 'a': 4}
@@ -107,10 +109,11 @@ def test_parse_bases_path_base_same_file():
 
 @mark.issue(id=7)
 @mark.unit
-def test_parse_bases_path_base_default_file():
+def test_parse_bases_path_base_default_file(monkeypatch):
     mod.DOCUMENTS.current_file = Path('project.yaml')
     link = mod.DocumentLink('project.yaml', 1)
     mod.DOCUMENTS.add_document(link, {'a': 1, 'b': 2})
+    monkeypatch.setattr(Path, 'exists', lambda _: True)
 
     result = mod.parse_bases({'bases': [{'index': 1}], 'c': 3, 'a': 4})
     assert result == {'a': 4, 'b': 2, 'c': 3}, (
