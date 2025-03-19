@@ -5,25 +5,17 @@ from os import linesep
 
 @mark.unit
 def test_exception_output(monkeypatch):
-    reported_exception = [0]
-    reported_output = ['']
-
-    def _exit_code(code: int):
-        reported_exception[0] = code
-
-    def _error_output(content: str):
-        reported_output[0] = content
-
-    monkeypatch.setattr(exc.sys, 'exit', _exit_code)
-    monkeypatch.setattr(exc.sys.stderr, 'write', _error_output)
+    dummy_exception = exc.ExceptionHandler(None, None, False)
+    monkeypatch.setattr(exc, 'EXCEPTION_HANDLER', dummy_exception)
     err = ValueError('Failed Expression', {'a': 1, 'b': 2, 'c': 3})
-    exc.process_exception(err)
+    exc.EXCEPTION_HANDLER.error(err)
+    monkeypatch.undo()
 
-    assert reported_exception[0] == 1, (
+    assert dummy_exception.exit_code == 1, (
         'Reported error exit code should be 2 (Expression Error)'
     )
     assert (
-        reported_output[0]
+        dummy_exception.stderr_output
         == linesep.join(
             [
                 'Error Encountered: (ValueError)',

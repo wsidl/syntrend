@@ -1,6 +1,5 @@
 from pathlib import Path
 import re
-import traceback
 
 from click.testing import CliRunner, Result
 from pytest import fixture
@@ -14,13 +13,21 @@ RE_TABLE_DELIM = re.compile(r'^\|={3,}$')
 
 @fixture(scope='function')
 def project_result(request, monkeypatch) -> Result:
-    from syntrend.cli import generate
+    from syntrend.cli import generate, exc
+    import sys
 
+    dummy_exception = exc.ExceptionHandler(None, None, False)
+    monkeypatch.setattr(exc, 'EXCEPTION_HANDLER', dummy_exception)
     name = request.node.name.split('_', 1)[1]
     runner = CliRunner(mix_stderr=False)
-    test_config = Path(f'tests/assets/uc_{name}.yaml').absolute()
+    test_config = Path.cwd().joinpath(f'tests/assets/uc_{name}.yaml').absolute()
     with runner.isolated_filesystem():
-        cli_result = runner.invoke(generate, [str(test_config)])
-    if cli_result.exit_code:
-        traceback.print_tb(cli_result.exc_info[2])
+        cli_result = runner.invoke(
+            generate, [str(test_config)], env={'SYNTREND_DEBUG': '1'}
+        )
+
+    monkeypatch.undo()
+    if dummy_exception.exit_code:
+        cli_result.exit_code = dummy_exception.exit_code
+        print(dummy_exception.stderr_output, file=sys.stderr)
     return cli_result

@@ -41,7 +41,7 @@ class PropertyGenerator:
         new_config = model.PropertyDefinition(
             name=config.name, type=config.type, **self.default_config
         )
-        model.update(new_config, config)
+        new_config.update_(config)
         self.config = new_config
         self.properties: dict[str, any] = {}
         self.items: list[any] = []
@@ -110,6 +110,7 @@ class PropertyGenerator:
             and isinstance(self.config.expression, str)
         ):
             self.expression = self.root_manager.load_expression(self)
+            self.__expression_loaded = True
         if self.expression != default_generator:
             try:
                 calculated = self.expression(
@@ -122,14 +123,12 @@ class PropertyGenerator:
                     generated.visible = calculated
                 self.iteration_value = generated
             except (ValueError, TypeError) as e:
-                print(e)
-                print(self.name, self.root_object)
                 e.args = {
                     'Generator': self.name,
                     'Property': self.root_object,
                     'Expression': self.config.expression,
                 }
-                exc.process_exception(e)
+                exc.EXCEPTION_HANDLER.error(e)
         else:
             self.iteration_value = generated
         self.iteration_value.hidden = self.__distribution(self.iteration_value.hidden)
@@ -163,7 +162,11 @@ def get_generator(
     object_name: str, config: model.PropertyDefinition, manager
 ) -> PropertyGenerator:
     prop_gen_cls = GENERATORS[config.type]
-    new_gen = prop_gen_cls(object_name, config)
+    new_config = model.PropertyDefinition(
+        name=config.name, type=config.type, **prop_gen_cls.default_config
+    )
+    new_config.update_(config)
+    new_gen = prop_gen_cls(object_name, new_config)
     new_gen.load(manager)
     return new_gen
 

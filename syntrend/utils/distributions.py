@@ -40,9 +40,9 @@ def dist_standard_deviation(prop_dist: model.PropertyDistribution):
 
 
 DISTRIBUTIONS = {
-    model.DistributionTypes.NoDistribution: dist_no_dist,
-    model.DistributionTypes.Linear: dist_linear,
-    model.DistributionTypes.StandardDeviation: dist_standard_deviation,
+    model.enum.DistributionTypes.NoDistribution: dist_no_dist,
+    model.enum.DistributionTypes.Linear: dist_linear,
+    model.enum.DistributionTypes.StandardDeviation: dist_standard_deviation,
 }
 
 

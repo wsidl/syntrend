@@ -32,8 +32,7 @@ def to_datetime(value_string, format_str: str = None):
     ]:
         try:
             return formatter(value_string)
-        except (TypeError, ValueError) as e:
-            print(e)
+        except (TypeError, ValueError):
             pass
     if format_str is not None:
         try:
