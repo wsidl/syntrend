@@ -30,10 +30,13 @@ def fields(obj: dc.dataclass, include_field=False) -> list[str | dc.Field]:
 
 def deep_update(base_object, new_object):
     for k, v in new_object.items():
-        if isinstance(v, dict):
-            base_object[k] = deep_update(base_object.get(k, {}), v)
-        else:
+        if k not in base_object:
             base_object[k] = v
+            continue
+        if isinstance(v, dict) and isinstance(base_object[k], dict):
+            base_object[k] = deep_update(base_object.get(k, {}), v)
+            continue
+        base_object[k] = v
     return base_object
 
 
@@ -47,8 +50,6 @@ def parse_bases(base_object: dict) -> dict:
 
     ref_object = {}
     for base in base_references:
-        if not base:
-            continue
         path_ref = DOCUMENTS.current_file
         if 'path' in base:
             file_path = base.pop('path', DOCUMENTS.current_file)
