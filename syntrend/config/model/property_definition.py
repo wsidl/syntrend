@@ -1,4 +1,4 @@
-from syntrend.config.model.base_config import Validated, dataclass, dc, parse_bases
+from syntrend.config.model.base_config import Validated, dataclass, dc, parse_bases, NullValue
 from syntrend.config.model.property_distribution import PropertyDistribution
 from syntrend.config.model.enum import DistributionTypes
 
@@ -34,8 +34,15 @@ class PropertyDefinition(Validated):
     items: list[any] = dc.field(default_factory=list)
     properties: dict[str, 'PropertyDefinition'] = dc.field(default_factory=dict)
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    def parse_type(self, type_name: str):
+        if type(type_name) is NullValue:
+            raise ValueError(
+                'No type provided',
+                {
+                    'Object': self.name,
+                },
+            ) from None
+        return type_name
 
     def parse_distribution(self, dist_type):
         if isinstance(dist_type, str):
