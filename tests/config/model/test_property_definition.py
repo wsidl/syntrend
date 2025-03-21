@@ -12,4 +12,6 @@ def test_init_no_type_raises_error():
         )
     assert exc.type is ValueError, 'Should raise ValueError'
     assert exc.value.args[0] == 'No type provided', 'Should say `type` was not provided'
-    assert exc.value.args[1]['Object'] == 'no_type', 'Should share the name of the object'
+    assert exc.value.args[1]['Object'] == 'no_type', (
+        'Should share the name of the object'
+    )

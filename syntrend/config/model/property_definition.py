@@ -1,4 +1,10 @@
-from syntrend.config.model.base_config import Validated, dataclass, dc, parse_bases, NullValue
+from syntrend.config.model.base_config import (
+    Validated,
+    dataclass,
+    dc,
+    parse_bases,
+    NullValue,
+)
 from syntrend.config.model.property_distribution import PropertyDistribution
 from syntrend.config.model.enum import DistributionTypes
 
