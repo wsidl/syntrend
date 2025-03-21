@@ -151,3 +151,20 @@ def test_parse_bases_invalid_path_reference():
     assert isinstance(exc.value.args[1], dict), (
         'Exception should return additional information about the error'
     )
+
+
+@mark.issue(id=30)
+@mark.unit
+def test_document_get_ref_from_foreign_file(monkeypatch):
+    mod.DOCUMENTS.current_file = Path('project.yaml')
+    link = mod.DocumentLink('project.yaml', 1)
+    mod.DOCUMENTS.add_document(link, {'a': 1, 'b': 2})
+
+    def _retrieve(_path):
+        new_link = mod.DocumentLink('other.yaml', 0)
+        mod.DOCUMENTS.add_document(new_link, {'type': 'string'})
+        mod.DOCUMENTS.add_tag('ref', 'obj', new_link)
+
+    mod.DOCUMENTS.set_retriever(_retrieve)
+    result = mod.DOCUMENTS.get_reference({'ref': 'obj', 'path': 'other.yaml'})
+    assert result == {'type': 'string'}, 'Return should be the loaded document'
