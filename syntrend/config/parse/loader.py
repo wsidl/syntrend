@@ -9,6 +9,11 @@ from ruamel.yaml import error
 ROOT_TAG = ('pos', '.')
 
 
+def get_file_content(file_path: Path) -> str:
+    with file_path.open('r') as file_obj:
+        return file_obj.read()
+
+
 def retrieve_source(config_file: list[dict] | dict | str | Path) -> None:
     if isinstance(config_file, list | dict):
         model.DOCUMENTS.add_document(
@@ -19,8 +24,7 @@ def retrieve_source(config_file: list[dict] | dict | str | Path) -> None:
 
     content = config_file
     if (path_ref := Path(config_file).absolute()).exists():
-        with path_ref.open('r') as file_obj:
-            content = file_obj.read()
+        content = get_file_content(path_ref)
         config_file = path_ref
         if path_ref.is_relative_to(Path.cwd()):
             config_file = path_ref.relative_to(Path.cwd())

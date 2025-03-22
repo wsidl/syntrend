@@ -38,9 +38,7 @@ class DocumentLink:
         return self.path.parent
 
     def get_reference(self):
-        if self not in DOCUMENTS:
-            DOCUMENTS.retrieve(self.path)
-        return DOCUMENTS.get_document(self)
+        return DOCUMENTS.get_reference({'path': self.path, 'index': self.index})
 
 
 class DocumentCollection:
@@ -49,13 +47,15 @@ class DocumentCollection:
         self.__sources: dict[int, Any] = {}
         self.__retriever = lambda x: None
         self.current_file: Path | None = None
+        self.__loaded_files: set[Path] = set()
 
     def clear(self):
-        self.__tags = {}
-        self.__sources = {}
-        self.__retriever = lambda x: None
+        self.__tags.clear()
+        self.__sources.clear()
+        self.__loaded_files.clear()
 
     def add_document(self, link: DocumentLink, content):
+        self.__loaded_files.add(link.path)
         self.__sources[hash(link)] = content
 
     def add_tag(self, tag_type: str, tag_value: str, link: DocumentLink):
@@ -80,6 +80,9 @@ class DocumentCollection:
         return self.__sources[hash(link)]
 
     def get_reference(self, reference: dict):
+        if 'path' in reference:
+            if reference['path'] not in self.__loaded_files:
+                self.retrieve(reference['path'])
         if reference.get('ref', ...) is not ...:
             return self.get_tag('ref', reference['ref'])
         if 'path' in reference:
