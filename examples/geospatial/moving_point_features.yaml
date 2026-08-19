@@ -1,0 +1,33 @@
+output:
+  count: 5
+  format: json
+  collection: true
+type: object
+properties:
+  type:
+    type: static
+    value: Feature
+  geometry:
+    type: object
+    properties:
+      type:
+        type: static
+        value: Point
+      coordinates:
+        type: list
+        min_length: 2
+        max_length: 2
+        sub_type:
+          type: float
+          num_decimals: 6
+          expression: "-42.80 + interval * 0.001 if kwargs.index == 0 else -5.09 + interval * 0.0005"
+  properties:
+    type: object
+    properties:
+      id:
+        type: integer
+        expression: interval
+      observed_at:
+        type: integer
+        start: 1735689600
+        expression: "1735689600 + interval * 60"
