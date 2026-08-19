@@ -1,0 +1,7 @@
+[
+  {"type": "Feature", "geometry": {"type": "Point", "coordinates": [-42.8, -5.09]}, "properties": {"id": 0, "observed_at": 1735689600}},
+  {"type": "Feature", "geometry": {"type": "Point", "coordinates": [-42.799, -5.0895]}, "properties": {"id": 1, "observed_at": 1735689660}},
+  {"type": "Feature", "geometry": {"type": "Point", "coordinates": [-42.797999999999995, -5.0889999999999995]}, "properties": {"id": 2, "observed_at": 1735689720}},
+  {"type": "Feature", "geometry": {"type": "Point", "coordinates": [-42.797, -5.0885]}, "properties": {"id": 3, "observed_at": 1735689780}},
+  {"type": "Feature", "geometry": {"type": "Point", "coordinates": [-42.796, -5.088]}, "properties": {"id": 4, "observed_at": 1735689840}}
+]

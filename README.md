@@ -78,6 +78,7 @@ Specific objectives for this project is to:
 - Understand how to use [Expressions](docs/expressions.md) to define trends in specific properties across a project.
 - Apply controlled randomness within your data using [Value Distributions](docs/distributions.md)
 - Understand how data can be [formatted or provide custom outputs](docs/outputs.md)
+- Generate and validate [geospatial and multidimensional fixtures](docs/geospatial.md)
 - Read the [FAQ's](docs/faq.md) for any un-answered questions
 
 ## Contributing
